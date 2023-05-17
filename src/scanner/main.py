@@ -4,7 +4,7 @@ import time
 from utils.screenshot import Screenshot
 import numpy as np
 from paddleocr import PaddleOCR
-from utils.game_data import GameData as gd
+from utils.game_data import GameData
 import Levenshtein as lev
 
 
@@ -86,7 +86,7 @@ class StarRailScanner:
                 superimposition = superimposition[0][0][0].strip()
 
                 # Fix OCR errors
-                lc = gd.get_light_cones()
+                lc = GameData.get_light_cones()
                 if name not in lc:
                     min_dist = 100
                     min_name = ""
@@ -104,7 +104,8 @@ class StarRailScanner:
 
                 # Parse superimposition
                 superimposition = superimposition.split(" ")
-                superimposition = int(superimposition[1])
+                superimposition = int(
+                    "".join(filter(str.isdigit, superimposition[1])))
 
                 result = {
                     "name": name,
