@@ -57,9 +57,9 @@ class StarRailScanner:
         time.sleep(0.5)
 
         # Main loop
-        # TODO: Extract into new Light Cone scanner class, location attribute, locked attribute, error checking and handling
+        # TODO: Extract into new Light Cone scanner class, error checking and handling
 
-        quantity = self.screenshot.screenshot_light_cone("quantity")
+        quantity = self.screenshot.screenshot_light_cone_quantity()
         quantity.save("quantity.png")
         quantity = np.array(quantity)
         quantity = self.ocr.ocr(quantity, cls=False, det=False)
@@ -95,18 +95,8 @@ class StarRailScanner:
 
                     quantity_remaining -= 1
 
-                    img = self.screenshot.screenshot_light_cone("stats")
-
-                    # Crop the image to the name, level, and superimposition
-                    # TODO: Scale images down when appropriate to improve OCR performance
-                    name = img.crop((0, 0, img.width, 0.15 * img.height))
-                    name.save("name.png")
-                    level = img.crop(
-                        (0.13 * img.width, 0.53 * img.height, 0.35 * img.width, 0.67 * img.height))
-                    level.save("level.png")
-                    superimposition = img.crop(
-                        (0.1 * img.width, 0.87 * img.height, 0.7 * img.width, img.height))
-                    superimposition.save("superimposition.png")
+                    # TODO: equipped, locked
+                    name, level, superimposition = self.screenshot.screenshot_light_cone_stats()
 
                     # Convert to numpy arrays
                     name = np.array(name)
