@@ -45,14 +45,14 @@ class StarRailScanner:
         self.nav.bring_window_to_foreground()
 
     def scan_light_cones(self):
-        light_cone_nav_data = nav_data[self.aspect_ratio]["light_cone"]
+        lc_nav_data = nav_data[self.aspect_ratio]["light_cone"]
 
         # Navigate to Light Cone tab from cellphone menu
         self.nav.send_key_press("esc")
         time.sleep(1)
         self.nav.send_key_press("b")
         time.sleep(1)
-        self.nav.move_cursor_to(*light_cone_nav_data["inv_tab"])
+        self.nav.move_cursor_to(*lc_nav_data["inv_tab"])
         self.nav.click()
         time.sleep(0.5)
 
@@ -70,26 +70,28 @@ class StarRailScanner:
         except:
             raise Exception("Could not parse quantity.")
 
+        print("Quantity remaining: ", quantity_remaining)
+
         scanned_light_cones = []
-        scanned_per_scroll = light_cone_nav_data["rows"] * \
-            light_cone_nav_data["cols"]
+        scanned_per_scroll = lc_nav_data["rows"] * \
+            lc_nav_data["cols"]
 
         while quantity_remaining > 0:
             if quantity_remaining < scanned_per_scroll:
-                x, y = light_cone_nav_data["row_start_bottom"]
-                start_row = quantity_remaining // light_cone_nav_data["cols"]
-                y -= start_row * light_cone_nav_data["offset_y"]
+                x, y = lc_nav_data["row_start_bottom"]
+                start_row = quantity_remaining // (lc_nav_data["cols"] + 1)
+                y -= start_row * lc_nav_data["offset_y"]
             else:
-                x, y = light_cone_nav_data["row_start_top"]
+                x, y = lc_nav_data["row_start_top"]
 
-            for r in range(light_cone_nav_data["rows"]):
-                for c in range(light_cone_nav_data["cols"]):
+            for r in range(lc_nav_data["rows"]):
+                for c in range(lc_nav_data["cols"]):
                     if quantity_remaining <= 0:
                         break
 
                     self.nav.move_cursor_to(x, y)
                     self.nav.click()
-                    x += light_cone_nav_data["offset_x"]
+                    x += lc_nav_data["offset_x"]
 
                     quantity_remaining -= 1
 
@@ -135,9 +137,9 @@ class StarRailScanner:
                         name = min_name
 
                     # Parse level and ascension
-                    level, ascension = level.split("/")
+                    level, _ = level.split("/")
                     level = int(level)
-                    ascension = int(ascension) // 10
+                    ascension = int(level) // 10
 
                     # Parse superimposition
                     superimposition = superimposition.split(" ")
@@ -154,14 +156,14 @@ class StarRailScanner:
                     scanned_light_cones.append(result)
 
                 # Next row
-                x = light_cone_nav_data["row_start_top"][0]
-                y += light_cone_nav_data["offset_y"]
+                x = lc_nav_data["row_start_top"][0]
+                y += lc_nav_data["offset_y"]
 
             if quantity_remaining <= 0:
                 break
 
             self.nav.drag_scroll(
-                x, light_cone_nav_data["scroll_start_y"], light_cone_nav_data["row_start_top"][1])
+                x, lc_nav_data["scroll_start_y"], lc_nav_data["row_start_top"][1])
             time.sleep(0.5)
 
         return scanned_light_cones
