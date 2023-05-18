@@ -127,9 +127,9 @@ class StarRailScanner:
                         name = min_name
 
                     # Parse level and ascension
-                    level, _ = level.split("/")
+                    level, max_level = level.split("/")
                     level = int(level)
-                    ascension = int(level) // 10
+                    ascension = (max(int(max_level), 20) - 20) // 10
 
                     # Parse superimposition
                     superimposition = superimposition.split(" ")
