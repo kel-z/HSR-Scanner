@@ -1,7 +1,8 @@
 import win32gui
 import keyboard
 import mouse
-
+import pyautogui
+import time
 
 class Navigation:
 
@@ -26,14 +27,31 @@ class Navigation:
     def click(self):
         mouse.click()
 
+    def drag_scroll(self, x, start_y, end_y):
+        x = self.left + int(self.x * x)
+        start_y = self.top + int(self.y * start_y)
+        end_y = self.top + int(self.y * end_y)
+
+        pyautogui.moveTo(x, start_y)
+        pyautogui.mouseDown()
+        pyautogui.dragTo(x, end_y, duration=1, mouseDownUp=False)
+        time.sleep(0.5)
+        pyautogui.mouseUp()
+
+
     def print_mouse_position(self):
+        x_percent, y_percent = self.get_mouse_position()
+
+        print("x: " + str(x_percent) + ", y: " + str(y_percent))
+
+    def get_mouse_position(self):
         mouse_x, mouse_y = mouse.get_position()
         right, bottom = win32gui.ClientToScreen(self.hwnd, (self.x, self.y))
 
         x_percent = (mouse_x - self.left) / (right - self.left)
         y_percent = (mouse_y - self.top) / (bottom - self.top)
 
-        print("x: " + str(x_percent) + ", y: " + str(y_percent))
+        return x_percent, y_percent
 
     def get_aspect_ratio(self):
         x, y = win32gui.GetClientRect(self.hwnd)[2:]
