@@ -6,6 +6,7 @@ import numpy as np
 from paddleocr import PaddleOCR
 from utils.game_data import GameData
 import Levenshtein as lev
+import asyncio
 
 
 nav_data = {
@@ -25,12 +26,12 @@ nav_data = {
 
 
 class HSRScanner:
+    scan_light_cones = False
+    scan_relics = False
+    scan_characters = False
+    update_progress = None
 
     def __init__(self):
-        self.scan_light_cones = False
-        self.scan_relics = False
-        self.scan_characters = False
-
         hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not hwnd:
             Exception(
@@ -44,14 +45,16 @@ class HSRScanner:
 
         self._ocr = PaddleOCR(use_angle_cls=False, lang="en", show_log=False)
 
-    def scan(self):
+    async def scan(self, callback=None):
         if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
             raise Exception("No scan options selected.")
 
         self._nav.bring_window_to_foreground()
 
+        res = {}
+
         if self.scan_light_cones:
-            self.get_light_cones()
+            res["light_cones"] = await self.get_light_cones()
 
         if self.scan_relics:
             pass
@@ -59,7 +62,10 @@ class HSRScanner:
         if self.scan_characters:
             pass
 
-    def get_light_cones(self):
+        if callback:
+            callback(res)
+
+    async def get_light_cones(self):
         lc_nav_data = nav_data[self._aspect_ratio]["light_cone"]
 
         # Navigate to Light Cone tab from cellphone menu
@@ -85,12 +91,11 @@ class HSRScanner:
         except:
             raise Exception("Could not parse quantity.")
 
-        print("Quantity remaining: ", quantity_remaining)
-
         scanned_light_cones = []
         scanned_per_scroll = lc_nav_data["rows"] * \
             lc_nav_data["cols"]
 
+        tasks = set()
         while quantity_remaining > 0:
             if quantity_remaining < scanned_per_scroll:
                 x, y = lc_nav_data["row_start_bottom"]
@@ -105,60 +110,29 @@ class HSRScanner:
                         break
 
                     self._nav.move_cursor_to(x, y)
+                    time.sleep(0.05)
                     self._nav.click()
-                    x += lc_nav_data["offset_x"]
+                    time.sleep(0.05)
 
                     quantity_remaining -= 1
 
                     # TODO: equipped, locked
                     name, level, superimposition = self._screenshot.screenshot_light_cone_stats()
 
-                    # Convert to numpy arrays
-                    name = np.array(name)
-                    level = np.array(level)
-                    superimposition = np.array(superimposition)
+                    # TODO: check min level
 
-                    # OCR
-                    name = self._ocr.ocr(name, cls=False, det=False)
-                    level = self._ocr.ocr(level, cls=False, det=False)
-                    superimposition = self._ocr.ocr(
-                        superimposition, cls=False, det=False)
+                    if self.update_progress:
+                        self.update_progress(0)
 
-                    # Convert to strings
-                    name = name[0][0][0].strip()
-                    level = level[0][0][0].strip()
-                    superimposition = superimposition[0][0][0].strip()
+                    task = asyncio.create_task(self.parse_light_cone(
+                        name, level, superimposition))
+                    tasks.add(task)
 
-                    # Fix OCR errors
-                    lc = GameData.get_light_cones()
-                    if name not in lc:
-                        min_dist = 100
-                        min_name = ""
-                        for cone in lc:
-                            dist = lev.distance(name, cone)
-                            if dist < min_dist:
-                                min_dist = dist
-                                min_name = cone
-                        name = min_name
+                    task.add_done_callback(
+                        lambda t: scanned_light_cones.append(t.result()))
+                    task.add_done_callback(tasks.discard)
 
-                    # Parse level and ascension
-                    level, max_level = level.split("/")
-                    level = int(level)
-                    ascension = (max(int(max_level), 20) - 20) // 10
-
-                    # Parse superimposition
-                    superimposition = superimposition.split(" ")
-                    superimposition = int(
-                        "".join(filter(str.isdigit, superimposition[1])))
-
-                    result = {
-                        "name": name,
-                        "level": level,
-                        "ascension": ascension,
-                        "superimposition": superimposition
-                    }
-
-                    scanned_light_cones.append(result)
+                    x += lc_nav_data["offset_x"]
 
                 # Next row
                 x = lc_nav_data["row_start_top"][0]
@@ -171,4 +145,60 @@ class HSRScanner:
                 x, lc_nav_data["scroll_start_y"], lc_nav_data["row_start_top"][1])
             time.sleep(0.5)
 
+        await asyncio.gather(*tasks)
+
         return scanned_light_cones
+
+    async def parse_light_cone(self, name, level, superimposition):
+        # Convert to numpy arrays
+        name = np.array(name)
+        level = np.array(level)
+        superimposition = np.array(superimposition)
+
+        # OCR
+        name = self._ocr.ocr(name, cls=False, det=False)
+        level = self._ocr.ocr(level, cls=False, det=False)
+        superimposition = self._ocr.ocr(
+            superimposition, cls=False, det=False)
+
+        # Convert to strings
+        name = name[0][0][0].strip()
+        level = level[0][0][0].strip()
+        superimposition = superimposition[0][0][0].strip()
+
+        # Fix OCR errors
+        lc = GameData.get_light_cones()
+        if name not in lc:
+            min_dist = 100
+            min_name = ""
+            for cone in lc:
+                dist = lev.distance(name, cone)
+                if dist < min_dist:
+                    min_dist = dist
+                    min_name = cone
+            name = min_name
+
+        # Parse level and ascension
+        level, max_level = level.split("/")
+        level = int(level)
+        ascension = (max(int(max_level), 20) - 20) // 10
+
+        # Parse superimposition
+        superimposition = superimposition.split(" ")
+        superimposition = int(
+            "".join(filter(str.isdigit, superimposition[1])))
+
+        result = {
+            "name": name,
+            "level": level,
+            "ascension": ascension,
+            "superimposition": superimposition
+        }
+
+        return result
+
+    def get_relics(self):
+        pass
+
+    def get_characters(self):
+        pass
