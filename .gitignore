@@ -1,3 +1,5 @@
-src/scanner/utils/mouse_position.py
-src/scanner/utils/__pycache__
+**\__pycache__
 .vscode
+.venv
+*.png
+src/utils/dev

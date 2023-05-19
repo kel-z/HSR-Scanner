@@ -24,45 +24,60 @@ nav_data = {
 }
 
 
-class StarRailScanner:
+class HSRScanner:
 
     def __init__(self):
-        try:
-            hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
-            if not hwnd:
-                raise "Honkai: Star Rail not found. Please open the game and try again."
-        except:
-            raise ("Honkai: Star Rail not found. Please open the game and try again.")
+        self.scan_light_cones = False
+        self.scan_relics = False
+        self.scan_characters = False
 
-        self.nav = Navigation(hwnd)
+        hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
+        if not hwnd:
+            Exception(
+                "Honkai: Star Rail not found. Please open the game and try again.")
 
-        self.aspect_ratio = self.nav.get_aspect_ratio()
+        self._nav = Navigation(hwnd)
 
-        self.screenshot = Screenshot(hwnd, self.aspect_ratio)
+        self._aspect_ratio = self._nav.get_aspect_ratio()
 
-        self.ocr = PaddleOCR(use_angle_cls=False, lang="en", show_log=False)
+        self._screenshot = Screenshot(hwnd, self._aspect_ratio)
 
-        self.nav.bring_window_to_foreground()
+        self._ocr = PaddleOCR(use_angle_cls=False, lang="en", show_log=False)
 
-    def scan_light_cones(self):
-        lc_nav_data = nav_data[self.aspect_ratio]["light_cone"]
+    def scan(self):
+        if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
+            raise Exception("No scan options selected.")
+
+        self._nav.bring_window_to_foreground()
+
+        if self.scan_light_cones:
+            self.get_light_cones()
+
+        if self.scan_relics:
+            pass
+
+        if self.scan_characters:
+            pass
+
+    def get_light_cones(self):
+        lc_nav_data = nav_data[self._aspect_ratio]["light_cone"]
 
         # Navigate to Light Cone tab from cellphone menu
-        self.nav.send_key_press("esc")
+        self._nav.send_key_press("esc")
         time.sleep(1)
-        self.nav.send_key_press("b")
+        self._nav.send_key_press("b")
         time.sleep(1)
-        self.nav.move_cursor_to(*lc_nav_data["inv_tab"])
-        self.nav.click()
+        self._nav.move_cursor_to(*lc_nav_data["inv_tab"])
+        self._nav.click()
         time.sleep(0.5)
 
         # Main loop
         # TODO: Extract into new Light Cone scanner class, error checking and handling
 
-        quantity = self.screenshot.screenshot_light_cone_quantity()
+        quantity = self._screenshot.screenshot_light_cone_quantity()
         quantity.save("quantity.png")
         quantity = np.array(quantity)
-        quantity = self.ocr.ocr(quantity, cls=False, det=False)
+        quantity = self._ocr.ocr(quantity, cls=False, det=False)
 
         try:
             quantity_remaining = int(
@@ -89,14 +104,14 @@ class StarRailScanner:
                     if quantity_remaining <= 0:
                         break
 
-                    self.nav.move_cursor_to(x, y)
-                    self.nav.click()
+                    self._nav.move_cursor_to(x, y)
+                    self._nav.click()
                     x += lc_nav_data["offset_x"]
 
                     quantity_remaining -= 1
 
                     # TODO: equipped, locked
-                    name, level, superimposition = self.screenshot.screenshot_light_cone_stats()
+                    name, level, superimposition = self._screenshot.screenshot_light_cone_stats()
 
                     # Convert to numpy arrays
                     name = np.array(name)
@@ -104,9 +119,9 @@ class StarRailScanner:
                     superimposition = np.array(superimposition)
 
                     # OCR
-                    name = self.ocr.ocr(name, cls=False, det=False)
-                    level = self.ocr.ocr(level, cls=False, det=False)
-                    superimposition = self.ocr.ocr(
+                    name = self._ocr.ocr(name, cls=False, det=False)
+                    level = self._ocr.ocr(level, cls=False, det=False)
+                    superimposition = self._ocr.ocr(
                         superimposition, cls=False, det=False)
 
                     # Convert to strings
@@ -152,12 +167,8 @@ class StarRailScanner:
             if quantity_remaining <= 0:
                 break
 
-            self.nav.drag_scroll(
+            self._nav.drag_scroll(
                 x, lc_nav_data["scroll_start_y"], lc_nav_data["row_start_top"][1])
             time.sleep(0.5)
 
         return scanned_light_cones
-
-
-scanner = StarRailScanner()
-print(scanner.scan_light_cones())
