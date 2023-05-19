@@ -7,22 +7,7 @@ from paddleocr import PaddleOCR
 from utils.game_data import GameData
 import Levenshtein as lev
 import asyncio
-
-
-nav_data = {
-    "16:9": {
-        "light_cone": {
-            "inv_tab": (0.38, 0.06),
-            "row_start_top": (0.1, 0.185),
-            "row_start_bottom": (0.1, 0.77),
-            "scroll_start_y": 0.849,
-            "offset_x": 0.075,
-            "offset_y": 0.157,
-            "rows": 4,
-            "cols": 8
-        }
-    }
-}
+from light_cone_strategy import LightConeStrategy
 
 
 class HSRScanner:
@@ -54,7 +39,7 @@ class HSRScanner:
         res = {}
 
         if self.scan_light_cones:
-            res["light_cones"] = await self.get_light_cones()
+            res["light_cones"] = await self.scan_inventory(LightConeStrategy(self._ocr, self._screenshot))
 
         if self.scan_relics:
             pass
@@ -65,23 +50,24 @@ class HSRScanner:
         if callback:
             callback(res)
 
-    async def get_light_cones(self):
-        lc_nav_data = nav_data[self._aspect_ratio]["light_cone"]
+    async def scan_inventory(self, strategy):
+        nav_data = strategy.nav_data[self._aspect_ratio]
 
-        # Navigate to Light Cone tab from cellphone menu
+        # Navigate to correct tab from cellphone menu
         self._nav.send_key_press("esc")
         time.sleep(1)
         self._nav.send_key_press("b")
         time.sleep(1)
-        self._nav.move_cursor_to(*lc_nav_data["inv_tab"])
+        self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
         time.sleep(0.5)
 
-        # Main loop
-        # TODO: Extract into new Light Cone scanner class, error checking and handling
-
-        quantity = self._screenshot.screenshot_light_cone_quantity()
-        quantity.save("quantity.png")
+        # TODO: using quantity to know when to scan the bottom row is not ideal
+        #       because it will not work for tabs that do not have a quantity
+        #       (i.e. materials).
+        #
+        #       for now, it will work for light cones and relics.
+        quantity = self._screenshot.screenshot_quantity()
         quantity = np.array(quantity)
         quantity = self._ocr.ocr(quantity, cls=False, det=False)
 
@@ -91,21 +77,20 @@ class HSRScanner:
         except:
             raise Exception("Could not parse quantity.")
 
-        scanned_light_cones = []
-        scanned_per_scroll = lc_nav_data["rows"] * \
-            lc_nav_data["cols"]
+        res = []
+        scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
 
         tasks = set()
         while quantity_remaining > 0:
             if quantity_remaining < scanned_per_scroll:
-                x, y = lc_nav_data["row_start_bottom"]
-                start_row = quantity_remaining // (lc_nav_data["cols"] + 1)
-                y -= start_row * lc_nav_data["offset_y"]
+                x, y = nav_data["row_start_bottom"]
+                start_row = quantity_remaining // (nav_data["cols"] + 1)
+                y -= start_row * nav_data["offset_y"]
             else:
-                x, y = lc_nav_data["row_start_top"]
+                x, y = nav_data["row_start_top"]
 
-            for r in range(lc_nav_data["rows"]):
-                for c in range(lc_nav_data["cols"]):
+            for r in range(nav_data["rows"]):
+                for c in range(nav_data["cols"]):
                     if quantity_remaining <= 0:
                         break
 
@@ -116,89 +101,36 @@ class HSRScanner:
 
                     quantity_remaining -= 1
 
-                    # TODO: equipped, locked
-                    name, level, superimposition = self._screenshot.screenshot_light_cone_stats()
+                    img_props = strategy.screenshot_stats()
 
-                    # TODO: check min level
+                    # TODO: check min level / rarity
 
                     if self.update_progress:
                         self.update_progress(0)
 
-                    task = asyncio.create_task(self.parse_light_cone(
-                        name, level, superimposition))
+                    task = asyncio.create_task(strategy.parse(**img_props))
                     tasks.add(task)
 
                     task.add_done_callback(
-                        lambda t: scanned_light_cones.append(t.result()))
+                        lambda t: res.append(t.result()))
                     task.add_done_callback(tasks.discard)
 
-                    x += lc_nav_data["offset_x"]
+                    x += nav_data["offset_x"]
 
                 # Next row
-                x = lc_nav_data["row_start_top"][0]
-                y += lc_nav_data["offset_y"]
+                x = nav_data["row_start_top"][0]
+                y += nav_data["offset_y"]
 
             if quantity_remaining <= 0:
                 break
 
             self._nav.drag_scroll(
-                x, lc_nav_data["scroll_start_y"], lc_nav_data["row_start_top"][1])
+                x, nav_data["scroll_start_y"], nav_data["row_start_top"][1])
             time.sleep(0.5)
 
+        self._nav.send_key_press("esc")
+        time.sleep(1)
+        self._nav.send_key_press("esc")
         await asyncio.gather(*tasks)
 
-        return scanned_light_cones
-
-    async def parse_light_cone(self, name, level, superimposition):
-        # Convert to numpy arrays
-        name = np.array(name)
-        level = np.array(level)
-        superimposition = np.array(superimposition)
-
-        # OCR
-        name = self._ocr.ocr(name, cls=False, det=False)
-        level = self._ocr.ocr(level, cls=False, det=False)
-        superimposition = self._ocr.ocr(
-            superimposition, cls=False, det=False)
-
-        # Convert to strings
-        name = name[0][0][0].strip()
-        level = level[0][0][0].strip()
-        superimposition = superimposition[0][0][0].strip()
-
-        # Fix OCR errors
-        lc = GameData.get_light_cones()
-        if name not in lc:
-            min_dist = 100
-            min_name = ""
-            for cone in lc:
-                dist = lev.distance(name, cone)
-                if dist < min_dist:
-                    min_dist = dist
-                    min_name = cone
-            name = min_name
-
-        # Parse level and ascension
-        level, max_level = level.split("/")
-        level = int(level)
-        ascension = (max(int(max_level), 20) - 20) // 10
-
-        # Parse superimposition
-        superimposition = superimposition.split(" ")
-        superimposition = int(
-            "".join(filter(str.isdigit, superimposition[1])))
-
-        result = {
-            "name": name,
-            "level": level,
-            "ascension": ascension,
-            "superimposition": superimposition
-        }
-
-        return result
-
-    def get_relics(self):
-        pass
-
-    def get_characters(self):
-        pass
+        return res
