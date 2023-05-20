@@ -8,6 +8,7 @@ from utils.game_data import GameData
 import Levenshtein as lev
 import asyncio
 from light_cone_strategy import LightConeStrategy
+from relic_strategy import RelicStrategy
 
 
 class HSRScanner:
@@ -35,25 +36,33 @@ class HSRScanner:
             raise Exception("No scan options selected.")
 
         self._nav.bring_window_to_foreground()
+        tasks = []
 
         res = {}
 
         if self.scan_light_cones:
-            res["light_cones"] = await self.scan_inventory(LightConeStrategy(self._ocr, self._screenshot))
+            res["light_cones"] = []
+            tasks.append(self.scan_inventory(LightConeStrategy(
+                self._ocr, self._screenshot), res["light_cones"].append))
 
         if self.scan_relics:
-            pass
+            res["relics"] = []
+            tasks.append(self.scan_inventory(RelicStrategy(
+                self._ocr, self._screenshot), res["relics"].append))
 
         if self.scan_characters:
             pass
 
+        await asyncio.gather(*tasks)
+
         if callback:
             callback(res)
 
-    async def scan_inventory(self, strategy):
+    async def scan_inventory(self, strategy, callback):
         nav_data = strategy.nav_data[self._aspect_ratio]
 
         # Navigate to correct tab from cellphone menu
+        time.sleep(1)
         self._nav.send_key_press("esc")
         time.sleep(1)
         self._nav.send_key_press("b")
@@ -77,12 +86,11 @@ class HSRScanner:
         except:
             raise Exception("Could not parse quantity.")
 
-        res = []
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
 
         tasks = set()
         while quantity_remaining > 0:
-            if quantity_remaining < scanned_per_scroll:
+            if quantity_remaining <= scanned_per_scroll:
                 x, y = nav_data["row_start_bottom"]
                 start_row = quantity_remaining // (nav_data["cols"] + 1)
                 y -= start_row * nav_data["offset_y"]
@@ -101,18 +109,22 @@ class HSRScanner:
 
                     quantity_remaining -= 1
 
-                    img_props = strategy.screenshot_stats()
+                    stats_img_map = strategy.screenshot_stats()
+
+                    # Convert each image to numpy array
+                    stats_img_map = {k: np.array(v)
+                                     for k, v in stats_img_map.items()}
 
                     # TODO: check min level / rarity
 
                     if self.update_progress:
-                        self.update_progress(0)
+                        self.update_progress(strategy.scan_type)
 
-                    task = asyncio.create_task(strategy.parse(**img_props))
+                    task = asyncio.create_task(strategy.parse(stats_img_map))
                     tasks.add(task)
 
                     task.add_done_callback(
-                        lambda t: res.append(t.result()))
+                        lambda t: callback(t.result()))
                     task.add_done_callback(tasks.discard)
 
                     x += nav_data["offset_x"]
@@ -131,6 +143,4 @@ class HSRScanner:
         self._nav.send_key_press("esc")
         time.sleep(1)
         self._nav.send_key_press("esc")
-        await asyncio.gather(*tasks)
-
-        return res
+        return tasks

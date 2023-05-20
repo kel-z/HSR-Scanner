@@ -6,13 +6,29 @@ class Screenshot:
     coords = {
         "16:9": {
             "quantity": (0.89, 0.46, 0.13, 0.06),
-            "stats": (0.11, 0.72, 0.25, 0.755),
+            "stats": (0.09, 0.72, 0.25, 0.78),
             "light_cone": {
-                "stats_attr": {
-                    "name": (0, 0, 1, 0.08),
-                    "level": (0.13, 0.3, 0.35, 0.35),
-                    "superimposition": (0.1, 0.48, 0.7, 0.55)
-                }
+                "name": (0, 0, 1, 0.09),
+                "level": (0.13, 0.3, 0.35, 0.37),
+                "superimposition": (0.1, 0.48, 0.7, 0.55)
+            },
+            "relic": {
+                "name": (0, 0, 1, 0.09),
+                "level": (0.115, 0.24, 0.23, 0.31),
+
+                "mainStatKey": (0.115, 0.34, 0.77, 0.4),
+
+                "subStatKey_1": (0.115, 0.39, 0.77, 0.46),
+                "subStatVal_1": (0.77, 0.39, 1, 0.46),
+
+                "subStatKey_2": (0.115, 0.44, 0.77, 0.51),
+                "subStatVal_2": (0.77, 0.44, 1, 0.51),
+
+                "subStatKey_3": (0.115, 0.48, 0.77, 0.555),
+                "subStatVal_3": (0.77, 0.48, 1, 0.555),
+
+                "subStatKey_4": (0.115, 0.53, 0.77, 0.6),
+                "subStatVal_4": (0.77, 0.53, 1, 0.6),
             }
         }
     }
@@ -29,7 +45,7 @@ class Screenshot:
         img = self._take_screenshot(*coords["stats"])
 
         adjusted_stat_coords = {
-            k: tuple([int(v * img.width) if i % 2 == 0 else int(v * img.height) for i, v in enumerate(v)]) for k, v in coords[key]["stats_attr"].items()}
+            k: tuple([int(v * img.width) if i % 2 == 0 else int(v * img.height) for i, v in enumerate(v)]) for k, v in coords[key].items()}
 
         return {
             k: img.crop(v) for k, v in adjusted_stat_coords.items()
@@ -37,6 +53,9 @@ class Screenshot:
 
     def screenshot_light_cone_stats(self):
         return self.screenshot_stats("light_cone")
+
+    def screenshot_relic_stats(self):
+        return self.screenshot_stats("relic")
 
     def screenshot_quantity(self):
         return self._take_screenshot(

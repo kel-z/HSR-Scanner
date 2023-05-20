@@ -6,6 +6,7 @@ import numpy as np
 
 
 class LightConeStrategy:
+    scan_type = 0
     nav_data = {
         "16:9": {
             "inv_tab": (0.38, 0.06),
@@ -23,14 +24,16 @@ class LightConeStrategy:
         self._ocr = ocr
         self._screenshot = screenshot
 
+        self._light_cones = GameData.get_light_cones()
+
     def screenshot_stats(self):
         return self._screenshot.screenshot_light_cone_stats()
 
-    async def parse(self, name, level, superimposition):
-        # Convert to numpy arrays
-        name = np.array(name)
-        level = np.array(level)
-        superimposition = np.array(superimposition)
+    async def parse(self, stats_map):
+        # Get each np array
+        name = stats_map["name"]
+        level = stats_map["level"]
+        superimposition = stats_map["superimposition"]
 
         # OCR
         name = self._ocr.ocr(name, cls=False, det=False)
@@ -44,7 +47,7 @@ class LightConeStrategy:
         superimposition = superimposition[0][0][0].strip()
 
         # Fix OCR errors
-        lc = GameData.get_light_cones()
+        lc = self._light_cones
         if name not in lc:
             min_dist = 100
             min_name = ""
