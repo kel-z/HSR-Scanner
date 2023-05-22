@@ -1,8 +1,10 @@
+import contextlib
+import asyncio
 from ui.hsr_scanner import Ui_MainWindow
 from PyQt6 import QtCore, QtGui, QtWidgets
 from scanner import HSRScanner
-import asyncio
 from enum import Enum
+from pynput.keyboard import Key, Listener
 
 
 class ScanType(Enum):
@@ -11,17 +13,20 @@ class ScanType(Enum):
     CHARACTER = 2
 
 
-class HSRScannerUI(Ui_MainWindow):
+class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
+    is_scanning = False
 
     def __init__(self):
         super().__init__()
         self._scanner = HSRScanner()
+        self._scanner_thread = None
+        self._listener = KeyboardListener(self, self.stop_scan)
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
-        self.buttonStartScan.clicked.connect(self.startScan)
+        self.buttonStartScan.clicked.connect(self.start_scan)
 
-    def startScan(self):
+    def start_scan(self):
         self.disable_start_scan_button()
 
         self._scanner.scan_light_cones = self.checkBoxScanLightCones.isChecked()
@@ -35,12 +40,19 @@ class HSRScannerUI(Ui_MainWindow):
         self._scanner_thread.result.connect(self.log)
         self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result.connect(self.enable_start_scan_button)
+        self._scanner_thread.result.connect(self._listener.stop)
 
         self._scanner_thread.error.connect(self.log)
         self._scanner_thread.error.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.error.connect(self.enable_start_scan_button)
+        self._scanner_thread.error.connect(self._listener.stop)
 
         self._scanner_thread.start()
+        self._listener.start()
+
+    def stop_scan(self):
+        if self.is_scanning:
+            self._scanner_thread.stop()
 
     def increment_progress(self, enum):
         if ScanType(enum) == ScanType.LIGHT_CONE:
@@ -54,10 +66,12 @@ class HSRScannerUI(Ui_MainWindow):
                 str(int(self.labelCharacterCount.text()) + 1))
 
     def disable_start_scan_button(self):
+        self.is_scanning = True
         self.buttonStartScan.setText("Processing...")
         self.buttonStartScan.setEnabled(False)
 
     def enable_start_scan_button(self):
+        self.is_scanning = False
         self.buttonStartScan.setText("Start Scan")
         self.buttonStartScan.setEnabled(True)
 
@@ -65,7 +79,31 @@ class HSRScannerUI(Ui_MainWindow):
         self.textLog.appendPlainText(str(message))
 
     def setupButtonStartScan(self):
-        self.buttonStartScan.clicked.connect(self.startScan)
+        self.buttonStartScan.clicked.connect(self.start_scan)
+
+
+class KeyboardListener(QtCore.QThread):
+    def __init__(self, parent, stop_scan):
+        super().__init__()
+        self.stop_scan = stop_scan
+        self.listener = None
+
+    def run(self):
+        with Listener(on_press=self.on_press, on_release=self.on_release) as listener:
+            self.listener = listener
+            listener.join()
+
+    def stop(self):
+        if self.listener:
+            self.listener.stop()
+
+    def on_press(self, key):
+        if key == Key.enter:
+            self.stop_scan()
+
+    def on_release(self, key):
+        if key == Key.enter:
+            return False
 
 
 class ScannerThread(QtCore.QThread):
@@ -80,9 +118,12 @@ class ScannerThread(QtCore.QThread):
 
     def run(self):
         try:
-            asyncio.run(self._scanner.scan(self.result.emit))
+            asyncio.run(self._scanner.start_scan(self.result.emit))
         except Exception as e:
             self.error.emit(e)
+
+    def stop(self):
+        self._scanner.stop_scan()
 
 
 if __name__ == "__main__":

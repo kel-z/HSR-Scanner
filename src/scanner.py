@@ -4,20 +4,24 @@ import time
 from utils.screenshot import Screenshot
 import numpy as np
 from paddleocr import PaddleOCR
-from utils.game_data import GameData
-import Levenshtein as lev
 import asyncio
 from light_cone_strategy import LightConeStrategy
 from relic_strategy import RelicStrategy
+from pynput.keyboard import Key
 
 
-class HSRScanner:
+class HSRScanner ():
     scan_light_cones = False
     scan_relics = False
     scan_characters = False
     update_progress = None
 
+    esc_key = Key.esc
+    inventory_key = "b"
+    character_key = "c"
+
     def __init__(self):
+        self.interrupt_requested = False
         hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not hwnd:
             Exception(
@@ -31,7 +35,10 @@ class HSRScanner:
 
         self._ocr = PaddleOCR(use_angle_cls=False, lang="en", show_log=False)
 
-    async def scan(self, callback=None):
+    def stop_scan(self):
+        self.interrupt_requested = True
+
+    async def start_scan(self, callback=None):
         if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
             raise Exception("No scan options selected.")
 
@@ -52,7 +59,7 @@ class HSRScanner:
 
         if self.scan_characters:
             pass
-
+        
         await asyncio.gather(*tasks)
 
         if callback:
@@ -63,9 +70,9 @@ class HSRScanner:
 
         # Navigate to correct tab from cellphone menu
         time.sleep(1)
-        self._nav.send_key_press("esc")
+        self._nav.send_key_press(self.esc_key)
         time.sleep(1)
-        self._nav.send_key_press("b")
+        self._nav.send_key_press(self.inventory_key)
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
@@ -101,6 +108,9 @@ class HSRScanner:
                 for c in range(nav_data["cols"]):
                     if quantity_remaining <= 0:
                         break
+
+                    if self.interrupt_requested:
+                        raise Exception("Scan interrupted.")
 
                     self._nav.move_cursor_to(x, y)
                     time.sleep(0.05)
@@ -140,7 +150,7 @@ class HSRScanner:
                 x, nav_data["scroll_start_y"], nav_data["row_start_top"][1])
             time.sleep(0.5)
 
-        self._nav.send_key_press("esc")
+        self._nav.send_key_press(self.esc_key)
         time.sleep(1)
-        self._nav.send_key_press("esc")
+        self._nav.send_key_press(self.esc_key)
         return tasks

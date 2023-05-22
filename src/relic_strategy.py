@@ -12,7 +12,7 @@ class RelicStrategy:
             "inv_tab": (0.43, 0.06),
             "row_start_top": (0.1, 0.25),
             "row_start_bottom": (0.1, 0.77),
-            "scroll_start_y": 0.752,
+            "scroll_start_y": 0.749,
             "offset_x": 0.075,
             "offset_y": 0.157,
             "rows": 3,

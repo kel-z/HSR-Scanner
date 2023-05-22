@@ -1,8 +1,7 @@
 import win32gui
-import keyboard
-import mouse
 import pyautogui
 import time
+from pynput import mouse, keyboard
 
 
 class Navigation:
@@ -12,6 +11,9 @@ class Navigation:
         self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
         self._left, self._top = win32gui.ClientToScreen(self._hwnd, (0, 0))
 
+        self._mouse = mouse.Controller()
+        self._keyboard = keyboard.Controller()
+
     def bring_window_to_foreground(self):
         win32gui.ShowWindow(self._hwnd, 5)
         win32gui.SetForegroundWindow(self._hwnd)
@@ -20,13 +22,13 @@ class Navigation:
         x = self._left + int(self._width * x_percent)
         y = self._top + int(self._height * y_percent)
 
-        mouse.move(x, y)
+        self._mouse.position = (x, y)
 
     def send_key_press(self, key):
-        keyboard.press_and_release(key)
+        self._keyboard.tap(key)
 
     def click(self):
-        mouse.click()
+        self._mouse.click(mouse.Button.left)
 
     def drag_scroll(self, x, start_y, end_y):
         x = self._left + int(self._width * x)
@@ -45,7 +47,7 @@ class Navigation:
         print("x: " + str(x_percent) + ", y: " + str(y_percent))
 
     def get_mouse_position(self):
-        mouse_x, mouse_y = mouse.get_position()
+        mouse_x, mouse_y = self._mouse.position
         right, bottom = win32gui.ClientToScreen(
             self._hwnd, (self._width, self._height))
 
