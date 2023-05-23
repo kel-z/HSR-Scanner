@@ -1,6 +1,7 @@
 from utils.game_data import GameData
 import Levenshtein as lev
 import numpy as np
+import pytesseract
 
 # TODO: equipped, locked
 
@@ -13,6 +14,7 @@ class LightConeStrategy:
             "row_start_top": (0.1, 0.185),
             "row_start_bottom": (0.1, 0.77),
             "scroll_start_y": 0.849,
+            "scroll_end_y": 0.185,
             "offset_x": 0.075,
             "offset_y": 0.157,
             "rows": 4,
@@ -20,11 +22,8 @@ class LightConeStrategy:
         }
     }
 
-    def __init__(self, ocr, screenshot):
-        self._ocr = ocr
+    def __init__(self, screenshot):
         self._screenshot = screenshot
-
-        self._light_cones = GameData.get_light_cones()
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_light_cone_stats()
@@ -36,43 +35,41 @@ class LightConeStrategy:
         superimposition = stats_map["superimposition"]
 
         # OCR
-        name = self._ocr.ocr(name, cls=False, det=False)
-        level = self._ocr.ocr(level, cls=False, det=False)
-        superimposition = self._ocr.ocr(
-            superimposition, cls=False, det=False)
+        name = pytesseract.image_to_string(
+            name, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6")
+        level = pytesseract.image_to_string(
+            level, config='-c tessedit_char_whitelist=0123456789/ --psm 7')
+        superimposition = pytesseract.image_to_string(
+            superimposition, config='-c tessedit_char_whitelist=12345 --psm 10')
 
         # Convert to strings
-        name = name[0][0][0].strip()
-        level = level[0][0][0].strip()
-        superimposition = superimposition[0][0][0].strip()
+        name = name.strip()
+        level = level.strip()
+        superimposition = superimposition.strip()
 
         # Fix OCR errors
-        lc = self._light_cones
-        if name not in lc:
-            min_dist = 100
-            min_name = ""
-            for cone in lc:
-                dist = lev.distance(name, cone)
-                if dist < min_dist:
-                    min_dist = dist
-                    min_name = cone
-            name = min_name
+        name, _ = GameData.get_closest_light_cone_name(name)
 
-        # Parse level and ascension
-        level, max_level = level.split("/")
-        level = int(level)
-        ascension = (max(int(max_level), 20) - 20) // 10
-
-        # Parse superimposition
-        superimposition = superimposition.split(" ")
-        superimposition = int(
-            "".join(filter(str.isdigit, superimposition[1])))
+        # Parse level, ascension, superimposition
+        try:
+            level, max_level = level.split("/")
+            level = int(level)
+            max_level = int(max_level)
+        except ValueError:
+            print("Failed to parse level for ", name, level)
+            level = 1
+            max_level = 20
+        
+        ascension = (max(max_level, 20) - 20) // 10
+        superimposition = int(superimposition)
 
         result = {
             "name": name,
-            "level": level,
-            "ascension": ascension,
-            "superimposition": superimposition
+            "level": int(level),
+            "ascension": int(ascension),
+            "superimposition": int(superimposition)
         }
+
+        print(result)
 
         return result

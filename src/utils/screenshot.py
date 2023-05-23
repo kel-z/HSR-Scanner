@@ -1,5 +1,6 @@
 import pyautogui
 import win32gui
+from PIL import ImageFilter
 
 
 class Screenshot:
@@ -9,26 +10,26 @@ class Screenshot:
             "stats": (0.09, 0.72, 0.25, 0.78),
             "light_cone": {
                 "name": (0, 0, 1, 0.09),
-                "level": (0.13, 0.3, 0.35, 0.37),
-                "superimposition": (0.1, 0.48, 0.7, 0.55)
+                "level": (0.13, 0.32, 0.35, 0.37),
+                "superimposition": (0.53, 0.48, 0.6, 0.55)
             },
             "relic": {
                 "name": (0, 0, 1, 0.09),
-                "level": (0.115, 0.24, 0.23, 0.31),
+                "level": (0.115, 0.25, 0.23, 0.3),
 
-                "mainStatKey": (0.115, 0.34, 0.77, 0.4),
+                "mainStatKey": (0.115, 0.358, 0.7, 0.4),
 
-                "subStatKey_1": (0.115, 0.39, 0.77, 0.46),
-                "subStatVal_1": (0.77, 0.39, 1, 0.46),
+                "subStatKey_1": (0.115, 0.4, 0.77, 0.45),
+                "subStatVal_1": (0.77, 0.4, 1, 0.45),
 
-                "subStatKey_2": (0.115, 0.44, 0.77, 0.51),
-                "subStatVal_2": (0.77, 0.44, 1, 0.51),
+                "subStatKey_2": (0.115, 0.45, 0.77, 0.5),
+                "subStatVal_2": (0.77, 0.45, 1, 0.5),
 
-                "subStatKey_3": (0.115, 0.48, 0.77, 0.555),
-                "subStatVal_3": (0.77, 0.48, 1, 0.555),
+                "subStatKey_3": (0.115, 0.495, 0.77, 0.545),
+                "subStatVal_3": (0.77, 0.495, 1, 0.545),
 
-                "subStatKey_4": (0.115, 0.53, 0.77, 0.6),
-                "subStatVal_4": (0.77, 0.53, 1, 0.6),
+                "subStatKey_4": (0.115, 0.545, 0.77, 0.595),
+                "subStatVal_4": (0.77, 0.545, 1, 0.595),
             }
         }
     }
@@ -68,4 +69,9 @@ class Screenshot:
         height = int(self._height * height)
 
         screenshot = pyautogui.screenshot(region=(x, y, width, height))
+        screenshot = screenshot.convert('L')
+        screenshot = screenshot.filter(ImageFilter.GaussianBlur(radius=1))
+
+        screenshot = screenshot.filter(ImageFilter.EDGE_ENHANCE)
+        
         return screenshot

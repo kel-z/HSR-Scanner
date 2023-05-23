@@ -3,11 +3,11 @@ import win32gui
 import time
 from utils.screenshot import Screenshot
 import numpy as np
-from paddleocr import PaddleOCR
 import asyncio
 from light_cone_strategy import LightConeStrategy
 from relic_strategy import RelicStrategy
 from pynput.keyboard import Key
+import pytesseract
 
 
 class HSRScanner ():
@@ -33,12 +33,11 @@ class HSRScanner ():
 
         self._screenshot = Screenshot(hwnd, self._aspect_ratio)
 
-        self._ocr = PaddleOCR(use_angle_cls=False, lang="en", show_log=False)
-
     def stop_scan(self):
         self.interrupt_requested = True
 
     async def start_scan(self, callback=None):
+        self.interrupt_requested = False
         if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
             raise Exception("No scan options selected.")
 
@@ -49,18 +48,18 @@ class HSRScanner ():
 
         if self.scan_light_cones:
             res["light_cones"] = []
-            tasks.append(self.scan_inventory(LightConeStrategy(
-                self._ocr, self._screenshot), res["light_cones"].append))
+            tasks.append(await self.scan_inventory(LightConeStrategy(
+                self._screenshot), res["light_cones"].append))
 
         if self.scan_relics:
             res["relics"] = []
-            tasks.append(self.scan_inventory(RelicStrategy(
-                self._ocr, self._screenshot), res["relics"].append))
+            tasks.append(await self.scan_inventory(RelicStrategy(
+                self._screenshot), res["relics"].append))
 
         if self.scan_characters:
             pass
-        
-        await asyncio.gather(*tasks)
+
+        # await asyncio.gather(*tasks)
 
         if callback:
             callback(res)
@@ -85,13 +84,13 @@ class HSRScanner ():
         #       for now, it will work for light cones and relics.
         quantity = self._screenshot.screenshot_quantity()
         quantity = np.array(quantity)
-        quantity = self._ocr.ocr(quantity, cls=False, det=False)
+        quantity = pytesseract.image_to_string(
+            quantity, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
 
         try:
-            quantity_remaining = int(
-                quantity[0][0][0].split(" ")[1].split("/")[0])
-        except:
-            raise Exception("Could not parse quantity.")
+            quantity_remaining = int(quantity.split("/")[0])
+        except Exception as e:
+            raise Exception("Could not parse quantity. Got " + quantity + ".")
 
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
 
@@ -113,9 +112,9 @@ class HSRScanner ():
                         raise Exception("Scan interrupted.")
 
                     self._nav.move_cursor_to(x, y)
-                    time.sleep(0.05)
+                    time.sleep(0.1)
                     self._nav.click()
-                    time.sleep(0.05)
+                    time.sleep(0.1)
 
                     quantity_remaining -= 1
 
@@ -139,6 +138,9 @@ class HSRScanner ():
 
                     x += nav_data["offset_x"]
 
+                    # async doesn't work, await for now until I find another solution Xd
+                    await task
+
                 # Next row
                 x = nav_data["row_start_top"][0]
                 y += nav_data["offset_y"]
@@ -147,10 +149,10 @@ class HSRScanner ():
                 break
 
             self._nav.drag_scroll(
-                x, nav_data["scroll_start_y"], nav_data["row_start_top"][1])
+                x, nav_data["scroll_start_y"], nav_data["scroll_end_y"])
             time.sleep(0.5)
 
         self._nav.send_key_press(self.esc_key)
         time.sleep(1)
         self._nav.send_key_press(self.esc_key)
-        return tasks
+        # return tasks

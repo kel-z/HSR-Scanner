@@ -1,10 +1,30 @@
-import contextlib
 import asyncio
 from ui.hsr_scanner import Ui_MainWindow
 from PyQt6 import QtCore, QtGui, QtWidgets
 from scanner import HSRScanner
 from enum import Enum
 from pynput.keyboard import Key, Listener
+import pytesseract
+import os
+import sys
+import json
+
+# https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
+
+
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(
+        os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
+def save_to_json(data):
+    with open('data.json', 'w') as outfile:
+        json.dump(data, outfile, indent=4)
+
+
+pytesseract.pytesseract.tesseract_cmd = resource_path(
+    "./tesseract/tesseract.exe")
 
 
 class ScanType(Enum):
@@ -38,6 +58,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread.update_progress.connect(self.increment_progress)
 
         self._scanner_thread.result.connect(self.log)
+        self._scanner_thread.result.connect(save_to_json)
         self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result.connect(self.enable_start_scan_button)
         self._scanner_thread.result.connect(self._listener.stop)
