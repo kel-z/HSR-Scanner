@@ -1,9 +1,11 @@
 from utils.game_data import GameData
-import Levenshtein as lev
 import numpy as np
 import pytesseract
+from file_helpers import resource_path
+from PIL import Image
+from pyautogui import locate
 
-# TODO: equipped, locked
+# TODO: equipped
 
 
 class RelicStrategy:
@@ -23,6 +25,7 @@ class RelicStrategy:
     }
 
     def __init__(self, screenshot):
+        self._lock_icon = Image.open(resource_path("./images/lock.png"))
         self._screenshot = screenshot
 
     def screenshot_stats(self):
@@ -33,6 +36,7 @@ class RelicStrategy:
         name = stats_map["name"]
         level = stats_map["level"]
         mainStatKey = stats_map["mainStatKey"]
+        lock = stats_map["lock"]
         rarity_sample = stats_map["rarity_sample"]
 
         # OCR
@@ -97,13 +101,23 @@ class RelicStrategy:
             rarity_sample.shape[0]/2)][int(rarity_sample.shape[1]/2)]
 
         rarity = GameData.get_closest_rarity(rarity_sample)
+
+        # Check if locked by image matching
+        min_dim = min(lock.size)
+        locked = self._lock_icon.resize((min_dim, min_dim))
+        if locate(locked, lock, confidence=0.1):
+            lock = True
+        else:
+            lock = False
+
         result = {
             "setKey": setKey,
             "slotKey": slotKey,
             "rarity": rarity,
             "level": int(level),
             "mainStatKey": mainStatKey,
-            "subStats": subStats
+            "subStats": subStats,
+            "lock": lock
         }
 
         print(result)

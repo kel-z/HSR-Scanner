@@ -4,23 +4,9 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from scanner import HSRScanner
 from enum import Enum
 from pynput.keyboard import Key, Listener
+from file_helpers import resource_path, save_to_json
 import pytesseract
-import os
 import sys
-import json
-
-# https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
-
-
-def resource_path(relative_path):
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(
-        os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
-
-
-def save_to_json(data):
-    with open('data.json', 'w') as outfile:
-        json.dump(data, outfile, indent=4)
 
 
 pytesseract.pytesseract.tesseract_cmd = resource_path(

@@ -1,9 +1,11 @@
 from utils.game_data import GameData
-import Levenshtein as lev
-import numpy as np
 import pytesseract
+from pyautogui import locate
+from PIL import Image
+from file_helpers import resource_path
 
-# TODO: equipped, locked
+
+# TODO: equipped
 
 
 class LightConeStrategy:
@@ -23,6 +25,7 @@ class LightConeStrategy:
     }
 
     def __init__(self, screenshot):
+        self._lock_icon = Image.open(resource_path("./images/lock.png"))
         self._screenshot = screenshot
 
     def screenshot_stats(self):
@@ -33,6 +36,7 @@ class LightConeStrategy:
         name = stats_map["name"]
         level = stats_map["level"]
         superimposition = stats_map["superimposition"]
+        lock = stats_map["lock"]
 
         # OCR
         name = pytesseract.image_to_string(
@@ -63,11 +67,21 @@ class LightConeStrategy:
         ascension = (max(max_level, 20) - 20) // 10
         superimposition = int(superimposition)
 
+        min_dim = min(lock.size)
+        locked = self._lock_icon.resize((min_dim, min_dim))
+
+        # Check if locked by image matching
+        if locate(locked, lock, confidence=0.1):
+            lock = True
+        else:
+            lock = False
+
         result = {
             "name": name,
             "level": int(level),
             "ascension": int(ascension),
-            "superimposition": int(superimposition)
+            "superimposition": int(superimposition),
+            "lock": lock
         }
 
         print(result)
