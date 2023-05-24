@@ -38,7 +38,6 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super().__init__()
-        self._scanner = HSRScanner()
         self._scanner_thread = None
         self._listener = KeyboardListener(self, self.stop_scan)
 
@@ -48,12 +47,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def start_scan(self):
         self.disable_start_scan_button()
+        scanner = HSRScanner()
+        scanner.scan_light_cones = self.checkBoxScanLightCones.isChecked()
+        scanner.scan_relics = self.checkBoxScanRelics.isChecked()
+        scanner.scan_characters = self.checkBoxScanChars.isChecked()
 
-        self._scanner.scan_light_cones = self.checkBoxScanLightCones.isChecked()
-        self._scanner.scan_relics = self.checkBoxScanRelics.isChecked()
-        self._scanner.scan_characters = self.checkBoxScanChars.isChecked()
-
-        self._scanner_thread = ScannerThread(self._scanner)
+        self._scanner_thread = ScannerThread(scanner)
 
         self._scanner_thread.update_progress.connect(self.increment_progress)
 

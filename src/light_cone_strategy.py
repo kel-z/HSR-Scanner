@@ -29,7 +29,7 @@ class LightConeStrategy:
         return self._screenshot.screenshot_light_cone_stats()
 
     async def parse(self, stats_map):
-        # Get each np array
+        # Get each cropped img
         name = stats_map["name"]
         level = stats_map["level"]
         superimposition = stats_map["superimposition"]
@@ -59,7 +59,7 @@ class LightConeStrategy:
             print("Failed to parse level for ", name, level)
             level = 1
             max_level = 20
-        
+
         ascension = (max(max_level, 20) - 20) // 10
         superimposition = int(superimposition)
 

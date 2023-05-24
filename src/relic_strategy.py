@@ -29,10 +29,11 @@ class RelicStrategy:
         return self._screenshot.screenshot_relic_stats()
 
     async def parse(self, stats_map):
-        # Get each np array
+        # Get each cropped img
         name = stats_map["name"]
         level = stats_map["level"]
         mainStatKey = stats_map["mainStatKey"]
+        rarity_sample = stats_map["rarity_sample"]
 
         # OCR
         name = pytesseract.image_to_string(
@@ -90,9 +91,16 @@ class RelicStrategy:
         setKey = metadata["setKey"]
         slotKey = metadata["slotKey"]
 
+        # Get rarity by color matching
+        rarity_sample = np.array(rarity_sample)
+        rarity_sample = rarity_sample[int(
+            rarity_sample.shape[0]/2)][int(rarity_sample.shape[1]/2)]
+
+        rarity = GameData.get_closest_rarity(rarity_sample)
         result = {
             "setKey": setKey,
             "slotKey": slotKey,
+            "rarity": rarity,
             "level": int(level),
             "mainStatKey": mainStatKey,
             "subStats": subStats

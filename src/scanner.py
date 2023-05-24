@@ -21,23 +21,22 @@ class HSRScanner ():
     character_key = "c"
 
     def __init__(self):
-        self.interrupt_requested = False
-        hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
-        if not hwnd:
+        self._interrupt_requested = False
+        self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
+        if not self._hwnd:
             Exception(
                 "Honkai: Star Rail not found. Please open the game and try again.")
 
-        self._nav = Navigation(hwnd)
+        self._nav = Navigation(self._hwnd)
 
         self._aspect_ratio = self._nav.get_aspect_ratio()
 
-        self._screenshot = Screenshot(hwnd, self._aspect_ratio)
+        self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
 
     def stop_scan(self):
-        self.interrupt_requested = True
+        self._interrupt_requested = True
 
     async def start_scan(self, callback=None):
-        self.interrupt_requested = False
         if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
             raise Exception("No scan options selected.")
 
@@ -108,7 +107,7 @@ class HSRScanner ():
                     if quantity_remaining <= 0:
                         break
 
-                    if self.interrupt_requested:
+                    if self._interrupt_requested:
                         raise Exception("Scan interrupted.")
 
                     self._nav.move_cursor_to(x, y)
@@ -119,10 +118,6 @@ class HSRScanner ():
                     quantity_remaining -= 1
 
                     stats_img_map = strategy.screenshot_stats()
-
-                    # Convert each image to numpy array
-                    stats_img_map = {k: np.array(v)
-                                     for k, v in stats_img_map.items()}
 
                     # TODO: check min level / rarity
 

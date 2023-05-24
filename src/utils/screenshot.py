@@ -1,6 +1,7 @@
 import pyautogui
 import win32gui
-from PIL import ImageFilter
+from PIL import ImageFilter, Image
+from utils.game_data import GameData
 
 
 class Screenshot:
@@ -15,7 +16,8 @@ class Screenshot:
             },
             "relic": {
                 "name": (0, 0, 1, 0.09),
-                "level": (0.115, 0.25, 0.23, 0.3),
+                "level": (0.115, 0.255, 0.23, 0.3),
+                "rarity_sample": (0.07, 0.15, 0.2, 0.22),
 
                 "mainStatKey": (0.115, 0.358, 0.7, 0.4),
 
@@ -40,27 +42,39 @@ class Screenshot:
         self._width, self._height = win32gui.GetClientRect(hwnd)[2:]
         self._left, self._top = win32gui.ClientToScreen(hwnd, (0, 0))
 
-    def screenshot_stats(self, key):
-        coords = self.coords[self._aspect_ratio]
-
-        img = self._take_screenshot(*coords["stats"])
-
-        adjusted_stat_coords = {
-            k: tuple([int(v * img.width) if i % 2 == 0 else int(v * img.height) for i, v in enumerate(v)]) for k, v in coords[key].items()}
-
-        return {
-            k: img.crop(v) for k, v in adjusted_stat_coords.items()
-        }
-
     def screenshot_light_cone_stats(self):
-        return self.screenshot_stats("light_cone")
+        return self._screenshot_stats("light_cone")
 
     def screenshot_relic_stats(self):
-        return self.screenshot_stats("relic")
+        p = []
+        for k in self.coords[self._aspect_ratio]["relic"].keys():
+            if k not in {"name", "mainStatKey", "rarity_sample"}:
+                p.append(k)
+
+        return self._screenshot_stats("relic", preprocess_keys=p)
 
     def screenshot_quantity(self):
         return self._take_screenshot(
             *self.coords[self._aspect_ratio]["quantity"])
+
+    def preprocess_img(self, img):
+        if img.height < 50:
+            img = img.resize((img.width * 2, img.height * 2))
+
+        for x in range(img.width):
+            for y in range(img.height):
+                pixel = img.getpixel((x, y))
+                if pixel[0] > 120 and pixel[1] > 120 and pixel[2] > 120:
+                    img.putpixel((x, y), (255, 255, 255))
+                else:
+                    img.putpixel(
+                        (x, y), (pixel[0] - 200, pixel[1] - 200, pixel[2] - 200))
+
+        img = img.convert('L')
+        img = img.filter(ImageFilter.EDGE_ENHANCE)
+        img = img.filter(ImageFilter.GaussianBlur(radius=1))
+
+        return img
 
     def _take_screenshot(self, top, left, width, height):
         x = self._left + int(self._width * left)
@@ -69,9 +83,22 @@ class Screenshot:
         height = int(self._height * height)
 
         screenshot = pyautogui.screenshot(region=(x, y, width, height))
-        screenshot = screenshot.convert('L')
-        screenshot = screenshot.filter(ImageFilter.GaussianBlur(radius=1))
 
-        screenshot = screenshot.filter(ImageFilter.EDGE_ENHANCE)
-        
         return screenshot
+
+    def _screenshot_stats(self, key, preprocess_keys=[]):
+        coords = self.coords[self._aspect_ratio]
+
+        img = self._take_screenshot(*coords["stats"])
+
+        adjusted_stat_coords = {
+            k: tuple([int(v * img.width) if i % 2 == 0 else int(v * img.height) for i, v in enumerate(v)]) for k, v in coords[key].items()}
+
+        result = {
+            k: img.crop(v) for k, v in adjusted_stat_coords.items()
+        }
+
+        for k in preprocess_keys:
+            result[k] = self.preprocess_img(result[k])
+
+        return result
