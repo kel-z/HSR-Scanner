@@ -139,6 +139,8 @@ RELIC_SUB_STATS = {
     "Break Effect",
 }
 
+# Uncomment when avatars are added
+# I don't have them yet so I can't get their equipped icon :(
 CHARACTER_NAMES = {
     "arlan",
     "asta",
@@ -146,27 +148,29 @@ CHARACTER_NAMES = {
     "bronya",
     "clara",
     "danheng",
-    # "gepard",         # TODO: add commented out characters (I don't have them yet)
+    "gepard",           # ty jack
     "herta",
-    # "himeko",
+    "himeko",           # ty james
     "hook",
-    "jingyuan",
+    "jingyuan",         # ty william
     # "kafka",
     # "luocha",
     "mar7th",
     "natasha",
     "pela",
     "qingque",
-    "sampo",
+    "sampo",            # ty william
     "seele",
     "serval",
     # "silverwolf",
     "sushang",
     "tingyun",
     "playergirl1",
+    "playerboy1",       # ty jack
     "playergirl2",
-    # "welt",
-    "yanqing",
+    "playerboy2",       # ty valdi
+    "welt",             # ty valdi
+    "yanqing",          # ty william
     # "yukong",
 }
 
