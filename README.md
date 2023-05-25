@@ -2,7 +2,8 @@
 Easily export light cones, relics, and character data from Honkai: Star Rail to JSON format using OCR.
 
 ## TODO
-- [ ] Rarity, locked, and equipped attribute for relics
+- [x] Rarity, locked, and equipped attribute for relics
 - [ ] Train new OCR model for faster performance.
-- [ ] Async doesn't execute as expected. Possibly need to create separate thread for OCR.
+- [x] async -> multiprocessing (should've been this from the beginning oops)
 - [ ] Filter min level/rarity
+- [ ] Character scan

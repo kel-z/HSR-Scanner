@@ -25,7 +25,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self._scanner_thread = None
-        self._listener = KeyboardListener(self, self.stop_scan)
+        self._listener = InterruptListener()
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
@@ -33,6 +33,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def start_scan(self):
         self.disable_start_scan_button()
+        self.labelLightConeCount.setText("0")
+        self.labelRelicCount.setText("0")
+        self.labelCharacterCount.setText("0")
+        self.textLog.clear()
+
         scanner = HSRScanner()
         scanner.scan_light_cones = self.checkBoxScanLightCones.isChecked()
         scanner.scan_relics = self.checkBoxScanRelics.isChecked()
@@ -53,12 +58,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread.error.connect(self.enable_start_scan_button)
         self._scanner_thread.error.connect(self._listener.stop)
 
+        self._listener.interrupt.connect(self._scanner_thread.interrupt_scan)
         self._scanner_thread.start()
         self._listener.start()
-
-    def stop_scan(self):
-        if self.is_scanning:
-            self._scanner_thread.stop()
 
     def increment_progress(self, enum):
         if ScanType(enum) == ScanType.LIGHT_CONE:
@@ -88,10 +90,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.buttonStartScan.clicked.connect(self.start_scan)
 
 
-class KeyboardListener(QtCore.QThread):
-    def __init__(self, parent, stop_scan):
+class InterruptListener(QtCore.QThread):
+    interrupt = QtCore.pyqtSignal()
+
+    def __init__(self):
         super().__init__()
-        self.stop_scan = stop_scan
         self.listener = None
 
     def run(self):
@@ -105,7 +108,7 @@ class KeyboardListener(QtCore.QThread):
 
     def on_press(self, key):
         if key == Key.enter:
-            self.stop_scan()
+            self.interrupt.emit()
 
     def on_release(self, key):
         if key == Key.enter:
@@ -122,13 +125,21 @@ class ScannerThread(QtCore.QThread):
         self._scanner = scanner
         self._scanner.update_progress = self.update_progress.emit
 
+        self._interrupt_requested = False
+
     def run(self):
         try:
-            asyncio.run(self._scanner.start_scan(self.result.emit))
+            res = asyncio.run(self._scanner.start_scan())
+            # print(res)
+            if self._interrupt_requested:
+                self.error.emit("Scan interrupted")
+            else:
+                self.result.emit(res)
         except Exception as e:
             self.error.emit(e)
 
-    def stop(self):
+    def interrupt_scan(self):
+        self._interrupt_requested = True
         self._scanner.stop_scan()
 
 

@@ -10,18 +10,18 @@ from pynput.keyboard import Key
 import pytesseract
 
 
-class HSRScanner ():
+class HSRScanner:
     scan_light_cones = False
     scan_relics = False
     scan_characters = False
     update_progress = None
+    interrupt = asyncio.Event()
 
     esc_key = Key.esc
     inventory_key = "b"
     character_key = "c"
 
     def __init__(self):
-        self._interrupt_requested = False
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
             Exception(
@@ -33,37 +33,44 @@ class HSRScanner ():
 
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
 
-    def stop_scan(self):
-        self._interrupt_requested = True
+        self._item_id = 0
 
-    async def start_scan(self, callback=None):
+        self.interrupt.clear()
+
+    def stop_scan(self):
+        self.interrupt.set()
+
+    async def start_scan(self):
         if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
             raise Exception("No scan options selected.")
 
         self._nav.bring_window_to_foreground()
-        tasks = []
 
-        res = {}
+        self._item_id = 0
 
-        if self.scan_light_cones:
-            res["light_cones"] = []
-            tasks.append(await self.scan_inventory(LightConeStrategy(
-                self._screenshot), res["light_cones"].append))
+        light_cones = []
+        if self.scan_light_cones and not self.interrupt.is_set():
+            light_cones = self.scan_inventory(
+                LightConeStrategy(self._screenshot))
 
-        if self.scan_relics:
-            res["relics"] = []
-            tasks.append(await self.scan_inventory(RelicStrategy(
-                self._screenshot), res["relics"].append))
+        relics = []
+        if self.scan_relics and not self.interrupt.is_set():
+            relics = self.scan_inventory(
+                RelicStrategy(self._screenshot))
 
         if self.scan_characters:
             pass
 
-        # await asyncio.gather(*tasks)
+        if self.interrupt.is_set():
+            await asyncio.gather(*light_cones, *relics)
+            return
 
-        if callback:
-            callback(res)
+        return {
+            "light_cones": await asyncio.gather(*light_cones),
+            "relics": await asyncio.gather(*relics)
+        }
 
-    async def scan_inventory(self, strategy, callback):
+    def scan_inventory(self, strategy):
         nav_data = strategy.nav_data[self._aspect_ratio]
 
         # Navigate to correct tab from cellphone menu
@@ -107,13 +114,13 @@ class HSRScanner ():
                     if quantity_remaining <= 0:
                         break
 
-                    if self._interrupt_requested:
-                        raise Exception("Scan interrupted.")
+                    if self.interrupt.is_set():
+                        return tasks
 
                     self._nav.move_cursor_to(x, y)
                     time.sleep(0.1)
                     self._nav.click()
-                    time.sleep(0.1)
+                    time.sleep(0.2)
 
                     quantity_remaining -= 1
 
@@ -124,17 +131,13 @@ class HSRScanner ():
                     if self.update_progress:
                         self.update_progress(strategy.scan_type)
 
-                    task = asyncio.create_task(strategy.parse(stats_img_map))
+                    task = asyncio.to_thread(
+                        strategy.parse, stats_img_map, self._item_id, self.interrupt)
+
                     tasks.add(task)
 
-                    task.add_done_callback(
-                        lambda t: callback(t.result()))
-                    task.add_done_callback(tasks.discard)
-
                     x += nav_data["offset_x"]
-
-                    # async doesn't work, await for now until I find another solution Xd
-                    await task
+                    self._item_id += 1
 
                 # Next row
                 x = nav_data["row_start_top"][0]
@@ -150,4 +153,4 @@ class HSRScanner ():
         self._nav.send_key_press(self.esc_key)
         time.sleep(1)
         self._nav.send_key_press(self.esc_key)
-        # return tasks
+        return tasks

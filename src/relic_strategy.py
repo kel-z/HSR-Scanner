@@ -5,8 +5,6 @@ from file_helpers import resource_path
 from PIL import Image
 from pyautogui import locate
 
-# TODO: equipped
-
 
 class RelicStrategy:
     scan_type = 1
@@ -31,7 +29,15 @@ class RelicStrategy:
     def screenshot_stats(self):
         return self._screenshot.screenshot_relic_stats()
 
-    async def parse(self, stats_map):
+    def parse(self, stats_map, _id, interrupt):
+        if interrupt.is_set():
+            return 
+
+        # Preprocess
+        for k in stats_map:
+            if k not in {"name", "mainStatKey", "rarity_sample", "lock", "equipped", "equipped_avatar"}:
+                self._screenshot.preprocess_img(stats_map[k])
+
         # Get each cropped img
         name = stats_map["name"]
         level = stats_map["level"]
@@ -49,7 +55,7 @@ class RelicStrategy:
             mainStatKey, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7')
         equipped = pytesseract.image_to_string(
             equipped, config='-c tessedit_char_whitelist=Equipped --psm 7')
-        
+
         # Clean up
         name = name.strip().replace("\n", " ")
         level = level.strip()
@@ -79,7 +85,7 @@ class RelicStrategy:
                 break
 
             if len(val) == 0:
-                print("ERROR: Substat value not found: " + key)
+                print("ERROR: Substat value not found: " + key, _id)
                 break
 
             if val[-1] == '%':
@@ -118,7 +124,8 @@ class RelicStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_map["equipped_avatar"]
 
-            location = GameData.get_equipped_character(equipped_avatar, resource_path("./images/avatars/"))
+            location = GameData.get_equipped_character(
+                equipped_avatar, resource_path("./images/avatars/"))
 
         result = {
             "setKey": setKey,
@@ -128,9 +135,8 @@ class RelicStrategy:
             "mainStatKey": mainStatKey,
             "subStats": subStats,
             "location": location,
-            "lock": lock
+            "lock": lock,
+            "id": _id
         }
-
-        print(result)
 
         return result

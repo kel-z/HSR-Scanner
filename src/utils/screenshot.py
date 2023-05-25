@@ -52,12 +52,7 @@ class Screenshot:
         return self._screenshot_stats("light_cone")
 
     def screenshot_relic_stats(self):
-        p = []
-        for k in self.coords[self._aspect_ratio]["relic"].keys():
-            if k not in {"name", "mainStatKey", "rarity_sample", "lock", "equipped", "equipped_avatar"}:
-                p.append(k)
-
-        return self._screenshot_stats("relic", preprocess_keys=p)
+        return self._screenshot_stats("relic")
 
     def screenshot_quantity(self):
         return self._take_screenshot(
@@ -92,7 +87,7 @@ class Screenshot:
 
         return screenshot
 
-    def _screenshot_stats(self, key, preprocess_keys=[]):
+    def _screenshot_stats(self, key):
         coords = self.coords[self._aspect_ratio]
 
         img = self._take_screenshot(*coords["stats"])
@@ -103,8 +98,5 @@ class Screenshot:
         result = {
             k: img.crop(v) for k, v in adjusted_stat_coords.items()
         }
-
-        for k in preprocess_keys:
-            result[k] = self.preprocess_img(result[k])
 
         return result

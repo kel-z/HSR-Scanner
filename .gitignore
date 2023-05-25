@@ -1,5 +1,8 @@
 **\__pycache__
 .vscode
 .venv
-*.png
 src/utils/dev
+
+capture_**.png
+**.json
+dev_**.py
