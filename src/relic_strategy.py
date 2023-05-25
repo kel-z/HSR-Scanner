@@ -38,6 +38,7 @@ class RelicStrategy:
         mainStatKey = stats_map["mainStatKey"]
         lock = stats_map["lock"]
         rarity_sample = stats_map["rarity_sample"]
+        equipped = stats_map["equipped"]
 
         # OCR
         name = pytesseract.image_to_string(
@@ -46,11 +47,14 @@ class RelicStrategy:
             level, config='-c tessedit_char_whitelist=0123456789 --psm 7')
         mainStatKey = pytesseract.image_to_string(
             mainStatKey, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7')
-
+        equipped = pytesseract.image_to_string(
+            equipped, config='-c tessedit_char_whitelist=Equipped --psm 7')
+        
         # Clean up
         name = name.strip().replace("\n", " ")
         level = level.strip()
         mainStatKey = mainStatKey.strip()
+        equipped = equipped.strip()
 
         # Fix OCR errors
         name, _ = GameData.get_closest_relic_name(name)
@@ -110,6 +114,12 @@ class RelicStrategy:
         else:
             lock = False
 
+        location = ""
+        if equipped == "Equipped":
+            equipped_avatar = stats_map["equipped_avatar"]
+
+            location = GameData.get_equipped_character(equipped_avatar, resource_path("./images/avatars/"))
+
         result = {
             "setKey": setKey,
             "slotKey": slotKey,
@@ -117,6 +127,7 @@ class RelicStrategy:
             "level": int(level),
             "mainStatKey": mainStatKey,
             "subStats": subStats,
+            "location": location,
             "lock": lock
         }
 

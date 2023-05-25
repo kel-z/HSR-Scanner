@@ -1,5 +1,6 @@
 import Levenshtein
 import numpy as np
+import cv2
 
 # From: https://honkai-star-rail.fandom.com/wiki/Light_Cone/List
 #   res = []
@@ -138,12 +139,77 @@ RELIC_SUB_STATS = {
     "Break Effect",
 }
 
+CHARACTER_NAMES = {
+    "arlan",
+    "asta",
+    "bailu",
+    "bronya",
+    "clara",
+    "danheng",
+    # "gepard",         # TODO: add commented out characters (I don't have them yet)
+    "herta",
+    # "himeko",
+    "hook",
+    "jingyuan",
+    # "kafka",
+    # "luocha",
+    "mar7th",
+    "natasha",
+    "pela",
+    "qingque",
+    "sampo",
+    "seele",
+    "serval",
+    # "silverwolf",
+    "sushang",
+    "tingyun",
+    "playergirl1",
+    "playergirl2",
+    # "welt",
+    "yanqing",
+    # "yukong",
+}
+
 
 class GameData:
 
     @staticmethod
     def get_relic_meta_data(name):
         return RELIC_META_DATA[name]
+
+    @staticmethod
+    def get_character_names():
+        return CHARACTER_NAMES
+
+    @staticmethod
+    def get_equipped_character(equipped_avatar_img, img_path_prefix):
+        equipped_avatar_img = np.array(equipped_avatar_img)
+        min_dim = int(min(equipped_avatar_img.shape[:2]))
+
+        max_conf = 0
+        character = ""
+
+        # Get highest confidence
+        for c in CHARACTER_NAMES:
+            img = cv2.imread(f"{img_path_prefix}/{c}.png")
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+            img = cv2.resize(img, (min_dim, min_dim))
+
+            # Circle mask
+            mask = np.zeros(img.shape[:2], dtype="uint8")
+            (h, w) = img.shape[:2]
+            cv2.circle(mask, (int(w / 2), int(h / 2)),
+                       int(min_dim / 2), 255, -1)
+            img = cv2.bitwise_and(img, img, mask=mask)
+
+            # Get confidence
+            conf = cv2.matchTemplate(
+                equipped_avatar_img, img, cv2.TM_CCOEFF_NORMED).max()
+            if conf > max_conf:
+                max_conf = conf
+                character = c
+
+        return character
 
     @staticmethod
     def get_closest_relic_name(name):

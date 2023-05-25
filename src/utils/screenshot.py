@@ -13,6 +13,8 @@ class Screenshot:
                 "name": (0, 0, 1, 0.09),
                 "level": (0.13, 0.32, 0.35, 0.37),
                 "superimposition": (0.53, 0.48, 0.6, 0.55),
+                "equipped": (0.45, 0.95, 0.68, 1),
+                "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
                 "lock": (0.896, 0.321, 0.97, 0.365),
             },
             "relic": {
@@ -20,6 +22,8 @@ class Screenshot:
                 "level": (0.115, 0.255, 0.23, 0.3),
                 "lock": (0.865, 0.253, 0.935, 0.293),
                 "rarity_sample": (0.07, 0.15, 0.2, 0.22),
+                "equipped": (0.45, 0.95, 0.68, 1),
+                "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
 
                 "mainStatKey": (0.115, 0.358, 0.7, 0.4),
 
@@ -50,7 +54,7 @@ class Screenshot:
     def screenshot_relic_stats(self):
         p = []
         for k in self.coords[self._aspect_ratio]["relic"].keys():
-            if k not in {"name", "mainStatKey", "rarity_sample", "lock"}:
+            if k not in {"name", "mainStatKey", "rarity_sample", "lock", "equipped", "equipped_avatar"}:
                 p.append(k)
 
         return self._screenshot_stats("relic", preprocess_keys=p)

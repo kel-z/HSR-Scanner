@@ -37,6 +37,7 @@ class LightConeStrategy:
         level = stats_map["level"]
         superimposition = stats_map["superimposition"]
         lock = stats_map["lock"]
+        equipped = stats_map["equipped"]
 
         # OCR
         name = pytesseract.image_to_string(
@@ -45,11 +46,14 @@ class LightConeStrategy:
             level, config='-c tessedit_char_whitelist=0123456789/ --psm 7')
         superimposition = pytesseract.image_to_string(
             superimposition, config='-c tessedit_char_whitelist=12345 --psm 10')
+        equipped = pytesseract.image_to_string(
+            equipped, config='-c tessedit_char_whitelist=Equipped --psm 7')
 
-        # Convert to strings
+        # Clean up
         name = name.strip()
         level = level.strip()
         superimposition = superimposition.strip()
+        equipped = equipped.strip()
 
         # Fix OCR errors
         name, _ = GameData.get_closest_light_cone_name(name)
@@ -76,11 +80,19 @@ class LightConeStrategy:
         else:
             lock = False
 
+        location = ""
+        if equipped == "Equipped":
+            equipped_avatar = stats_map["equipped_avatar"]
+
+            location = GameData.get_equipped_character(
+                equipped_avatar, resource_path("./images/avatars/"))
+
         result = {
             "name": name,
             "level": int(level),
             "ascension": int(ascension),
             "superimposition": int(superimposition),
+            "location": location,
             "lock": lock
         }
 
