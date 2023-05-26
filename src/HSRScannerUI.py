@@ -21,6 +21,7 @@ class ScanType(Enum):
 
 class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     is_scanning = False
+    output_location = sys.path[0] + "\\StarRailData"
 
     def __init__(self):
         super().__init__()
@@ -29,26 +30,35 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
-        self.buttonStartScan.clicked.connect(self.start_scan)
+        self.pushButtonStartScan.clicked.connect(self.start_scan)
+        self.lineEditOutputLocation.setText(self.output_location)
+        self.pushButtonChangeLocation.clicked.connect(
+            self.change_output_location)
+
+    def change_output_location(self):
+        new_output_location = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select Output Location", self.output_location)
+        if new_output_location:
+            self.output_location = new_output_location
+            self.lineEditOutputLocation.setText(self.output_location)
 
     def start_scan(self):
         self.disable_start_scan_button()
         self.labelLightConeCount.setText("0")
         self.labelRelicCount.setText("0")
         self.labelCharacterCount.setText("0")
-        self.textLog.clear()
+        self.textEditLog.clear()
 
-        scanner = HSRScanner()
-        scanner.scan_light_cones = self.checkBoxScanLightCones.isChecked()
-        scanner.scan_relics = self.checkBoxScanRelics.isChecked()
-        scanner.scan_characters = self.checkBoxScanChars.isChecked()
+        scanner = HSRScanner(self.get_config())
 
         self._scanner_thread = ScannerThread(scanner)
 
+        self._scanner_thread.log.connect(self.log)
+
         self._scanner_thread.update_progress.connect(self.increment_progress)
 
-        self._scanner_thread.result.connect(self.log)
-        self._scanner_thread.result.connect(save_to_json)
+        # self._scanner_thread.result.connect(self.log)
+        self._scanner_thread.result.connect(self.receive_scan_result)
         self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result.connect(self.enable_start_scan_button)
         self._scanner_thread.result.connect(self._listener.stop)
@@ -61,6 +71,19 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._listener.interrupt.connect(self._scanner_thread.interrupt_scan)
         self._scanner_thread.start()
         self._listener.start()
+
+    def get_config(self):
+        config = {}
+        config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
+        config["scan_relics"] = self.checkBoxScanRelics.isChecked()
+        config["scan_characters"] = self.checkBoxScanChars.isChecked()
+        config["inventory_key"] = self.lineEditInventoryKey.text().lower()
+        config["character_key"] = self.lineEditCharacterKey.text().lower()
+        return config
+
+    def receive_scan_result(self, data):
+        save_to_json(data, self.output_location)
+        self.log("Scan complete. Data saved to " + self.output_location)
 
     def increment_progress(self, enum):
         if ScanType(enum) == ScanType.LIGHT_CONE:
@@ -75,19 +98,19 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def disable_start_scan_button(self):
         self.is_scanning = True
-        self.buttonStartScan.setText("Processing...")
-        self.buttonStartScan.setEnabled(False)
+        self.pushButtonStartScan.setText("Processing...")
+        self.pushButtonStartScan.setEnabled(False)
 
     def enable_start_scan_button(self):
         self.is_scanning = False
-        self.buttonStartScan.setText("Start Scan")
-        self.buttonStartScan.setEnabled(True)
+        self.pushButtonStartScan.setText("Start Scan")
+        self.pushButtonStartScan.setEnabled(True)
 
     def log(self, message):
-        self.textLog.appendPlainText(str(message))
+        self.textEditLog.appendPlainText(str(message))
 
     def setupButtonStartScan(self):
-        self.buttonStartScan.clicked.connect(self.start_scan)
+        self.pushButtonStartScan.clicked.connect(self.start_scan)
 
 
 class InterruptListener(QtCore.QThread):
@@ -119,11 +142,13 @@ class ScannerThread(QtCore.QThread):
     update_progress = QtCore.pyqtSignal(int)
     result = QtCore.pyqtSignal(object)
     error = QtCore.pyqtSignal(object)
+    log = QtCore.pyqtSignal(str)
 
     def __init__(self, scanner):
         super().__init__()
         self._scanner = scanner
         self._scanner.update_progress = self.update_progress.emit
+        self._scanner.logger = self.log
 
         self._interrupt_requested = False
 

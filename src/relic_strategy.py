@@ -22,29 +22,30 @@ class RelicStrategy:
         }
     }
 
-    def __init__(self, screenshot):
+    def __init__(self, screenshot, logger):
         self._lock_icon = Image.open(resource_path("./images/lock.png"))
         self._screenshot = screenshot
+        self._logger = logger
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_relic_stats()
 
-    def parse(self, stats_map, _id, interrupt):
+    def parse(self, img_dict, _id, interrupt):
         if interrupt.is_set():
-            return 
+            return
 
         # Preprocess
-        for k in stats_map:
+        for k in img_dict:
             if k not in {"name", "mainStatKey", "rarity_sample", "lock", "equipped", "equipped_avatar"}:
-                self._screenshot.preprocess_img(stats_map[k])
+                self._screenshot.preprocess_img(img_dict[k])
 
         # Get each cropped img
-        name = stats_map["name"]
-        level = stats_map["level"]
-        mainStatKey = stats_map["mainStatKey"]
-        lock = stats_map["lock"]
-        rarity_sample = stats_map["rarity_sample"]
-        equipped = stats_map["equipped"]
+        name = img_dict["name"]
+        level = img_dict["level"]
+        mainStatKey = img_dict["mainStatKey"]
+        lock = img_dict["lock"]
+        rarity_sample = img_dict["rarity_sample"]
+        equipped = img_dict["equipped"]
 
         # OCR
         name = pytesseract.image_to_string(
@@ -69,8 +70,8 @@ class RelicStrategy:
         # Parse substats
         subStats = []
         for i in range(1, 5):
-            key = stats_map["subStatKey_" + str(i)]
-            val = stats_map["subStatVal_" + str(i)]
+            key = img_dict["subStatKey_" + str(i)]
+            val = img_dict["subStatVal_" + str(i)]
 
             key = pytesseract.image_to_string(
                 key, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7')
@@ -85,7 +86,8 @@ class RelicStrategy:
                 break
 
             if len(val) == 0:
-                print("ERROR: Substat value not found: " + key, _id)
+                self._logger.emit(
+                    f"Relic ID {_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
                 break
 
             if val[-1] == '%':
@@ -122,7 +124,7 @@ class RelicStrategy:
 
         location = ""
         if equipped == "Equipped":
-            equipped_avatar = stats_map["equipped_avatar"]
+            equipped_avatar = img_dict["equipped_avatar"]
 
             location = GameData.get_equipped_character(
                 equipped_avatar, resource_path("./images/avatars/"))

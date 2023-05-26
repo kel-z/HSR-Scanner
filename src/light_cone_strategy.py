@@ -21,23 +21,24 @@ class LightConeStrategy:
         }
     }
 
-    def __init__(self, screenshot):
+    def __init__(self, screenshot, logger):
         self._lock_icon = Image.open(resource_path("./images/lock.png"))
         self._screenshot = screenshot
+        self._logger = logger
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_light_cone_stats()
 
-    def parse(self, stats_map, _id, interrupt):
+    def parse(self, img_dict, _id, interrupt):
         if interrupt.is_set():
             return
 
         # Get each cropped img
-        name = stats_map["name"]
-        level = stats_map["level"]
-        superimposition = stats_map["superimposition"]
-        lock = stats_map["lock"]
-        equipped = stats_map["equipped"]
+        name = img_dict["name"]
+        level = img_dict["level"]
+        superimposition = img_dict["superimposition"]
+        lock = img_dict["lock"]
+        equipped = img_dict["equipped"]
 
         # OCR
         name = pytesseract.image_to_string(
@@ -64,16 +65,18 @@ class LightConeStrategy:
             level = int(level)
             max_level = int(max_level)
         except ValueError:
-            print("Failed to parse level for", name, level)
+            self._logger.emit(
+                f"Light Cone ID {_id}: Error parsing level, setting to 1")
             level = 1
             max_level = 20
 
         ascension = (max(max_level, 20) - 20) // 10
-        
+
         try:
             superimposition = int(superimposition)
         except ValueError:
-            print("Failed to parse superimposition for", name, superimposition)
+            self._logger.emit(
+                f"Light Cone ID {_id}: Error parsing superimposition, setting to 1")
             superimposition = 1
 
         min_dim = min(lock.size)
@@ -87,7 +90,7 @@ class LightConeStrategy:
 
         location = ""
         if equipped == "Equipped":
-            equipped_avatar = stats_map["equipped_avatar"]
+            equipped_avatar = img_dict["equipped_avatar"]
 
             location = GameData.get_equipped_character(
                 equipped_avatar, resource_path("./images/avatars/"))

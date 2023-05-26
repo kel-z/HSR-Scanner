@@ -11,21 +11,17 @@ import pytesseract
 
 
 class HSRScanner:
-    scan_light_cones = False
-    scan_relics = False
-    scan_characters = False
     update_progress = None
+    logger = None
     interrupt = asyncio.Event()
 
-    esc_key = Key.esc
-    inventory_key = "b"
-    character_key = "c"
-
-    def __init__(self):
+    def __init__(self, config):
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
             Exception(
                 "Honkai: Star Rail not found. Please open the game and try again.")
+
+        self._config = config
 
         self._nav = Navigation(self._hwnd)
 
@@ -41,7 +37,7 @@ class HSRScanner:
         self.interrupt.set()
 
     async def start_scan(self):
-        if not any([self.scan_light_cones, self.scan_relics, self.scan_characters]):
+        if not any([self._config["scan_light_cones"], self._config["scan_relics"], self._config["scan_characters"]]):
             raise Exception("No scan options selected.")
 
         self._nav.bring_window_to_foreground()
@@ -49,16 +45,16 @@ class HSRScanner:
         self._item_id = 0
 
         light_cones = []
-        if self.scan_light_cones and not self.interrupt.is_set():
+        if self._config["scan_light_cones"] and not self.interrupt.is_set():
             light_cones = self.scan_inventory(
-                LightConeStrategy(self._screenshot))
+                LightConeStrategy(self._screenshot, self.logger))
 
         relics = []
-        if self.scan_relics and not self.interrupt.is_set():
+        if self._config["scan_relics"] and not self.interrupt.is_set():
             relics = self.scan_inventory(
-                RelicStrategy(self._screenshot))
+                RelicStrategy(self._screenshot, self.logger))
 
-        if self.scan_characters:
+        if self._config["scan_characters"] and not self.interrupt.is_set():
             pass
 
         if self.interrupt.is_set():
@@ -75,9 +71,9 @@ class HSRScanner:
 
         # Navigate to correct tab from cellphone menu
         time.sleep(1)
-        self._nav.send_key_press(self.esc_key)
+        self._nav.send_key_press(Key.esc)
         time.sleep(1)
-        self._nav.send_key_press(self.inventory_key)
+        self._nav.send_key_press(self._config["inventory_key"])
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
@@ -96,7 +92,8 @@ class HSRScanner:
         try:
             quantity_remaining = int(quantity.split("/")[0])
         except Exception as e:
-            raise Exception("Could not parse quantity. Got " + quantity + ".")
+            raise Exception("Failed to parse quantity." +
+                            (f" Got {quantity} instead." if quantity else ""))
 
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
 
@@ -124,7 +121,7 @@ class HSRScanner:
 
                     quantity_remaining -= 1
 
-                    stats_img_map = strategy.screenshot_stats()
+                    img_dict = strategy.screenshot_stats()
 
                     # TODO: check min level / rarity
 
@@ -132,7 +129,7 @@ class HSRScanner:
                         self.update_progress(strategy.scan_type)
 
                     task = asyncio.to_thread(
-                        strategy.parse, stats_img_map, self._item_id, self.interrupt)
+                        strategy.parse, img_dict, self._item_id, self.interrupt)
 
                     tasks.add(task)
 
@@ -150,7 +147,7 @@ class HSRScanner:
                 x, nav_data["scroll_start_y"], nav_data["scroll_end_y"])
             time.sleep(0.5)
 
-        self._nav.send_key_press(self.esc_key)
+        self._nav.send_key_press(Key.esc)
         time.sleep(1)
-        self._nav.send_key_press(self.esc_key)
+        self._nav.send_key_press(Key.esc)
         return tasks
