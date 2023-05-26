@@ -156,7 +156,7 @@ class Ui_MainWindow(object):
         self.groupBox_5.setGeometry(QtCore.QRect(20, 230, 281, 91))
         self.groupBox_5.setObjectName("groupBox_5")
         self.textEditLog = QtWidgets.QPlainTextEdit(parent=self.groupBox_5)
-        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 271, 61))
+        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 261, 61))
         self.textEditLog.setReadOnly(True)
         self.textEditLog.setObjectName("textEditLog")
         self.tabWidget.addTab(self.tab, "")
