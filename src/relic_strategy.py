@@ -23,7 +23,7 @@ class RelicStrategy:
     }
 
     def __init__(self, screenshot, logger):
-        self._lock_icon = Image.open(resource_path("./images/lock.png"))
+        self._lock_icon = Image.open(resource_path("images\\lock.png"))
         self._screenshot = screenshot
         self._logger = logger
 
@@ -127,7 +127,7 @@ class RelicStrategy:
             equipped_avatar = img_dict["equipped_avatar"]
 
             location = GameData.get_equipped_character(
-                equipped_avatar, resource_path("./images/avatars/"))
+                equipped_avatar, resource_path("images\\avatars\\"))
 
         result = {
             "setKey": setKey,

@@ -1,8 +1,9 @@
 **\__pycache__
 .vscode
 .venv
-src/utils/dev
-
+src\utils\dev
+\dist
+\build
 capture_**.png
 **.json
 dev_**.py
