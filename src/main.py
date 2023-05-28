@@ -14,14 +14,16 @@ pytesseract.pytesseract.tesseract_cmd = resource_path(
 
 
 class ScanType(Enum):
-    LIGHT_CONE = 0
-    RELIC = 1
-    CHARACTER = 2
+    LIGHT_CONE_ADD = 0
+    LIGHT_CONE_SUCCESS = 100
+    RELIC_ADD = 1
+    RELIC_SUCCESS = 101
+    CHARACTER_ADD = 2
+    CHARACTER_SUCCESS = 102
 
 
 class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     is_scanning = False
-    output_location = executable_path("StarRailData")
 
     def __init__(self):
         super().__init__()
@@ -31,16 +33,25 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def setupUi(self, MainWindow):
         super().setupUi(MainWindow)
         self.pushButtonStartScan.clicked.connect(self.start_scan)
-        self.lineEditOutputLocation.setText(self.output_location)
+        self.lineEditOutputLocation.setText(executable_path("StarRailData"))
         self.pushButtonChangeLocation.clicked.connect(
             self.change_output_location)
+        self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
 
     def change_output_location(self):
         new_output_location = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Select Output Location", self.output_location)
+            self, "Select Output Location", self.lineEditOutputLocation.text())
         if new_output_location:
-            self.output_location = new_output_location
-            self.lineEditOutputLocation.setText(self.output_location)
+            self.lineEditOutputLocation.setText(new_output_location)
+
+    def open_output_location(self):
+        output_location = self.lineEditOutputLocation.text()
+        if output_location:
+            try:
+                QtGui.QDesktopServices.openUrl(
+                    QtCore.QUrl.fromLocalFile(output_location))
+            except Exception as e:
+                self.log(f"Error opening output location: {e}")
 
     def start_scan(self):
         self.disable_start_scan_button()
@@ -79,22 +90,42 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config["scan_characters"] = self.checkBoxScanChars.isChecked()
         config["inventory_key"] = self.lineEditInventoryKey.text().lower()
         config["character_key"] = self.lineEditCharacterKey.text().lower()
+        config["filters"] = {
+            "light_cone": {
+                "min_level": self.spinBoxLightConeMinLevel.value(),
+                "min_rarity": self.spinBoxLightConeMinRarity.value(),
+            },
+            "relic": {
+                "min_level": self.spinBoxRelicMinLevel.value(),
+                "min_rarity": self.spinBoxRelicMinRarity.value(),
+            },
+        }
         return config
 
     def receive_scan_result(self, data):
-        save_to_json(data, self.output_location)
-        self.log("Scan complete. Data saved to " + self.output_location)
+        output_location = self.lineEditOutputLocation.text()
+        save_to_json(data, output_location)
+        self.log("Scan complete. Data saved to " + output_location)
 
     def increment_progress(self, enum):
-        if ScanType(enum) == ScanType.LIGHT_CONE:
+        if ScanType(enum) == ScanType.LIGHT_CONE_ADD:
             self.labelLightConeCount.setText(
                 str(int(self.labelLightConeCount.text()) + 1))
-        elif ScanType(enum) == ScanType.RELIC:
+        elif ScanType(enum) == ScanType.RELIC_ADD:
             self.labelRelicCount.setText(
                 str(int(self.labelRelicCount.text()) + 1))
-        elif ScanType(enum) == ScanType.CHARACTER:
+        elif ScanType(enum) == ScanType.CHARACTER_ADD:
             self.labelCharacterCount.setText(
                 str(int(self.labelCharacterCount.text()) + 1))
+        elif ScanType(enum) == ScanType.LIGHT_CONE_SUCCESS:
+            self.labelLightConeProcessed.setText(
+                str(int(self.labelLightConeProcessed.text()) + 1))
+        elif ScanType(enum) == ScanType.RELIC_SUCCESS:
+            self.labelRelicProcessed.setText(
+                str(int(self.labelRelicProcessed.text()) + 1))
+        elif ScanType(enum) == ScanType.CHARACTER_SUCCESS:
+            self.labelCharacterProcessed.setText(
+                str(int(self.labelCharacterProcessed.text()) + 1))
 
     def disable_start_scan_button(self):
         self.is_scanning = True
@@ -147,7 +178,7 @@ class ScannerThread(QtCore.QThread):
     def __init__(self, scanner):
         super().__init__()
         self._scanner = scanner
-        self._scanner.update_progress = self.update_progress.emit
+        self._scanner.update_progress = self.update_progress
         self._scanner.logger = self.log
 
         self._interrupt_requested = False

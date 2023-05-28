@@ -4,10 +4,84 @@ import cv2
 
 # From: https://honkai-star-rail.fandom.com/wiki/Light_Cone/List
 #   res = []
-#   Array.from($('tbody')[1].children).forEach(x => {res.push('"'+x.children[1].children[0].title+'"')})
-#   res.join(',')
-LIGHT_CONE_NAMES = {"A Secret Vow", "Adversarial", "Amber", "Arrows", "Before Dawn", "But the Battle Isn't Over", "Carve the Moon, Weave the Clouds", "Chorus", "Collapsing Sky", "Cornucopia", "Cruising in the Stellar Sea", "Dance! Dance! Dance!", "Darting Arrow", "Data Bank", "Day One of My New Life", "Defense", "Echoes of the Coffin", "Eyes of the Prey", "Fermata", "Fine Fruit", "Geniuses' Repose", "Good Night and Sleep Well", "Hidden Shadow", "In the Name of the World", "In the Night", "Incessant Rain", "Landau's Choice", "Loop", "Make the World Clamor", "Mediation", "Memories of the Past", "Meshing Cogs", "Moment of Victory", "Multiplication", "Mutual Demise", "Night on the Milky Way", "Nowhere to Run", "On the Fall of an Aeon",
-                    "Only Silence Remains", "Passkey", "Past and Future", "Patience Is All You Need", "Perfect Timing", "Pioneering", "Planetary Rendezvous", "Post-Op Conversation", "Quid Pro Quo", "Resolution Shines As Pearls of Sweat", "Return to Darkness", "River Flows in Spring", "Sagacity", "Shared Feeling", "Shattered Home", "Sleep Like the Dead", "Something Irreplaceable", "Subscribe for More!", "Swordplay", "Texture of Memories", "The Birth of the Self", "The Moles Welcome You", "The Seriousness of Breakfast", "The Unreachable Side", "This Is Me!", "Time Waits for No One", "Today Is Another Peaceful Day", "Trend of the Universal Market", "Under the Blue Sky", "Void", "Warmth Shortens Cold Nights", "We Are Wildfire", "We Will Meet Again", "Woof! Walk Time!"}
+#   Array.from($('tbody')[1].children).forEach(x => {res.push('"'+x.children[1].children[0].title+'": {' +
+# 	    '"rarity": ' + x.children[2].innerText.split(' ').length
+#   +'}')})
+#   res.join(',\n')
+LIGHT_CONE_META_DATA = {
+    "A Secret Vow": {"rarity": 4},
+    "Adversarial": {"rarity": 3},
+    "Amber": {"rarity": 3},
+    "Arrows": {"rarity": 3},
+    "Before Dawn": {"rarity": 5},
+    "But the Battle Isn't Over": {"rarity": 5},
+    "Carve the Moon, Weave the Clouds": {"rarity": 4},
+    "Chorus": {"rarity": 3},
+    "Collapsing Sky": {"rarity": 3},
+    "Cornucopia": {"rarity": 3},
+    "Cruising in the Stellar Sea": {"rarity": 5},
+    "Dance! Dance! Dance!": {"rarity": 4},
+    "Darting Arrow": {"rarity": 3},
+    "Data Bank": {"rarity": 3},
+    "Day One of My New Life": {"rarity": 4},
+    "Defense": {"rarity": 3},
+    "Echoes of the Coffin": {"rarity": 5},
+    "Eyes of the Prey": {"rarity": 4},
+    "Fermata": {"rarity": 4},
+    "Fine Fruit": {"rarity": 3},
+    "Geniuses' Repose": {"rarity": 4},
+    "Good Night and Sleep Well": {"rarity": 4},
+    "Hidden Shadow": {"rarity": 3},
+    "In the Name of the World": {"rarity": 5},
+    "In the Night": {"rarity": 5},
+    "Incessant Rain": {"rarity": 5},
+    "Landau's Choice": {"rarity": 4},
+    "Loop": {"rarity": 3},
+    "Make the World Clamor": {"rarity": 4},
+    "Mediation": {"rarity": 3},
+    "Memories of the Past": {"rarity": 4},
+    "Meshing Cogs": {"rarity": 3},
+    "Moment of Victory": {"rarity": 5},
+    "Multiplication": {"rarity": 3},
+    "Mutual Demise": {"rarity": 3},
+    "Night on the Milky Way": {"rarity": 5},
+    "Nowhere to Run": {"rarity": 4},
+    "On the Fall of an Aeon": {"rarity": 5},
+    "Only Silence Remains": {"rarity": 4},
+    "Passkey": {"rarity": 3},
+    "Past and Future": {"rarity": 4},
+    "Patience Is All You Need": {"rarity": 5},
+    "Perfect Timing": {"rarity": 4},
+    "Pioneering": {"rarity": 3},
+    "Planetary Rendezvous": {"rarity": 4},
+    "Post-Op Conversation": {"rarity": 4},
+    "Quid Pro Quo": {"rarity": 4},
+    "Resolution Shines As Pearls of Sweat": {"rarity": 4},
+    "Return to Darkness": {"rarity": 4},
+    "River Flows in Spring": {"rarity": 4},
+    "Sagacity": {"rarity": 3},
+    "Shared Feeling": {"rarity": 4},
+    "Shattered Home": {"rarity": 3},
+    "Sleep Like the Dead": {"rarity": 5},
+    "Something Irreplaceable": {"rarity": 5},
+    "Subscribe for More!": {"rarity": 4},
+    "Swordplay": {"rarity": 4},
+    "Texture of Memories": {"rarity": 5},
+    "The Birth of the Self": {"rarity": 4},
+    "The Moles Welcome You": {"rarity": 4},
+    "The Seriousness of Breakfast": {"rarity": 4},
+    "The Unreachable Side": {"rarity": 5},
+    "This Is Me!": {"rarity": 4},
+    "Time Waits for No One": {"rarity": 5},
+    "Today Is Another Peaceful Day": {"rarity": 4},
+    "Trend of the Universal Market": {"rarity": 4},
+    "Under the Blue Sky": {"rarity": 4},
+    "Void": {"rarity": 3},
+    "Warmth Shortens Cold Nights": {"rarity": 4},
+    "We Are Wildfire": {"rarity": 4},
+    "We Will Meet Again": {"rarity": 4},
+    "Woof! Walk Time!": {"rarity": 4}
+}
 
 # From: https://honkai-star-rail.fandom.com/wiki/Relic/Sets
 # For each set wiki page:
@@ -182,6 +256,10 @@ class GameData:
         return RELIC_META_DATA[name]
 
     @staticmethod
+    def get_light_cone_meta_data(name):
+        return LIGHT_CONE_META_DATA[name]
+
+    @staticmethod
     def get_character_names():
         return CHARACTER_NAMES
 
@@ -221,7 +299,7 @@ class GameData:
 
     @staticmethod
     def get_closest_light_cone_name(name):
-        return get_closest_match(name, LIGHT_CONE_NAMES)
+        return get_closest_match(name, LIGHT_CONE_META_DATA)
 
     @staticmethod
     def get_closest_relic_sub_stat(name):
@@ -252,11 +330,11 @@ def get_closest_match(name, targets):
 
     min_dist = 100
     min_name = ""
-    for relic in targets:
-        dist = Levenshtein.distance(name, relic)
+    for x in targets:
+        dist = Levenshtein.distance(name, x)
         if dist < min_dist:
             min_dist = dist
-            min_name = relic
+            min_name = x
     name = min_name
 
     return name, min_dist

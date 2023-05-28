@@ -6,10 +6,15 @@ from file_helpers import resource_path
 
 
 class LightConeStrategy:
-    scan_type = 0
-    nav_data = {
+    SCAN_TYPE = 0
+    NAV_DATA = {
         "16:9": {
             "inv_tab": (0.38, 0.06),
+            "sort": {
+                "button": (0.093, 0.91),
+                "Rarity": (0.093, 0.49),
+                "Lv": (0.093, 0.56),
+            },
             "row_start_top": (0.1, 0.185),
             "row_start_bottom": (0.1, 0.77),
             "scroll_start_y": 0.849,
@@ -29,35 +34,82 @@ class LightConeStrategy:
     def screenshot_stats(self):
         return self._screenshot.screenshot_light_cone_stats()
 
-    def parse(self, img_dict, _id, interrupt):
+    def screenshot_sort(self):
+        return self._screenshot.screenshot_light_cone_sort()
+
+    def get_optimal_sort_method(self, filters):
+        if filters["light_cone"]["min_level"] > 1:
+            return "Lv"
+        else:
+            return "Rarity"
+
+    def check_filters(self, stats_dict, filters):
+        filters = filters["light_cone"]
+
+        filter_results = {}
+        for key in filters:
+            filter_type, filter_key = key.split("_")
+
+            val = stats_dict[filter_key] if filter_key in stats_dict else None
+
+            if not val or isinstance(val, Image.Image):
+                if filter_key == "rarity":
+                    stats_dict["name"] = self.extract_stats_data(
+                        "name", stats_dict["name"])
+                    stats_dict["name"], _ = GameData.get_closest_light_cone_name(
+                        stats_dict["name"])
+                    val = GameData.get_light_cone_meta_data(
+                        stats_dict["name"])["rarity"]
+                elif filter_key == "level":
+                    # Trivial case
+                    if filters["min_level"] <= 1:
+                        filter_results[key] = True
+                        continue
+                    stats_dict["level"] = self.extract_stats_data(
+                        "level", stats_dict["level"])
+                    val = int(stats_dict["level"].split("/")[0])
+
+            if not isinstance(val, int):
+                raise ValueError(
+                    f"Filter key {key} does not have an int value.")
+
+            if filter_type == "min":
+                filter_results[key] = val >= filters[key]
+            elif filter_type == "max":
+                filter_results[key] = val <= filters[key]
+
+        return (filter_results, stats_dict)
+
+    def extract_stats_data(self, key, img):
+        if key == "name":
+            name, _ = GameData.get_closest_light_cone_name(pytesseract.image_to_string(
+                img, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6").strip().replace("\n", " "))
+            return name
+        elif key == "level":
+            return pytesseract.image_to_string(
+                img, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
+        elif key == "superimposition":
+            return pytesseract.image_to_string(
+                img, config='-c tessedit_char_whitelist=12345 --psm 10').strip()
+        elif key == "equipped":
+            return pytesseract.image_to_string(
+                img, config='-c tessedit_char_whitelist=Equipped --psm 7').strip()
+        else:
+            return img
+
+    def parse(self, stats_dict, _id, interrupt, update_progress):
         if interrupt.is_set():
             return
 
-        # Get each cropped img
-        name = img_dict["name"]
-        level = img_dict["level"]
-        superimposition = img_dict["superimposition"]
-        lock = img_dict["lock"]
-        equipped = img_dict["equipped"]
+        for key in stats_dict:
+            if isinstance(stats_dict[key], Image.Image):
+                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
-        # OCR
-        name = pytesseract.image_to_string(
-            name, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6")
-        level = pytesseract.image_to_string(
-            level, config='-c tessedit_char_whitelist=0123456789/ --psm 7')
-        superimposition = pytesseract.image_to_string(
-            superimposition, config='-c tessedit_char_whitelist=12345 --psm 10')
-        equipped = pytesseract.image_to_string(
-            equipped, config='-c tessedit_char_whitelist=Equipped --psm 7')
-
-        # Clean up
-        name = name.strip()
-        level = level.strip()
-        superimposition = superimposition.strip()
-        equipped = equipped.strip()
-
-        # Fix OCR errors
-        name, _ = GameData.get_closest_light_cone_name(name)
+        name = stats_dict["name"]
+        level = stats_dict["level"]
+        superimposition = stats_dict["superimposition"]
+        lock = stats_dict["lock"]
+        equipped = stats_dict["equipped"]
 
         # Parse level, ascension, superimposition
         try:
@@ -90,7 +142,7 @@ class LightConeStrategy:
 
         location = ""
         if equipped == "Equipped":
-            equipped_avatar = img_dict["equipped_avatar"]
+            equipped_avatar = stats_dict["equipped_avatar"]
 
             location = GameData.get_equipped_character(
                 equipped_avatar, resource_path("images\\avatars\\"))
@@ -104,5 +156,7 @@ class LightConeStrategy:
             "lock": lock,
             "id": _id
         }
+
+        update_progress.emit(100)
 
         return result

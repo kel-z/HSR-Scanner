@@ -18,7 +18,7 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 5. Start the scan.
     - If you have multiple monitors, ensure that both Star Rail and HSR Scanner are on the same monitor before starting the scan.
 6. Do not move your mouse during the scan process.
-7. Once the scan is complete, additional time may be required to process the data before generating the final JSON file output.
+7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
 ## Scanner settings and configurations
 HSR Scanner assumes that the inventory and character key bindings are unchanged ("b" and "c", respectively). If you have modified these bindings, please set them appropriately in the "Configure" tab of HSR Scanner.
@@ -27,7 +27,7 @@ HSR Scanner has the following scan options:
 
 - Select whether to scan light cones or relics.
 - Set output location for the JSON file.
-- Filter light cones and relics based on a minimum rarity or level threshhold (*in development*).
+- Filter light cones and relics based on a minimum rarity or level threshhold.
 
 ## Output
 The output is loosely based off of Genshin's `.GOOD` export format. **Please note that the current output format is subject to change.**
@@ -115,4 +115,3 @@ Current output sample:
 
 ## Dev notes
 - **Expect data inaccuracies.** This app relies on reading text from images captured during the scan process, as opposed to reading off some save file. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions).
-- **If you have A LOT of light cones or relics, it could take a few minutes to process the images once the initial scan is done.** The current implementation includes preprocessing and error-checking for each relic to ensure accuracy, which comes at the cost of speed. Since this is my first time working with Tesseract and OCR as a whole, there is a lot of room for improvement and optimization in future releases.

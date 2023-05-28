@@ -9,6 +9,7 @@ class Screenshot:
         "16:9": {
             "quantity": (0.89, 0.46, 0.13, 0.06),
             "stats": (0.09, 0.72, 0.25, 0.78),
+            "sort": (0.9, 0.079, 0.07, 0.033),
             "light_cone": {
                 "name": (0, 0, 1, 0.09),
                 "level": (0.13, 0.32, 0.35, 0.37),
@@ -21,7 +22,7 @@ class Screenshot:
                 "name": (0, 0, 1, 0.09),
                 "level": (0.115, 0.255, 0.23, 0.3),
                 "lock": (0.865, 0.253, 0.935, 0.293),
-                "rarity_sample": (0.07, 0.15, 0.2, 0.22),
+                "rarity": (0.07, 0.15, 0.2, 0.22),
                 "equipped": (0.45, 0.95, 0.68, 1),
                 "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
 
@@ -53,6 +54,15 @@ class Screenshot:
 
     def screenshot_relic_stats(self):
         return self._screenshot_stats("relic")
+
+    def screenshot_relic_sort(self):
+        coords = self.coords[self._aspect_ratio]["sort"]
+        coords = (coords[0], coords[1] + 0.035, coords[2], coords[3])
+        return self._take_screenshot(*coords)
+
+    def screenshot_light_cone_sort(self):
+        return self._take_screenshot(
+            *self.coords[self._aspect_ratio]["sort"])
 
     def screenshot_quantity(self):
         return self._take_screenshot(

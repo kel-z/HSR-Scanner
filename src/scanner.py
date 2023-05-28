@@ -33,9 +33,6 @@ class HSRScanner:
 
         self.interrupt.clear()
 
-    def stop_scan(self):
-        self.interrupt.set()
-
     async def start_scan(self):
         if not any([self._config["scan_light_cones"], self._config["scan_relics"], self._config["scan_characters"]]):
             raise Exception("No scan options selected.")
@@ -66,8 +63,11 @@ class HSRScanner:
             "relics": await asyncio.gather(*relics)
         }
 
+    def stop_scan(self):
+        self.interrupt.set()
+
     def scan_inventory(self, strategy):
-        nav_data = strategy.nav_data[self._aspect_ratio]
+        nav_data = strategy.NAV_DATA[self._aspect_ratio]
 
         # Navigate to correct tab from cellphone menu
         time.sleep(1)
@@ -85,19 +85,38 @@ class HSRScanner:
         #
         #       for now, it will work for light cones and relics.
         quantity = self._screenshot.screenshot_quantity()
-        quantity = np.array(quantity)
-        quantity = pytesseract.image_to_string(
+        quantity_text = pytesseract.image_to_string(
             quantity, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
 
+        if not quantity_text:
+            quantity = self._screenshot.preprocess_img(quantity)
+            quantity_text = pytesseract.image_to_string(
+                quantity, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
+
         try:
-            quantity_remaining = int(quantity.split("/")[0])
+            quantity_remaining = int(quantity_text.split("/")[0])
         except Exception as e:
             raise Exception("Failed to parse quantity." +
-                            (f" Got {quantity} instead." if quantity else ""))
+                            (f" Got \"{quantity_text}\" instead." if quantity_text else "") +
+                            " Did you start the scan from the ESC menu?")
 
-        scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
+        current_sort_method = strategy.screenshot_sort()
+        current_sort_method = pytesseract.image_to_string(
+            current_sort_method, config='-c tessedit_char_whitelist=RarityLv --psm 7').strip()
+        optimal_sort_method = strategy.get_optimal_sort_method(
+            self._config["filters"])
+
+        if optimal_sort_method != current_sort_method:
+            self._nav.move_cursor_to(*nav_data["sort"]["button"])
+            self._nav.click()
+            time.sleep(0.5)
+            self._nav.move_cursor_to(*nav_data["sort"][optimal_sort_method])
+            self._nav.click()
+            current_sort_method = optimal_sort_method
+            time.sleep(0.5)
 
         tasks = set()
+        scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
         while quantity_remaining > 0:
             if quantity_remaining <= scanned_per_scroll:
                 x, y = nav_data["row_start_bottom"]
@@ -121,19 +140,26 @@ class HSRScanner:
 
                     quantity_remaining -= 1
 
-                    img_dict = strategy.screenshot_stats()
+                    stats_dict = strategy.screenshot_stats()
+                    x += nav_data["offset_x"]
 
-                    # TODO: check min level / rarity
+                    if self._config["filters"]:
+                        filter_results, stats_dict = strategy.check_filters(
+                            stats_dict, self._config["filters"])
+                        if (current_sort_method == "Lv" and not filter_results["min_level"]) or \
+                                (current_sort_method == "Rarity" and not filter_results["min_rarity"]):
+                            quantity_remaining = 0
+                            break
+                        if not all(filter_results.values()):
+                            continue
 
                     if self.update_progress:
-                        self.update_progress(strategy.scan_type)
+                        self.update_progress.emit(strategy.SCAN_TYPE)
 
                     task = asyncio.to_thread(
-                        strategy.parse, img_dict, self._item_id, self.interrupt)
-
+                        strategy.parse, stats_dict, self._item_id, self.interrupt, self.update_progress)
                     tasks.add(task)
 
-                    x += nav_data["offset_x"]
                     self._item_id += 1
 
                 # Next row
