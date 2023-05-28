@@ -47,7 +47,7 @@ Current output sample:
             "superimposition": 2,
             "location": "seele",
             "lock": true,
-            "id": 0
+            "_id": "light_cone_0"
         },
         {
             "name": "Meshing Cogs",
@@ -56,7 +56,7 @@ Current output sample:
             "superimposition": 5,
             "location": "",
             "lock": true,
-            "id": 1
+            "_id": "light_cone_1"
         }
     ],
     "relics": [
@@ -86,7 +86,7 @@ Current output sample:
             ],
             "location": "bronya",
             "lock": true,
-            "id": 2
+            "_id": "relic_0" 
         },
         {
             "setKey": "Thief of Shooting Meteor",
@@ -106,7 +106,7 @@ Current output sample:
             ],
             "location": "",
             "lock": false,
-            "id": 3
+            "_id": "relic_1"
         }
     ]
 }
