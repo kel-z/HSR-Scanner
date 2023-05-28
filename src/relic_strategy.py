@@ -31,6 +31,7 @@ class RelicStrategy:
         self._lock_icon = Image.open(resource_path("images\\lock.png"))
         self._screenshot = screenshot
         self._logger = logger
+        self._curr_id = 0
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_relic_stats()
@@ -76,7 +77,7 @@ class RelicStrategy:
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key, img, _id=None):
+    def extract_stats_data(self, key, img):
         if key == "name":
             return pytesseract.image_to_string(
                 img, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6").strip().replace("\n", " ")
@@ -91,7 +92,7 @@ class RelicStrategy:
 
             if not level:
                 self._logger.emit(
-                    f"Relic ID {_id}: Failed to extract level. Setting to 0."
+                    f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
                 )
                 level = 0
 
@@ -111,7 +112,7 @@ class RelicStrategy:
         else:
             return img
 
-    def parse(self, stats_dict, _id, interrupt, update_progress):
+    def parse(self, stats_dict, interrupt, update_progress):
         if interrupt.is_set():
             return
 
@@ -149,7 +150,7 @@ class RelicStrategy:
 
             if not key:
                 self._logger.emit(
-                    f"Relic ID {_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
+                    f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
                 break
 
             key, min_dist = GameData.get_closest_relic_sub_stat(key)
@@ -164,7 +165,7 @@ class RelicStrategy:
 
             if not val:
                 self._logger.emit(
-                    f"Relic ID {_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
+                    f"Relic ID {self._curr_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
                 break
 
             if val[-1] == '%':
@@ -213,9 +214,10 @@ class RelicStrategy:
             "subStats": subStats,
             "location": location,
             "lock": lock,
-            "id": _id
+            "_id": f"relic_{self._curr_id}"
         }
 
         update_progress.emit(101)
+        self._curr_id += 1
 
         return result

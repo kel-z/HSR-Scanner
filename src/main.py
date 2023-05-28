@@ -87,8 +87,6 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
         config["scan_relics"] = self.checkBoxScanRelics.isChecked()
         config["scan_characters"] = self.checkBoxScanChars.isChecked()
-        config["inventory_key"] = self.lineEditInventoryKey.text().lower()
-        config["character_key"] = self.lineEditCharacterKey.text().lower()
         config["filters"] = {
             "light_cone": {
                 "min_level": self.spinBoxLightConeMinLevel.value(),

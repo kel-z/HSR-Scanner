@@ -27,8 +27,14 @@ class Navigation:
 
         self._mouse.position = (x, y)
 
-    def send_key_press(self, key):
+    def key_press(self, key):
         self._keyboard.tap(key)
+
+    def key_hold(self, key):
+        self._keyboard.press(key)
+
+    def key_release(self, key):
+        self._keyboard.release(key)
 
     def click(self):
         self._mouse.click(mouse.Button.left)

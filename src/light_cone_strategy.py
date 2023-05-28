@@ -30,6 +30,7 @@ class LightConeStrategy:
         self._lock_icon = Image.open(resource_path("images\\lock.png"))
         self._screenshot = screenshot
         self._logger = logger
+        self._curr_id = 0
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_light_cone_stats()
@@ -97,7 +98,7 @@ class LightConeStrategy:
         else:
             return img
 
-    def parse(self, stats_dict, _id, interrupt, update_progress):
+    def parse(self, stats_dict, interrupt, update_progress):
         if interrupt.is_set():
             return
 
@@ -118,7 +119,7 @@ class LightConeStrategy:
             max_level = int(max_level)
         except ValueError:
             self._logger.emit(
-                f"Light Cone ID {_id}: Error parsing level, setting to 1")
+                f"Light Cone ID {self._curr_id}: Error parsing level, setting to 1")
             level = 1
             max_level = 20
 
@@ -128,7 +129,7 @@ class LightConeStrategy:
             superimposition = int(superimposition)
         except ValueError:
             self._logger.emit(
-                f"Light Cone ID {_id}: Error parsing superimposition, setting to 1")
+                f"Light Cone ID {self._curr_id}: Error parsing superimposition, setting to 1")
             superimposition = 1
 
         min_dim = min(lock.size)
@@ -154,9 +155,10 @@ class LightConeStrategy:
             "superimposition": int(superimposition),
             "location": location,
             "lock": lock,
-            "id": _id
+            "_id": f"light_cone_{self._curr_id}"
         }
 
         update_progress.emit(100)
+        self._curr_id += 1
 
         return result

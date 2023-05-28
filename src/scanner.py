@@ -29,8 +29,6 @@ class HSRScanner:
 
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
 
-        self._item_id = 0
-
         self.interrupt.clear()
 
     async def start_scan(self):
@@ -38,8 +36,6 @@ class HSRScanner:
             raise Exception("No scan options selected.")
 
         self._nav.bring_window_to_foreground()
-
-        self._item_id = 0
 
         light_cones = []
         if self._config["scan_light_cones"] and not self.interrupt.is_set():
@@ -71,9 +67,13 @@ class HSRScanner:
 
         # Navigate to correct tab from cellphone menu
         time.sleep(1)
-        self._nav.send_key_press(Key.esc)
+        self._nav.key_press(Key.esc)
         time.sleep(1)
-        self._nav.send_key_press(self._config["inventory_key"])
+        self._nav.key_hold(Key.tab)
+        time.sleep(0.1)
+        self._nav.move_cursor_to(0.75, 0.5)
+        time.sleep(0.1)
+        self._nav.key_release(Key.tab)
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
@@ -157,10 +157,8 @@ class HSRScanner:
                         self.update_progress.emit(strategy.SCAN_TYPE)
 
                     task = asyncio.to_thread(
-                        strategy.parse, stats_dict, self._item_id, self.interrupt, self.update_progress)
+                        strategy.parse, stats_dict, self.interrupt, self.update_progress)
                     tasks.add(task)
-
-                    self._item_id += 1
 
                 # Next row
                 x = nav_data["row_start_top"][0]
@@ -173,7 +171,7 @@ class HSRScanner:
                 x, nav_data["scroll_start_y"], nav_data["scroll_end_y"])
             time.sleep(0.5)
 
-        self._nav.send_key_press(Key.esc)
+        self._nav.key_press(Key.esc)
         time.sleep(1)
-        self._nav.send_key_press(Key.esc)
+        self._nav.key_press(Key.esc)
         return tasks

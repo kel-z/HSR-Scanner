@@ -26,8 +26,11 @@ class Ui_MainWindow(object):
         self.centralwidget.setEnabled(True)
         self.centralwidget.setObjectName("centralwidget")
         self.tabWidget = QtWidgets.QTabWidget(parent=self.centralwidget)
+        self.tabWidget.setEnabled(True)
         self.tabWidget.setGeometry(QtCore.QRect(10, 10, 681, 411))
         self.tabWidget.setAutoFillBackground(False)
+        self.tabWidget.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
+        self.tabWidget.setTabBarAutoHide(True)
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -216,28 +219,6 @@ class Ui_MainWindow(object):
         self.textEditLog.setReadOnly(True)
         self.textEditLog.setObjectName("textEditLog")
         self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.formLayoutWidget_4 = QtWidgets.QWidget(parent=self.tab_2)
-        self.formLayoutWidget_4.setGeometry(QtCore.QRect(20, 20, 160, 80))
-        self.formLayoutWidget_4.setObjectName("formLayoutWidget_4")
-        self.formLayout_5 = QtWidgets.QFormLayout(self.formLayoutWidget_4)
-        self.formLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.formLayout_5.setObjectName("formLayout_5")
-        self.label_9 = QtWidgets.QLabel(parent=self.formLayoutWidget_4)
-        self.label_9.setObjectName("label_9")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_9)
-        self.lineEditInventoryKey = QtWidgets.QLineEdit(parent=self.formLayoutWidget_4)
-        self.lineEditInventoryKey.setMaxLength(1)
-        self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
-        self.label_10 = QtWidgets.QLabel(parent=self.formLayoutWidget_4)
-        self.label_10.setObjectName("label_10")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_10)
-        self.lineEditCharacterKey = QtWidgets.QLineEdit(parent=self.formLayoutWidget_4)
-        self.lineEditCharacterKey.setObjectName("lineEditCharacterKey")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditCharacterKey)
-        self.tabWidget.addTab(self.tab_2, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -246,7 +227,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner alpha v0.0.2"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner alpha v0.0.3"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -280,7 +261,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.0.2</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.0.3</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">- STILL IN DEVELOPMENT-</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
@@ -296,8 +277,3 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "Press ENTER to cancel"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Log"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Scan"))
-        self.label_9.setText(_translate("MainWindow", "Inventory Key"))
-        self.lineEditInventoryKey.setText(_translate("MainWindow", "B"))
-        self.label_10.setText(_translate("MainWindow", "Characters Key"))
-        self.lineEditCharacterKey.setText(_translate("MainWindow", "C"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Configure"))

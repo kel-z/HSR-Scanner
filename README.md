@@ -21,7 +21,6 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
 ## Scanner settings and configurations
-HSR Scanner assumes that the inventory and character key bindings are unchanged ("b" and "c", respectively). If you have modified these bindings, please set them appropriately in the "Configure" tab of HSR Scanner.
 
 HSR Scanner has the following scan options:
 
@@ -34,7 +33,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 ### Notes
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
-- The `id` value is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
+- The `_id` value is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - The exact string values can be found in [game_data.py](src/utils/game_data.py).
 
 Current output sample:
