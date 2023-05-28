@@ -1,7 +1,6 @@
 from utils.game_data import GameData
 import numpy as np
-import pytesseract
-from file_helpers import resource_path
+from helper_functions import resource_path, image_to_string
 from PIL import Image
 from pyautogui import locate
 
@@ -83,30 +82,19 @@ class RelicStrategy:
 
     def extract_stats_data(self, key, img):
         if key == "name":
-            return pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6").strip().replace("\n", " ")
+            return image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6)
         elif key == "level":
-            level = pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=0123456789 --psm 7").strip()
-
-            if not level:
-                level = self._screenshot.preprocess_img(img)
-                level = pytesseract.image_to_string(
-                    level, config="-c tessedit_char_whitelist=0123456789 --psm 7").strip()
-
+            level = image_to_string(img, "0123456789", 7)
             if not level:
                 self._logger.emit(
                     f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
                 )
                 level = 0
-
             return int(level)
         elif key == "mainStatKey":
-            return pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist='ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz' --psm 7").strip()
+            return image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7)
         elif key == "equipped":
-            return pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=Equipped --psm 7").strip()
+            return image_to_string(img, "Equiped", 7)
         elif key == "rarity":
             # Get rarity by color matching
             rarity_sample = np.array(img)
@@ -139,34 +127,19 @@ class RelicStrategy:
         subStats = []
         for i in range(1, 5):
             key = stats_dict["subStatKey_" + str(i)]
-            val = stats_dict["subStatVal_" + str(i)]
 
-            key = pytesseract.image_to_string(
-                key, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7').strip()
-            val = pytesseract.image_to_string(
-                val, config='-c tessedit_char_whitelist=0123456789.% --psm 7').strip()
-
-            if not key:
-                key = self._screenshot.preprocess_img(
-                    stats_dict["subStatKey_" + str(i)])
-                key = pytesseract.image_to_string(
-                    key, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7').strip()
-
+            key = image_to_string(
+                key, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7)
             if not key:
                 self._logger.emit(
                     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
                 break
-
             key, min_dist = GameData.get_closest_relic_sub_stat(key)
             if min_dist > 5:
                 break
 
-            if not val:
-                val = self._screenshot.preprocess_img(
-                    stats_dict["subStatVal_" + str(i)])
-                val = pytesseract.image_to_string(
-                    val, config='-c tessedit_char_whitelist=0123456789.% --psm 7')
-
+            val_img = stats_dict["subStatVal_" + str(i)]
+            val = image_to_string(val_img, "0123456789.%", 7)
             if not val:
                 self._logger.emit(
                     f"Relic ID {self._curr_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
@@ -174,10 +147,8 @@ class RelicStrategy:
 
             if val[-1] == '%':
                 if '.' not in val:
-                    val = self._screenshot.preprocess_img(
-                        stats_dict["subStatVal_" + str(i)])
-                    val = pytesseract.image_to_string(
-                        val, config='-c tessedit_char_whitelist=0123456789.% --psm 7').strip()
+                    val = image_to_string(
+                        val_img, "0123456789.%", 7, True)
                 val = float(val[:-1])
                 key += '_'
             else:

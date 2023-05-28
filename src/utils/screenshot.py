@@ -1,7 +1,5 @@
 import pyautogui
 import win32gui
-from PIL import ImageFilter, Image
-from utils.game_data import GameData
 
 
 class Screenshot:
@@ -67,25 +65,6 @@ class Screenshot:
     def screenshot_quantity(self):
         return self._take_screenshot(
             *self.coords[self._aspect_ratio]["quantity"])
-
-    def preprocess_img(self, img):
-        if img.height < 50:
-            img = img.resize((img.width * 2, img.height * 2))
-
-        for x in range(img.width):
-            for y in range(img.height):
-                pixel = img.getpixel((x, y))
-                if pixel[0] > 150 and pixel[1] > 150 and pixel[2] > 150:
-                    img.putpixel((x, y), (255, 255, 255))
-                else:
-                    img.putpixel(
-                        (x, y), (pixel[0] - 75, pixel[1] - 75, pixel[2] - 75))
-
-        img = img.convert('L')
-        img = img.filter(ImageFilter.EDGE_ENHANCE)
-        img = img.filter(ImageFilter.GaussianBlur(radius=1))
-
-        return img
 
     def _take_screenshot(self, top, left, width, height):
         x = self._left + int(self._width * left)

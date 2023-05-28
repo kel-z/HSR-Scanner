@@ -2,12 +2,11 @@ from utils.navigation import Navigation
 import win32gui
 import time
 from utils.screenshot import Screenshot
-import numpy as np
 import asyncio
 from light_cone_strategy import LightConeStrategy
 from relic_strategy import RelicStrategy
 from pynput.keyboard import Key
-import pytesseract
+from helper_functions import image_to_string
 
 
 class HSRScanner:
@@ -85,24 +84,18 @@ class HSRScanner:
         #
         #       for now, it will work for light cones and relics.
         quantity = self._screenshot.screenshot_quantity()
-        quantity_text = pytesseract.image_to_string(
-            quantity, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
-
-        if not quantity_text:
-            quantity = self._screenshot.preprocess_img(quantity)
-            quantity_text = pytesseract.image_to_string(
-                quantity, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
+        quantity = image_to_string(quantity, "0123456789/", 7)
 
         try:
-            quantity_remaining = int(quantity_text.split("/")[0])
-        except Exception as e:
-            raise Exception("Failed to parse quantity." +
-                            (f" Got \"{quantity_text}\" instead." if quantity_text else "") +
-                            " Did you start the scan from the ESC menu?")
+            quantity_remaining = int(quantity.split("/")[0])
+        except ValueError:
+            raise ValueError("Failed to parse quantity." +
+                             (f" Got \"{quantity}\" instead." if quantity else "") +
+                             " Did you start the scan from the ESC menu?")
 
         current_sort_method = strategy.screenshot_sort()
-        current_sort_method = pytesseract.image_to_string(
-            current_sort_method, config='-c tessedit_char_whitelist=RarityLv --psm 7').strip()
+        current_sort_method = image_to_string(
+            current_sort_method, "RarityLv", 7)
         optimal_sort_method = strategy.get_optimal_sort_method(
             self._config["filters"])
 

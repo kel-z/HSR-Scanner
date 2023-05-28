@@ -1,8 +1,7 @@
 from utils.game_data import GameData
-import pytesseract
 from pyautogui import locate
 from PIL import Image
-from file_helpers import resource_path
+from helper_functions import resource_path, image_to_string
 
 
 class LightConeStrategy:
@@ -87,18 +86,15 @@ class LightConeStrategy:
 
     def extract_stats_data(self, key, img):
         if key == "name":
-            name, _ = GameData.get_closest_light_cone_name(pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6").strip().replace("\n", " "))
+            name, _ = GameData.get_closest_light_cone_name(
+                image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6))
             return name
         elif key == "level":
-            return pytesseract.image_to_string(
-                img, config='-c tessedit_char_whitelist=0123456789/ --psm 7').strip()
+            return image_to_string(img, "0123456789/", 7)
         elif key == "superimposition":
-            return pytesseract.image_to_string(
-                img, config='-c tessedit_char_whitelist=12345 --psm 10').strip()
+            return image_to_string(img, "12345", 10)
         elif key == "equipped":
-            return pytesseract.image_to_string(
-                img, config='-c tessedit_char_whitelist=Equipped --psm 7').strip()
+            return image_to_string(img, "Equipped", 7)
         else:
             return img
 
