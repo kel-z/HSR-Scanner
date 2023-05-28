@@ -54,16 +54,20 @@ class LightConeStrategy:
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
             if not val or isinstance(val, Image.Image):
-                if filter_key == "rarity":
+                if key == "min_rarity":
+                    # Trivial case
+                    if filters[key] <= 3:
+                        filter_results[key] = True
+                        continue
                     stats_dict["name"] = self.extract_stats_data(
                         "name", stats_dict["name"])
                     stats_dict["name"], _ = GameData.get_closest_light_cone_name(
                         stats_dict["name"])
                     val = GameData.get_light_cone_meta_data(
                         stats_dict["name"])["rarity"]
-                elif filter_key == "level":
+                elif key == "min_level":
                     # Trivial case
-                    if filters["min_level"] <= 1:
+                    if filters[key] <= 1:
                         filter_results[key] = True
                         continue
                     stats_dict["level"] = self.extract_stats_data(

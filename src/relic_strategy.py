@@ -55,12 +55,16 @@ class RelicStrategy:
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
             if not val or isinstance(val, Image.Image):
-                if filter_key == "rarity":
+                if key == "min_rarity":
+                    # Trivial case
+                    if filters[key] <= 2:
+                        filter_results[key] = True
+                        continue
                     val = stats_dict["rarity"] = self.extract_stats_data(
                         filter_key, stats_dict["rarity"])
-                elif filter_key == "level":
+                elif key == "min_level":
                     # Trivial case
-                    if filters["min_level"] <= 0:
+                    if filters[key] <= 0:
                         filter_results[key] = True
                         continue
                     val = stats_dict["level"] = self.extract_stats_data(
