@@ -55,9 +55,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def start_scan(self):
         self.disable_start_scan_button()
-        self.labelLightConeCount.setText("0")
-        self.labelRelicCount.setText("0")
-        self.labelCharacterCount.setText("0")
+        for label in [self.labelLightConeCount, self.labelRelicCount, self.labelCharacterCount, self.labelLightConeProcessed, self.labelRelicProcessed, self.labelCharacterProcessed]:
+            label.setText("0")
         self.textEditLog.clear()
 
         scanner = HSRScanner(self.get_config())

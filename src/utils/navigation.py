@@ -9,13 +9,16 @@ class Navigation:
     def __init__(self, hwnd):
         self._hwnd = hwnd
         self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
+        if self._width == 0 or self._height == 0:
+            self.bring_window_to_foreground(9)
+            self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
         self._left, self._top = win32gui.ClientToScreen(self._hwnd, (0, 0))
 
         self._mouse = mouse.Controller()
         self._keyboard = keyboard.Controller()
 
-    def bring_window_to_foreground(self):
-        win32gui.ShowWindow(self._hwnd, 5)
+    def bring_window_to_foreground(self, cmd_show=5):
+        win32gui.ShowWindow(self._hwnd, cmd_show)
         win32gui.SetForegroundWindow(self._hwnd)
 
     def move_cursor_to(self, x_percent, y_percent):
@@ -57,7 +60,7 @@ class Navigation:
         return x_percent, y_percent
 
     def get_aspect_ratio(self):
-        x, y = win32gui.GetClientRect(self._hwnd)[2:]
+        x, y = self._width, self._height
         gcd = self.gcd(x, y)
         return f"{x // gcd}:{y // gcd}"
 
