@@ -21,9 +21,14 @@ class Navigation:
         win32gui.ShowWindow(self._hwnd, cmd_show)
         win32gui.SetForegroundWindow(self._hwnd)
 
-    def move_cursor_to(self, x_percent, y_percent):
+    def translate_percent_to_coords(self, x_percent, y_percent):
         x = self._left + int(self._width * x_percent)
         y = self._top + int(self._height * y_percent)
+
+        return x, y
+
+    def move_cursor_to(self, x_percent, y_percent):
+        x, y = self.translate_percent_to_coords(x_percent, y_percent)
 
         self._mouse.position = (x, y)
 
