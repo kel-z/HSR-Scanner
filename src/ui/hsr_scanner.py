@@ -26,8 +26,11 @@ class Ui_MainWindow(object):
         self.centralwidget.setEnabled(True)
         self.centralwidget.setObjectName("centralwidget")
         self.tabWidget = QtWidgets.QTabWidget(parent=self.centralwidget)
+        self.tabWidget.setEnabled(True)
         self.tabWidget.setGeometry(QtCore.QRect(10, 10, 681, 411))
         self.tabWidget.setAutoFillBackground(False)
+        self.tabWidget.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
+        self.tabWidget.setTabBarAutoHide(True)
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -45,12 +48,12 @@ class Ui_MainWindow(object):
         self.checkBoxScanRelics.setObjectName("checkBoxScanRelics")
         self.verticalLayout.addWidget(self.checkBoxScanRelics)
         self.checkBoxScanChars = QtWidgets.QCheckBox(parent=self.formGroupBox)
-        self.checkBoxScanChars.setEnabled(False)
+        self.checkBoxScanChars.setEnabled(True)
         self.checkBoxScanChars.setObjectName("checkBoxScanChars")
         self.verticalLayout.addWidget(self.checkBoxScanChars)
         self.formLayout.setLayout(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.verticalLayout)
         self.pushButtonStartScan = QtWidgets.QPushButton(parent=self.tab)
-        self.pushButtonStartScan.setGeometry(QtCore.QRect(20, 330, 111, 41))
+        self.pushButtonStartScan.setGeometry(QtCore.QRect(20, 350, 111, 41))
         self.pushButtonStartScan.setObjectName("pushButtonStartScan")
         self.groupBox = QtWidgets.QGroupBox(parent=self.tab)
         self.groupBox.setGeometry(QtCore.QRect(270, 230, 151, 91))
@@ -196,48 +199,26 @@ class Ui_MainWindow(object):
         self.lineEditOutputLocation.setObjectName("lineEditOutputLocation")
         self.gridLayout.addWidget(self.lineEditOutputLocation, 0, 0, 1, 3)
         self.groupBox_4 = QtWidgets.QGroupBox(parent=self.tab)
-        self.groupBox_4.setGeometry(QtCore.QRect(430, 20, 231, 351))
+        self.groupBox_4.setGeometry(QtCore.QRect(430, 20, 231, 371))
         self.groupBox_4.setObjectName("groupBox_4")
         self.textEdit = QtWidgets.QTextEdit(parent=self.groupBox_4)
-        self.textEdit.setGeometry(QtCore.QRect(10, 20, 211, 321))
+        self.textEdit.setGeometry(QtCore.QRect(10, 20, 211, 341))
         self.textEdit.setReadOnly(True)
         self.textEdit.setObjectName("textEdit")
         self.label = QtWidgets.QLabel(parent=self.tab)
-        self.label.setGeometry(QtCore.QRect(140, 340, 161, 16))
+        self.label.setGeometry(QtCore.QRect(140, 360, 161, 16))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.groupBox_5 = QtWidgets.QGroupBox(parent=self.tab)
-        self.groupBox_5.setGeometry(QtCore.QRect(20, 230, 241, 91))
+        self.groupBox_5.setGeometry(QtCore.QRect(20, 230, 241, 111))
         self.groupBox_5.setObjectName("groupBox_5")
         self.textEditLog = QtWidgets.QPlainTextEdit(parent=self.groupBox_5)
-        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 221, 61))
+        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 221, 81))
         self.textEditLog.setReadOnly(True)
         self.textEditLog.setObjectName("textEditLog")
         self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.formLayoutWidget_4 = QtWidgets.QWidget(parent=self.tab_2)
-        self.formLayoutWidget_4.setGeometry(QtCore.QRect(20, 20, 160, 80))
-        self.formLayoutWidget_4.setObjectName("formLayoutWidget_4")
-        self.formLayout_5 = QtWidgets.QFormLayout(self.formLayoutWidget_4)
-        self.formLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.formLayout_5.setObjectName("formLayout_5")
-        self.label_9 = QtWidgets.QLabel(parent=self.formLayoutWidget_4)
-        self.label_9.setObjectName("label_9")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_9)
-        self.lineEditInventoryKey = QtWidgets.QLineEdit(parent=self.formLayoutWidget_4)
-        self.lineEditInventoryKey.setMaxLength(1)
-        self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
-        self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
-        self.label_10 = QtWidgets.QLabel(parent=self.formLayoutWidget_4)
-        self.label_10.setObjectName("label_10")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_10)
-        self.lineEditCharacterKey = QtWidgets.QLineEdit(parent=self.formLayoutWidget_4)
-        self.lineEditCharacterKey.setObjectName("lineEditCharacterKey")
-        self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditCharacterKey)
-        self.tabWidget.addTab(self.tab_2, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -246,7 +227,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner alpha v0.0.2"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.1.0"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -280,24 +261,18 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.0.2</span></p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">- STILL IN DEVELOPMENT-</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.1.0</span></p>\n"
+"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">- BETA -</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">1. Set resolution with aspect ratio 16:9</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">1. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">2. Open cellphone menu (ESC)</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">3. Press the start scan button</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">4. Don\'t move mouse during the scan process</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">NOTES</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; color:#ff0000;\">- Character scanning is </span><span style=\" font-size:12pt; font-weight:600; text-decoration: underline; color:#ff0000;\">not</span><span style=\" font-size:12pt; color:#ff0000;\"> implemented yet</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600; color:#ff0000;\">- </span><span style=\" font-size:8pt; color:#ff0000;\">The inventory screen is translucent and overall accuracy can be influenced by poor text contrast. </span><span style=\" font-size:8pt; font-weight:600; color:#ff0000;\">Make sure you\'re not looking at anything bright before starting the scan.</span></p></body></html>"))
         self.label.setText(_translate("MainWindow", "Press ENTER to cancel"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Log"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Scan"))
-        self.label_9.setText(_translate("MainWindow", "Inventory Key"))
-        self.lineEditInventoryKey.setText(_translate("MainWindow", "B"))
-        self.label_10.setText(_translate("MainWindow", "Characters Key"))
-        self.lineEditCharacterKey.setText(_translate("MainWindow", "C"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Configure"))

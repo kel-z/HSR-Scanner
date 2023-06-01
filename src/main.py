@@ -4,7 +4,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from scanner import HSRScanner
 from enum import Enum
 from pynput.keyboard import Key, Listener
-from file_helpers import resource_path, save_to_json, executable_path
+from helper_functions import resource_path, save_to_json, executable_path
 import pytesseract
 import sys
 
@@ -13,7 +13,7 @@ pytesseract.pytesseract.tesseract_cmd = resource_path(
     ".\\tesseract\\tesseract.exe")
 
 
-class ScanType(Enum):
+class IncrementType(Enum):
     LIGHT_CONE_ADD = 0
     LIGHT_CONE_SUCCESS = 100
     RELIC_ADD = 1
@@ -68,7 +68,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread.update_progress.connect(self.increment_progress)
 
         # self._scanner_thread.result.connect(self.log)
-        self._scanner_thread.result.connect(self.receive_scan_result)
+        self._scanner_thread.result.connect(self.handle_result)
         self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result.connect(self.enable_start_scan_button)
         self._scanner_thread.result.connect(self._listener.stop)
@@ -87,8 +87,6 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
         config["scan_relics"] = self.checkBoxScanRelics.isChecked()
         config["scan_characters"] = self.checkBoxScanChars.isChecked()
-        config["inventory_key"] = self.lineEditInventoryKey.text().lower()
-        config["character_key"] = self.lineEditCharacterKey.text().lower()
         config["filters"] = {
             "light_cone": {
                 "min_level": self.spinBoxLightConeMinLevel.value(),
@@ -101,28 +99,29 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         }
         return config
 
-    def receive_scan_result(self, data):
+    def handle_result(self, data):
         output_location = self.lineEditOutputLocation.text()
         save_to_json(data, output_location)
         self.log("Scan complete. Data saved to " + output_location)
 
     def increment_progress(self, enum):
-        if ScanType(enum) == ScanType.LIGHT_CONE_ADD:
+        switch = IncrementType(enum)
+        if switch == IncrementType.LIGHT_CONE_ADD:
             self.labelLightConeCount.setText(
                 str(int(self.labelLightConeCount.text()) + 1))
-        elif ScanType(enum) == ScanType.RELIC_ADD:
+        elif switch == IncrementType.RELIC_ADD:
             self.labelRelicCount.setText(
                 str(int(self.labelRelicCount.text()) + 1))
-        elif ScanType(enum) == ScanType.CHARACTER_ADD:
+        elif switch == IncrementType.CHARACTER_ADD:
             self.labelCharacterCount.setText(
                 str(int(self.labelCharacterCount.text()) + 1))
-        elif ScanType(enum) == ScanType.LIGHT_CONE_SUCCESS:
+        elif switch == IncrementType.LIGHT_CONE_SUCCESS:
             self.labelLightConeProcessed.setText(
                 str(int(self.labelLightConeProcessed.text()) + 1))
-        elif ScanType(enum) == ScanType.RELIC_SUCCESS:
+        elif switch == IncrementType.RELIC_SUCCESS:
             self.labelRelicProcessed.setText(
                 str(int(self.labelRelicProcessed.text()) + 1))
-        elif ScanType(enum) == ScanType.CHARACTER_SUCCESS:
+        elif switch == IncrementType.CHARACTER_SUCCESS:
             self.labelCharacterProcessed.setText(
                 str(int(self.labelCharacterProcessed.text()) + 1))
 

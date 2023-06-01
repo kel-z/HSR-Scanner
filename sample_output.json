@@ -1,0 +1,7071 @@
+{
+    "light_cones": [
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_7"
+        },
+        {
+            "key": "Adversarial",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_12"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_8"
+        },
+        {
+            "key": "Adversarial",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_10"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_14"
+        },
+        {
+            "key": "Adversarial",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_4"
+        },
+        {
+            "key": "Defense",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_4"
+        },
+        {
+            "key": "Adversarial",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_9"
+        },
+        {
+            "key": "Defense",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_4"
+        },
+        {
+            "key": "Adversarial",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_0"
+        },
+        {
+            "key": "Defense",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_3"
+        },
+        {
+            "key": "Darting Arrow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_1"
+        },
+        {
+            "key": "Defense",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_11"
+        },
+        {
+            "key": "Darting Arrow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_2"
+        },
+        {
+            "key": "Amber",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_15"
+        },
+        {
+            "key": "Darting Arrow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_13"
+        },
+        {
+            "key": "Amber",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_16"
+        },
+        {
+            "key": "Darting Arrow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_22"
+        },
+        {
+            "key": "Amber",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_18"
+        },
+        {
+            "key": "Arrows",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_23"
+        },
+        {
+            "key": "Amber",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_20"
+        },
+        {
+            "key": "Arrows",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_19"
+        },
+        {
+            "key": "Amber",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_26"
+        },
+        {
+            "key": "Arrows",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_29"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_30"
+        },
+        {
+            "key": "Arrows",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_28"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_25"
+        },
+        {
+            "key": "Arrows",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_23"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_20"
+        },
+        {
+            "key": "Arrows",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_27"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_17"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_30"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_32"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_44"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_33"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_40"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_34"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_39"
+        },
+        {
+            "key": "Multiplication",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_36"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_42"
+        },
+        {
+            "key": "Fine Fruit",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_37"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_38"
+        },
+        {
+            "key": "Fine Fruit",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_35"
+        },
+        {
+            "key": "Sagacity",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_47"
+        },
+        {
+            "key": "Fine Fruit",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_45"
+        },
+        {
+            "key": "Passkey",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_41"
+        },
+        {
+            "key": "Cornucopia",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_46"
+        },
+        {
+            "key": "Passkey",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_43"
+        },
+        {
+            "key": "Cornucopia",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_48"
+        },
+        {
+            "key": "Passkey",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_50"
+        },
+        {
+            "key": "Cornucopia",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_52"
+        },
+        {
+            "key": "Passkey",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_49"
+        },
+        {
+            "key": "Cornucopia",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_53"
+        },
+        {
+            "key": "Passkey",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_57"
+        },
+        {
+            "key": "Passkey",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_55"
+        },
+        {
+            "key": "Data Bank",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_54"
+        },
+        {
+            "key": "Past and Future",
+            "level": 50,
+            "ascension": 3,
+            "superimposition": 3,
+            "location": "Bronya",
+            "lock": true,
+            "_id": "light_cone_63"
+        },
+        {
+            "key": "Data Bank",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_51"
+        },
+        {
+            "key": "Quid Pro Quo",
+            "level": 50,
+            "ascension": 3,
+            "superimposition": 1,
+            "location": "Bailu",
+            "lock": false,
+            "_id": "light_cone_59"
+        },
+        {
+            "key": "Data Bank",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_56"
+        },
+        {
+            "key": "Swordplay",
+            "level": 60,
+            "ascension": 4,
+            "superimposition": 2,
+            "location": "Sushang",
+            "lock": true,
+            "_id": "light_cone_58"
+        },
+        {
+            "key": "Data Bank",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_62"
+        },
+        {
+            "key": "The Moles Welcome You",
+            "level": 50,
+            "ascension": 3,
+            "superimposition": 1,
+            "location": "Clara",
+            "lock": true,
+            "_id": "light_cone_61"
+        },
+        {
+            "key": "Data Bank",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_60"
+        },
+        {
+            "key": "Cruising in the Stellar Sea",
+            "level": 60,
+            "ascension": 4,
+            "superimposition": 3,
+            "location": "Seele",
+            "lock": true,
+            "_id": "light_cone_64"
+        },
+        {
+            "key": "Data Bank",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_65"
+        },
+        {
+            "key": "We Are Wildfire",
+            "level": 20,
+            "ascension": 1,
+            "superimposition": 2,
+            "location": "TrailblazerPreservation",
+            "lock": true,
+            "_id": "light_cone_69"
+        },
+        {
+            "key": "Mediation",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_68"
+        },
+        {
+            "key": "Make the World Clamor",
+            "level": 20,
+            "ascension": 1,
+            "superimposition": 1,
+            "location": "Qingque",
+            "lock": true,
+            "_id": "light_cone_67"
+        },
+        {
+            "key": "Mediation",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_66"
+        },
+        {
+            "key": "Under the Blue Sky",
+            "level": 20,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "Hook",
+            "lock": true,
+            "_id": "light_cone_76"
+        },
+        {
+            "key": "Mediation",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_70"
+        },
+        {
+            "key": "Memories of the Past",
+            "level": 50,
+            "ascension": 3,
+            "superimposition": 1,
+            "location": "Asta",
+            "lock": true,
+            "_id": "light_cone_79"
+        },
+        {
+            "key": "Mediation",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_71"
+        },
+        {
+            "key": "Make the World Clamor",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "Serval",
+            "lock": true,
+            "_id": "light_cone_76"
+        },
+        {
+            "key": "Mediation",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_75"
+        },
+        {
+            "key": "Only Silence Remains",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "DanHeng",
+            "lock": true,
+            "_id": "light_cone_78"
+        },
+        {
+            "key": "Mediation",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_73"
+        },
+        {
+            "key": "Eyes of the Prey",
+            "level": 50,
+            "ascension": 3,
+            "superimposition": 2,
+            "location": "Pela",
+            "lock": true,
+            "_id": "light_cone_72"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_74"
+        },
+        {
+            "key": "The Birth of the Self",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "Herta",
+            "lock": true,
+            "_id": "light_cone_81"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_80"
+        },
+        {
+            "key": "Dance! Dance! Dance!",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "Tingyun",
+            "lock": true,
+            "_id": "light_cone_85"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_82"
+        },
+        {
+            "key": "Perfect Timing",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "Natasha",
+            "lock": true,
+            "_id": "light_cone_88"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_87"
+        },
+        {
+            "key": "A Secret Vow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 2,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_83"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_84"
+        },
+        {
+            "key": "The Seriousness of Breakfast",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_89"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_86"
+        },
+        {
+            "key": "Woof! Walk Time!",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_93"
+        },
+        {
+            "key": "Meshing Cogs",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_90"
+        },
+        {
+            "key": "The Seriousness of Breakfast",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_93"
+        },
+        {
+            "key": "Chorus",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_95"
+        },
+        {
+            "key": "River Flows in Spring",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_92"
+        },
+        {
+            "key": "Chorus",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_90"
+        },
+        {
+            "key": "Today Is Another Peaceful Day",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_98"
+        },
+        {
+            "key": "Chorus",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_96"
+        },
+        {
+            "key": "Planetary Rendezvous",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_97"
+        },
+        {
+            "key": "Chorus",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_102"
+        },
+        {
+            "key": "Planetary Rendezvous",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_100"
+        },
+        {
+            "key": "Chorus",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_99"
+        },
+        {
+            "key": "Fermata",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_105"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_104"
+        },
+        {
+            "key": "Good Night and Sleep Well",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_101"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_103"
+        },
+        {
+            "key": "Shared Feeling",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 2,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_108"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_110"
+        },
+        {
+            "key": "Defense",
+            "level": 50,
+            "ascension": 3,
+            "superimposition": 5,
+            "location": "March7th",
+            "lock": true,
+            "_id": "light_cone_111"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_106"
+        },
+        {
+            "key": "Collapsing Sky",
+            "level": 20,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "Arlan",
+            "lock": true,
+            "_id": "light_cone_109"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_107"
+        },
+        {
+            "key": "Cornucopia",
+            "level": 30,
+            "ascension": 2,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_112"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_113"
+        },
+        {
+            "key": "Mutual Demise",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_114"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_116"
+        },
+        {
+            "key": "Mutual Demise",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_115"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_120"
+        },
+        {
+            "key": "Mutual Demise",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_117"
+        },
+        {
+            "key": "Hidden Shadow",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_118"
+        },
+        {
+            "key": "Loop",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_119"
+        },
+        {
+            "key": "Mutual Demise",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_121"
+        },
+        {
+            "key": "Loop",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_123"
+        },
+        {
+            "key": "Mutual Demise",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_124"
+        },
+        {
+            "key": "Loop",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_122"
+        },
+        {
+            "key": "Mutual Demise",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_125"
+        },
+        {
+            "key": "Loop",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_126"
+        },
+        {
+            "key": "Shattered Home",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_127"
+        },
+        {
+            "key": "Void",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_128"
+        },
+        {
+            "key": "Shattered Home",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_129"
+        },
+        {
+            "key": "Void",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_130"
+        },
+        {
+            "key": "Shattered Home",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_133"
+        },
+        {
+            "key": "Void",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_132"
+        },
+        {
+            "key": "Shattered Home",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 5,
+            "location": "",
+            "lock": true,
+            "_id": "light_cone_131"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_137"
+        },
+        {
+            "key": "Collapsing Sky",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_135"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_136"
+        },
+        {
+            "key": "Collapsing Sky",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_134"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_141"
+        },
+        {
+            "key": "Collapsing Sky",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_140"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_138"
+        },
+        {
+            "key": "Pioneering",
+            "level": 1,
+            "ascension": 0,
+            "superimposition": 1,
+            "location": "",
+            "lock": false,
+            "_id": "light_cone_139"
+        }
+    ],
+    "relics": [
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_5"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 6,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.6
+                }
+            ],
+            "location": "Natasha",
+            "lock": false,
+            "_id": "relic_14"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_3"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_1"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                }
+            ],
+            "location": "Natasha",
+            "lock": false,
+            "_id": "relic_8"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_0"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_9"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "Natasha",
+            "lock": false,
+            "_id": "relic_12"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_4"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_11"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "CRIT Rate",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 27
+                },
+                {
+                    "key": "DEF_",
+                    "value": 7.7
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 8.8
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "Seele",
+            "lock": false,
+            "_id": "relic_15"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_7"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_13"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Lightning DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "Seele",
+            "lock": false,
+            "_id": "relic_6"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_2"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_10"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 8.2
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 6.2
+                }
+            ],
+            "location": "Seele",
+            "lock": false,
+            "_id": "relic_25"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_22"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_16"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 49
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "Seele",
+            "lock": false,
+            "_id": "relic_26"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_18"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_17"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 81
+                },
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "Seele",
+            "lock": false,
+            "_id": "relic_27"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_19"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_20"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "CRIT DMG",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                },
+                {
+                    "key": "SPD",
+                    "value": 5
+                }
+            ],
+            "location": "Bronya",
+            "lock": false,
+            "_id": "relic_30"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_21"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_23"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 14.5
+                }
+            ],
+            "location": "Bronya",
+            "lock": false,
+            "_id": "relic_29"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_24"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_28"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 64
+                },
+                {
+                    "key": "ATK_",
+                    "value": 6.5
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "Bronya",
+            "lock": false,
+            "_id": "relic_31"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_33"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF",
+                    "value": 15
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_32"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 2
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 6.2
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 9.8
+                }
+            ],
+            "location": "Bronya",
+            "lock": false,
+            "_id": "relic_40"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_34"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_35"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Fire DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                }
+            ],
+            "location": "Asta",
+            "lock": false,
+            "_id": "relic_36"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_37"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_38"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "Effect Hit Rate",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "ATK_",
+                    "value": 6.5
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "Asta",
+            "lock": false,
+            "_id": "relic_44"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_41"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_39"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 13.4
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 6.2
+                }
+            ],
+            "location": "Asta",
+            "lock": false,
+            "_id": "relic_43"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_42"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_45"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "DEF",
+                    "value": 32
+                },
+                {
+                    "key": "DEF_",
+                    "value": 7.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "Asta",
+            "lock": false,
+            "_id": "relic_48"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_46"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_47"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 15
+                },
+                {
+                    "key": "SPD",
+                    "value": 3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 9.3
+                }
+            ],
+            "location": "Asta",
+            "lock": false,
+            "_id": "relic_53"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_49"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_50"
+        },
+        {
+            "setKey": "Knight of Purity Palace",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 6.2
+                }
+            ],
+            "location": "March7th",
+            "lock": false,
+            "_id": "relic_55"
+        },
+        {
+            "setKey": "Passerby of Wandering Cloud",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_51"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_56"
+        },
+        {
+            "setKey": "Knight of Purity Palace",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "March7th",
+            "lock": false,
+            "_id": "relic_52"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Break Effect",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.5
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.0
+                }
+            ],
+            "location": "Natasha",
+            "lock": false,
+            "_id": "relic_54"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_59"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "DEF",
+                    "value": 30
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 6.5
+                }
+            ],
+            "location": "March7th",
+            "lock": false,
+            "_id": "relic_62"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 9,
+            "mainStatKey": "Break Effect",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 25
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.5
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.5
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.2
+                }
+            ],
+            "location": "Seele",
+            "lock": false,
+            "_id": "relic_61"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_60"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Energy Regeneration Rate",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                }
+            ],
+            "location": "March7th",
+            "lock": false,
+            "_id": "relic_58"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Break Effect",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.5
+                }
+            ],
+            "location": "Asta",
+            "lock": false,
+            "_id": "relic_57"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_66"
+        },
+        {
+            "setKey": "Knight of Purity Palace",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "March7th",
+            "lock": false,
+            "_id": "relic_69"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 11
+                },
+                {
+                    "key": "DEF",
+                    "value": 11
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_63"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_68"
+        },
+        {
+            "setKey": "Knight of Purity Palace",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_70"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 2.5
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_67"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_65"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_71"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 11
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_64"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_73"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF",
+                    "value": 13
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_74"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 2.9
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_72"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 15
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_76"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_78"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Energy Regeneration Rate",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_74"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_77"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Fire DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_81"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_79"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_86"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Imaginary DMG Boost",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_84"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 12
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_80"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 5,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.8
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 6.4
+                }
+            ],
+            "location": "Sushang",
+            "lock": false,
+            "_id": "relic_91"
+        },
+        {
+            "setKey": "Belobog of the Architects",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_82"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_85"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_83"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.9
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.8
+                }
+            ],
+            "location": "Clara",
+            "lock": false,
+            "_id": "relic_90"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_89"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                },
+                {
+                    "key": "SPD",
+                    "value": 2
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_87"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Quantum DMG Boost",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 3.2
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_88"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 3.2
+                }
+            ],
+            "location": "Bailu",
+            "lock": false,
+            "_id": "relic_92"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_93"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_94"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 10
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_96"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "Break Effect",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 21
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "DEF_",
+                    "value": 5.4
+                }
+            ],
+            "location": "Bailu",
+            "lock": false,
+            "_id": "relic_97"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_98"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_99"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_95"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 3.2
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.8
+                }
+            ],
+            "location": "TrailblazerPreservation",
+            "lock": false,
+            "_id": "relic_103"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_102"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_100"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Lightning DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 12
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_101"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Link Rope",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 42
+                },
+                {
+                    "key": "ATK",
+                    "value": 19
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 3.2
+                }
+            ],
+            "location": "Pela",
+            "lock": false,
+            "_id": "relic_107"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_106"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_105"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 20
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_104"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "Ice DMG Boost",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 19
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.8
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "Pela",
+            "lock": false,
+            "_id": "relic_111"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_108"
+        },
+        {
+            "setKey": "Eagle of Twilight Line",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_110"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 20
+                },
+                {
+                    "key": "ATK",
+                    "value": 12
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_109"
+        },
+        {
+            "setKey": "Inert Salsotto",
+            "slotKey": "Link Rope",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.8
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 6.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 4.3
+                }
+            ],
+            "location": "Clara",
+            "lock": false,
+            "_id": "relic_115"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_112"
+        },
+        {
+            "setKey": "Eagle of Twilight Line",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_116"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Lightning DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.5
+                },
+                {
+                    "key": "DEF_",
+                    "value": 2.9
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_112"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.8
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 6.4
+                }
+            ],
+            "location": "Clara",
+            "lock": false,
+            "_id": "relic_118"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Fire DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_117"
+        },
+        {
+            "setKey": "Eagle of Twilight Line",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_119"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Lightning DMG Boost",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 1.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_114"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 15,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 105
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 3.2
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 17.4
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 8.2
+                }
+            ],
+            "location": "Bronya",
+            "lock": true,
+            "_id": "relic_124"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_122"
+        },
+        {
+            "setKey": "Eagle of Twilight Line",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF",
+                    "value": 13
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_121"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "Effect RES_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_120"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Link Rope",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.8
+                }
+            ],
+            "location": "Bronya",
+            "lock": false,
+            "_id": "relic_127"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_129"
+        },
+        {
+            "setKey": "Firesmith of Lava-Forging",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_125"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 10
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_123"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 42
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 6.4
+                }
+            ],
+            "location": "Clara",
+            "lock": false,
+            "_id": "relic_132"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_131"
+        },
+        {
+            "setKey": "Firesmith of Lava-Forging",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_130"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "Break Effect_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_126"
+        },
+        {
+            "setKey": "Knight of Purity Palace",
+            "slotKey": "Body",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "ATK_",
+                    "value": 4.3
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "March7th",
+            "lock": false,
+            "_id": "relic_135"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_134"
+        },
+        {
+            "setKey": "Firesmith of Lava-Forging",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 2
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_133"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 10
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_128"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "Fire DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "SPD",
+                    "value": 2
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 6.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_139"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF",
+                    "value": 16
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_137"
+        },
+        {
+            "setKey": "Firesmith of Lava-Forging",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_138"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_136"
+        },
+        {
+            "setKey": "Fleet of the Ageless",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_141"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_143"
+        },
+        {
+            "setKey": "Hunter of Glacial Forest",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_144"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_140"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.8
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.9
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_151"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_147"
+        },
+        {
+            "setKey": "Hunter of Glacial Forest",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_145"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "CRIT DMG_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_142"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_150"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Quantum DMG Boost",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_149"
+        },
+        {
+            "setKey": "Hunter of Glacial Forest",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_148"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_146"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Link Rope",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "SPD",
+                    "value": 2
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_153"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_154"
+        },
+        {
+            "setKey": "Hunter of Glacial Forest",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_155"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_152"
+        },
+        {
+            "setKey": "Knight of Purity Palace",
+            "slotKey": "Head",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.8
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 6.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_159"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Fire DMG Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK",
+                    "value": 13
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_157"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_161"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Hand",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_156"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 19
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_166"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_163"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_165"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "CRIT DMG_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_158"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 21
+                },
+                {
+                    "key": "HP_",
+                    "value": 4.3
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_167"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_160"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_164"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_162"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 5,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 4.3
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 6.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_169"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_168"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_170"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 12
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_171"
+        },
+        {
+            "setKey": "Guard of Wuthering Snow",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.4
+                }
+            ],
+            "location": "TrailblazerPreservation",
+            "lock": false,
+            "_id": "relic_174"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_172"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_176"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 11
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_173"
+        },
+        {
+            "setKey": "Guard of Wuthering Snow",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "TrailblazerPreservation",
+            "lock": false,
+            "_id": "relic_182"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_178"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_177"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_179"
+        },
+        {
+            "setKey": "Guard of Wuthering Snow",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                }
+            ],
+            "location": "TrailblazerPreservation",
+            "lock": false,
+            "_id": "relic_183"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_181"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_180"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_175"
+        },
+        {
+            "setKey": "Guard of Wuthering Snow",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "TrailblazerPreservation",
+            "lock": false,
+            "_id": "relic_187"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK",
+                    "value": 15
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_185"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_186"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "SPD",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 12
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_184"
+        },
+        {
+            "setKey": "Pan-Galactic Commercial Enterprise",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "TrailblazerPreservation",
+            "lock": false,
+            "_id": "relic_192"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_188"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_191"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_189"
+        },
+        {
+            "setKey": "Passerby of Wandering Cloud",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 6.5
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "Bailu",
+            "lock": false,
+            "_id": "relic_197"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_195"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_194"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_190"
+        },
+        {
+            "setKey": "Passerby of Wandering Cloud",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK_",
+                    "value": 6.2
+                },
+                {
+                    "key": "DEF_",
+                    "value": 12.9
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "Bailu",
+            "lock": false,
+            "_id": "relic_199"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF",
+                    "value": 16
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_196"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.4
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_198"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_193"
+        },
+        {
+            "setKey": "Passerby of Wandering Cloud",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 5.8
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 13.4
+                }
+            ],
+            "location": "Bailu",
+            "lock": false,
+            "_id": "relic_206"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 15
+                },
+                {
+                    "key": "DEF",
+                    "value": 13
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_200"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_203"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 1.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_201"
+        },
+        {
+            "setKey": "Passerby of Wandering Cloud",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "Bailu",
+            "lock": false,
+            "_id": "relic_207"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_204"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_204"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 22
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_202"
+        },
+        {
+            "setKey": "Celestial Differentiator",
+            "slotKey": "Link Rope",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Energy Regeneration Rate",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK",
+                    "value": 13
+                }
+            ],
+            "location": "Sushang",
+            "lock": false,
+            "_id": "relic_210"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_211"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "SPD",
+                    "value": 2
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_209"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 11
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_208"
+        },
+        {
+            "setKey": "Champion of Streetwise Boxing",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 5.8
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "Sushang",
+            "lock": false,
+            "_id": "relic_217"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Effect Hit Rate",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 15
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_216"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Effect Hit Rate",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "DEF",
+                    "value": 15
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_214"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 3,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "CRIT DMG_",
+                    "value": 3.8
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_212"
+        },
+        {
+            "setKey": "Champion of Streetwise Boxing",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 30
+                },
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "ATK_",
+                    "value": 6.5
+                },
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                }
+            ],
+            "location": "Sushang",
+            "lock": false,
+            "_id": "relic_220"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.6
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_219"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 15
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_218"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 2,
+            "level": 0,
+            "mainStatKey": "Physical DMG Boost",
+            "subStats": [],
+            "location": "",
+            "lock": false,
+            "_id": "relic_213"
+        },
+        {
+            "setKey": "Champion of Streetwise Boxing",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "CRIT Rate",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 32
+                },
+                {
+                    "key": "DEF_",
+                    "value": 7.3
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.4
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 6.5
+                }
+            ],
+            "location": "Sushang",
+            "lock": false,
+            "_id": "relic_225"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_221"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_222"
+        },
+        {
+            "setKey": "Space Sealing Station",
+            "slotKey": "Planar Sphere",
+            "rarity": 2,
+            "level": 0,
+            "mainStatKey": "Wind DMG Boost",
+            "subStats": [],
+            "location": "",
+            "lock": false,
+            "_id": "relic_215"
+        },
+        {
+            "setKey": "Champion of Streetwise Boxing",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 2.7
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "Sushang",
+            "lock": false,
+            "_id": "relic_228"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.0
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_224"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_223"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "CRIT Rate",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "ATK_",
+                    "value": 9.6
+                }
+            ],
+            "location": "Clara",
+            "lock": false,
+            "_id": "relic_231"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 15
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_226"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_226"
+        },
+        {
+            "setKey": "Inert Salsotto",
+            "slotKey": "Planar Sphere",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "Effect Hit Rate_",
+                    "value": 3.1
+                }
+            ],
+            "location": "Clara",
+            "lock": false,
+            "_id": "relic_229"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 3.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_230"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 16
+                },
+                {
+                    "key": "DEF",
+                    "value": 13
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_232"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "CRIT Rate",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 49
+                },
+                {
+                    "key": "DEF",
+                    "value": 30
+                },
+                {
+                    "key": "ATK_",
+                    "value": 2.7
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "Pela",
+            "lock": false,
+            "_id": "relic_236"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_234"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 3.1
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.4
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_233"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 9,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 5.8
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.6
+                }
+            ],
+            "location": "Pela",
+            "lock": false,
+            "_id": "relic_239"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "SPD",
+                    "value": 2
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_235"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.6
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_237"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 12,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "DEF_",
+                    "value": 10.3
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                },
+                {
+                    "key": "Effect RES_",
+                    "value": 2.7
+                }
+            ],
+            "location": "Pela",
+            "lock": false,
+            "_id": "relic_244"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "CRIT DMG",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "ATK",
+                    "value": 15
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_238"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 33
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.5
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_240"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Feet",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK",
+                    "value": 13
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "Pela",
+            "lock": false,
+            "_id": "relic_243"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_242"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "CRIT Rate_",
+                    "value": 2.3
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_241"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Outgoing Healing Boost",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 15
+                },
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 5.1
+                }
+            ],
+            "location": "Natasha",
+            "lock": false,
+            "_id": "relic_249"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_245"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "SPD",
+                    "value": 1
+                },
+                {
+                    "key": "Break Effect_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_246"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Head",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "HP",
+            "subStats": [
+                {
+                    "key": "DEF",
+                    "value": 13
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "SPD",
+                    "value": 1
+                }
+            ],
+            "location": "Natasha",
+            "lock": false,
+            "_id": "relic_248"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "DEF",
+            "subStats": [
+                {
+                    "key": "HP",
+                    "value": 27
+                },
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_247"
+        },
+        {
+            "setKey": "Musketeer of Wild Wheat",
+            "slotKey": "Hand",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "ATK",
+            "subStats": [
+                {
+                    "key": "ATK_",
+                    "value": 3.1
+                },
+                {
+                    "key": "DEF_",
+                    "value": 3.8
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 4.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_251"
+        },
+        {
+            "setKey": "Thief of Shooting Meteor",
+            "slotKey": "Body",
+            "rarity": 4,
+            "level": 0,
+            "mainStatKey": "Effect Hit Rate",
+            "subStats": [
+                {
+                    "key": "HP_",
+                    "value": 2.7
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.1
+                }
+            ],
+            "location": "",
+            "lock": false,
+            "_id": "relic_250"
+        }
+    ],
+    "characters": [
+        {
+            "key": "Arlan",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Pela",
+            "level": 50,
+            "ascension": 4,
+            "eidelon": 4,
+            "skills": {
+                "basic": 2,
+                "skill": 3,
+                "ult": 4,
+                "talent": 4
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Serval",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 2,
+                "ult": 2,
+                "talent": 2
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Seele",
+            "level": 59,
+            "ascension": 4,
+            "eidelon": 0,
+            "skills": {
+                "basic": 4,
+                "skill": 6,
+                "ult": 6,
+                "talent": 6
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": true,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": true,
+                "stat_4": true,
+                "stat_5": true,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Herta",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 3,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Natasha",
+            "level": 40,
+            "ascension": 3,
+            "eidelon": 4,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Bailu",
+            "level": 59,
+            "ascension": 4,
+            "eidelon": 0,
+            "skills": {
+                "basic": 2,
+                "skill": 4,
+                "ult": 4,
+                "talent": 4
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Dan Heng",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "March 7th",
+            "level": 50,
+            "ascension": 4,
+            "eidelon": 5,
+            "skills": {
+                "basic": 1,
+                "skill": 4,
+                "ult": 2,
+                "talent": 2
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Bronya",
+            "level": 59,
+            "ascension": 4,
+            "eidelon": 0,
+            "skills": {
+                "basic": 3,
+                "skill": 4,
+                "ult": 4,
+                "talent": 4
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": true,
+                "stat_4": true,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Qingque",
+            "level": 40,
+            "ascension": 3,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Sushang",
+            "level": 59,
+            "ascension": 4,
+            "eidelon": 4,
+            "skills": {
+                "basic": 4,
+                "skill": 6,
+                "ult": 6,
+                "talent": 6
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": true,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": true,
+                "stat_4": true,
+                "stat_5": true,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Hook",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Asta",
+            "level": 50,
+            "ascension": 4,
+            "eidelon": 2,
+            "skills": {
+                "basic": 2,
+                "skill": 4,
+                "ult": 4,
+                "talent": 4
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": false,
+                "stat_4": true,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Clara",
+            "level": 59,
+            "ascension": 4,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 2,
+                "ult": 2,
+                "talent": 2
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Tingyun",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 2,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "TrailblazerPreservation",
+            "level": 50,
+            "ascension": 4,
+            "eidelon": 4,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": false,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        }
+    ]
+}

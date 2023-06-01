@@ -1,7 +1,6 @@
-from utils.game_data import GameData
+from utils.game_data_helpers import get_closest_rarity, get_closest_relic_name, get_relic_meta_data, get_closest_relic_sub_stat, get_equipped_character, get_closest_relic_main_stat
 import numpy as np
-import pytesseract
-from file_helpers import resource_path
+from helper_functions import resource_path, image_to_string
 from PIL import Image
 from pyautogui import locate
 
@@ -31,6 +30,7 @@ class RelicStrategy:
         self._lock_icon = Image.open(resource_path("images\\lock.png"))
         self._screenshot = screenshot
         self._logger = logger
+        self._curr_id = 0
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_relic_stats()
@@ -54,12 +54,16 @@ class RelicStrategy:
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
             if not val or isinstance(val, Image.Image):
-                if filter_key == "rarity":
+                if key == "min_rarity":
+                    # Trivial case
+                    if filters[key] <= 2:
+                        filter_results[key] = True
+                        continue
                     val = stats_dict["rarity"] = self.extract_stats_data(
                         filter_key, stats_dict["rarity"])
-                elif filter_key == "level":
+                elif key == "min_level":
                     # Trivial case
-                    if filters["min_level"] <= 0:
+                    if filters[key] <= 0:
                         filter_results[key] = True
                         continue
                     val = stats_dict["level"] = self.extract_stats_data(
@@ -76,42 +80,31 @@ class RelicStrategy:
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key, img, _id=None):
+    def extract_stats_data(self, key, img):
         if key == "name":
-            return pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=\"ABCDEFGHIJKLMNOPQRSTUVWXYZ \'abcedfghijklmnopqrstuvwxyz-\" --psm 6").strip().replace("\n", " ")
+            return image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6)
         elif key == "level":
-            level = pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=0123456789 --psm 7").strip()
-
-            if not level:
-                level = self._screenshot.preprocess_img(img)
-                level = pytesseract.image_to_string(
-                    level, config="-c tessedit_char_whitelist=0123456789 --psm 7").strip()
-
+            level = image_to_string(img, "0123456789", 7)
             if not level:
                 self._logger.emit(
-                    f"Relic ID {_id}: Failed to extract level. Setting to 0."
+                    f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
                 )
                 level = 0
-
             return int(level)
         elif key == "mainStatKey":
-            return pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist='ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz' --psm 7").strip()
+            return image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7)
         elif key == "equipped":
-            return pytesseract.image_to_string(
-                img, config="-c tessedit_char_whitelist=Equipped --psm 7").strip()
+            return image_to_string(img, "Equiped", 7)
         elif key == "rarity":
             # Get rarity by color matching
             rarity_sample = np.array(img)
             rarity_sample = rarity_sample[int(
                 rarity_sample.shape[0]/2)][int(rarity_sample.shape[1]/2)]
-            return GameData.get_closest_rarity(rarity_sample)
+            return get_closest_rarity(rarity_sample)
         else:
             return img
 
-    def parse(self, stats_dict, _id, interrupt, update_progress):
+    def parse(self, stats_dict, interrupt, update_progress):
         if interrupt.is_set():
             return
 
@@ -127,52 +120,35 @@ class RelicStrategy:
         equipped = stats_dict["equipped"]
 
         # Fix OCR errors
-        name, _ = GameData.get_closest_relic_name(name)
-        mainStatKey, _ = GameData.get_closest_relic_main_stat(mainStatKey)
+        name, _ = get_closest_relic_name(name)
+        mainStatKey, _ = get_closest_relic_main_stat(mainStatKey)
 
         # Parse substats
         subStats = []
         for i in range(1, 5):
             key = stats_dict["subStatKey_" + str(i)]
-            val = stats_dict["subStatVal_" + str(i)]
 
-            key = pytesseract.image_to_string(
-                key, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7').strip()
-            val = pytesseract.image_to_string(
-                val, config='-c tessedit_char_whitelist=0123456789.% --psm 7').strip()
-
+            key = image_to_string(
+                key, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7)
             if not key:
-                key = self._screenshot.preprocess_img(
-                    stats_dict["subStatKey_" + str(i)])
-                key = pytesseract.image_to_string(
-                    key, config='-c tessedit_char_whitelist=\'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz\' --psm 7').strip()
-
-            if not key:
-                self._logger.emit(
-                    f"Relic ID {_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
+                # self._logger.emit(
+                #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
                 break
-
-            key, min_dist = GameData.get_closest_relic_sub_stat(key)
+            key, min_dist = get_closest_relic_sub_stat(key)
             if min_dist > 5:
                 break
 
+            val_img = stats_dict["subStatVal_" + str(i)]
+            val = image_to_string(val_img, "0123456789.%", 7)
             if not val:
-                val = self._screenshot.preprocess_img(
-                    stats_dict["subStatVal_" + str(i)])
-                val = pytesseract.image_to_string(
-                    val, config='-c tessedit_char_whitelist=0123456789.% --psm 7')
-
-            if not val:
-                self._logger.emit(
-                    f"Relic ID {_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
+                # self._logger.emit(
+                #     f"Relic ID {self._curr_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
                 break
 
             if val[-1] == '%':
                 if '.' not in val:
-                    val = self._screenshot.preprocess_img(
-                        stats_dict["subStatVal_" + str(i)])
-                    val = pytesseract.image_to_string(
-                        val, config='-c tessedit_char_whitelist=0123456789.% --psm 7').strip()
+                    val = image_to_string(
+                        val_img, "0123456789.%", 7, True)
                 val = float(val[:-1])
                 key += '_'
             else:
@@ -185,7 +161,7 @@ class RelicStrategy:
                 }
             )
 
-        metadata = GameData.get_relic_meta_data(name)
+        metadata = get_relic_meta_data(name)
         setKey = metadata["setKey"]
         slotKey = metadata["slotKey"]
 
@@ -201,7 +177,7 @@ class RelicStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = GameData.get_equipped_character(
+            location = get_equipped_character(
                 equipped_avatar, resource_path("images\\avatars\\"))
 
         result = {
@@ -213,9 +189,10 @@ class RelicStrategy:
             "subStats": subStats,
             "location": location,
             "lock": lock,
-            "id": _id
+            "_id": f"relic_{self._curr_id}"
         }
 
         update_progress.emit(101)
+        self._curr_id += 1
 
         return result

@@ -1,8 +1,6 @@
 # Honkai: Star Rail - Data Scanner
 Easily export light cones, relics, and character data from Honkai: Star Rail to JSON format using OCR.
 
-## (NOTE: Character export is still under development. Currently, only light cone and relic data can be exported.)
-
 ## Installation
 If you haven't already, download and install [Microsoft Visual C++ Redistributable for Visual Studio 2015-2022](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) (x86 or x64 depending on system).
 
@@ -12,7 +10,7 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 1. Set in-game resolution to one that has an aspect ratio of 16:9 (e.g. 1920x1080, 1280x720).
     <!-- - Changing off from an ultra-wide resolution requires a game restart to reset the UI layout. -->
     <!-- ^^ wait... is this a thing in Star Rail? I know it was for Genshin -->
-2. **In Star Rail, look away from any bright colours.** The inventory screen is *translucent* and bright colours can bleed through to make the text harder to accurately detect and recognize. Looking towards the ground usually works in most cases, as long as the right side of the screen is relatively dark. (Double-check by opening the inventory page and see if the item info on the right contrasts well with the background.) You can skip this step if you're only scanning characters.
+2. **In Star Rail, look away from any bright colours.** *Yes, really.* The inventory screen is translucent and bright colours can bleed through to make the text harder to accurately detect and recognize. Looking towards the ground usually works in most cases, as long as the right side of the screen is relatively dark. (Double-check by opening the inventory page and see if the item info on the right contrasts well with the background.) You can skip this step if you're only scanning characters.
 3. Open the cellphone menu (ESC menu).
 4. Configure the necessary [scanner settings](#scanner-settings-and-configurations) in HSR Scanner.
 5. Start the scan.
@@ -21,11 +19,10 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
 ## Scanner settings and configurations
-HSR Scanner assumes that the inventory and character key bindings are unchanged ("b" and "c", respectively). If you have modified these bindings, please set them appropriately in the "Configure" tab of HSR Scanner.
 
 HSR Scanner has the following scan options:
 
-- Select whether to scan light cones or relics.
+- Select whether to scan light cones, relics, and/or characters.
 - Set output location for the JSON file.
 - Filter light cones and relics based on a minimum rarity or level threshhold.
 
@@ -34,30 +31,33 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 ### Notes
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
-- The `id` value is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
+- The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
+- For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
+    - In the case of ties, namely two stat bonuses *X* and *Y* that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus *X* connects to `stat_2` and stat bonus *Y* connects to `stat_1`, then *X* would be `stat_3` and *Y* would be `stat_4`.
+        - If *X* and *Y* both connect to the same `stat_#` (only found in Erudition), then visually assign from top to bottom.
 - The exact string values can be found in [game_data.py](src/utils/game_data.py).
 
-Current output sample:
+Current output sample: 
 ```
 {
     "light_cones": [
         {
-            "name": "Cruising in the Stellar Sea",
+            "key": "Cruising in the Stellar Sea",
             "level": 60,
             "ascension": 4,
             "superimposition": 2,
-            "location": "seele",
+            "location": "Seele",
             "lock": true,
-            "id": 0
+            "_id": "light_cone_0"
         },
         {
-            "name": "Meshing Cogs",
+            "key": "Meshing Cogs",
             "level": 1,
             "ascension": 0,
             "superimposition": 5,
             "location": "",
             "lock": true,
-            "id": 1
+            "_id": "light_cone_1"
         }
     ],
     "relics": [
@@ -85,9 +85,9 @@ Current output sample:
                     "value": 8.2
                 }
             ],
-            "location": "bronya",
+            "location": "Bronya",
             "lock": true,
-            "id": 2
+            "_id": "relic_0" 
         },
         {
             "setKey": "Thief of Shooting Meteor",
@@ -107,11 +107,68 @@ Current output sample:
             ],
             "location": "",
             "lock": false,
-            "id": 3
+            "_id": "relic_1"
         }
-    ]
+    ],
+    "characters": [
+        {
+            "key": "Seele",
+            "level": 59,
+            "ascension": 4,
+            "eidelon": 0,
+            "skills": {
+                "basic": 4,
+                "skill": 6,
+                "ult": 6,
+                "talent": 6
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": true,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": true,
+                "stat_4": true,
+                "stat_5": true,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        },
+        {
+            "key": "Bronya",
+            "level": 20,
+            "ascension": 1,
+            "eidelon": 0,
+            "skills": {
+                "basic": 1,
+                "skill": 1,
+                "ult": 1,
+                "talent": 1
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": true,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
+                "stat_7": false,
+                "stat_8": false,
+                "stat_9": false,
+                "stat_10": false
+            }
+        }
+    ],
 }
 ```
+Check [sample_output.json](sample_output.json) for a full-sized, unfiltered example.
 
 ## Dev notes
-- **Expect data inaccuracies.** This app relies on reading text from images captured during the scan process, as opposed to reading off some save file. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions).
+- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors, especially given the variability of relic substats and lack of a model optimized for Star Rail. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible substat value is known and can be checked against.
