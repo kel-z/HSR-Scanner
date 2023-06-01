@@ -260,19 +260,20 @@ def get_equipped_character(equipped_avatar_img, img_path_prefix):
     max_conf = 0
     character = ""
 
-    FILE_NAMES = [x.replace(" ", "") for x in CHARACTER_META_DATA.keys()]
-    if "TrailblazerDestruction" in FILE_NAMES:
-        FILE_NAMES.remove("TrailblazerDestruction")
-        FILE_NAMES.append("TrailblazerDestruction#M")
-        FILE_NAMES.append("TrailblazerDestruction#F")
-    if "TrailblazerPreservation" in FILE_NAMES:
-        FILE_NAMES.remove("TrailblazerPreservation")
-        FILE_NAMES.append("TrailblazerPreservation#M")
-        FILE_NAMES.append("TrailblazerPreservation#F")
+    CHARACTER_KEYS = list(CHARACTER_META_DATA.keys())
+    if "TrailblazerDestruction" in CHARACTER_KEYS:
+        CHARACTER_KEYS.remove("TrailblazerDestruction")
+        CHARACTER_KEYS.append("TrailblazerDestruction#M")
+        CHARACTER_KEYS.append("TrailblazerDestruction#F")
+    if "TrailblazerPreservation" in CHARACTER_KEYS:
+        CHARACTER_KEYS.remove("TrailblazerPreservation")
+        CHARACTER_KEYS.append("TrailblazerPreservation#M")
+        CHARACTER_KEYS.append("TrailblazerPreservation#F")
 
     # Get highest confidence
-    for c in FILE_NAMES:
-        img = cv2.imread(f"{img_path_prefix}/{c}.png")
+    for c in CHARACTER_KEYS:
+        file_name = c.replace(" ", "")
+        img = cv2.imread(f"{img_path_prefix}/{file_name}.png")
         img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
         img = cv2.resize(img, (min_dim, min_dim))
 

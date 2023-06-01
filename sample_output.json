@@ -689,7 +689,7 @@
             "level": 1,
             "ascension": 0,
             "superimposition": 1,
-            "location": "DanHeng",
+            "location": "Dan Heng",
             "lock": true,
             "_id": "light_cone_78"
         },
@@ -977,7 +977,7 @@
             "level": 50,
             "ascension": 3,
             "superimposition": 5,
-            "location": "March7th",
+            "location": "March 7th",
             "lock": true,
             "_id": "light_cone_111"
         },
@@ -2472,7 +2472,7 @@
                     "value": 6.2
                 }
             ],
-            "location": "March7th",
+            "location": "March 7th",
             "lock": false,
             "_id": "relic_55"
         },
@@ -2536,7 +2536,7 @@
                     "value": 2.7
                 }
             ],
-            "location": "March7th",
+            "location": "March 7th",
             "lock": false,
             "_id": "relic_52"
         },
@@ -2608,7 +2608,7 @@
                     "value": 6.5
                 }
             ],
-            "location": "March7th",
+            "location": "March 7th",
             "lock": false,
             "_id": "relic_62"
         },
@@ -2680,7 +2680,7 @@
                     "value": 3.1
                 }
             ],
-            "location": "March7th",
+            "location": "March 7th",
             "lock": false,
             "_id": "relic_58"
         },
@@ -2744,7 +2744,7 @@
                     "value": 4.1
                 }
             ],
-            "location": "March7th",
+            "location": "March 7th",
             "lock": false,
             "_id": "relic_69"
         },
@@ -4140,7 +4140,7 @@
                     "value": 2.5
                 }
             ],
-            "location": "March7th",
+            "location": "March 7th",
             "lock": false,
             "_id": "relic_135"
         },

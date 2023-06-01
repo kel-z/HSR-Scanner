@@ -29,7 +29,7 @@ HSR Scanner has the following scan options:
 ## Output
 The output is loosely based off of Genshin's `.GOOD` export format. **Please note that the current output format is subject to change.**
 ### Notes
-- Flat substats and percentage substats are differentiated by an underscore suffix in the key.
+- Flat sub-stats and percentage sub-stats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
@@ -171,4 +171,4 @@ Current output sample:
 Check [sample_output.json](sample_output.json) for a full-sized, unfiltered example.
 
 ## Dev notes
-- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors, especially given the variability of relic substats and lack of a model optimized for Star Rail. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible substat value is known and can be checked against.
+- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors, especially given the variability of relic sub-stats and lack of a model optimized for Star Rail. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible sub-stat value is known and can be checked against.

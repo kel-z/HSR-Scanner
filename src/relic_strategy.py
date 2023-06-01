@@ -123,7 +123,7 @@ class RelicStrategy:
         name, _ = get_closest_relic_name(name)
         mainStatKey, _ = get_closest_relic_main_stat(mainStatKey)
 
-        # Parse substats
+        # Parse sub-stats
         subStats = []
         for i in range(1, 5):
             key = stats_dict["subStatKey_" + str(i)]
@@ -142,7 +142,7 @@ class RelicStrategy:
             val = image_to_string(val_img, "0123456789.%", 7)
             if not val:
                 # self._logger.emit(
-                #     f"Relic ID {self._curr_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
+                #     f"Relic ID {self._curr_id}: Found sub-stat with no value: {key}. Either it doesn't exist or the OCR failed.")
                 break
 
             if val[-1] == '%':
