@@ -68,7 +68,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread.update_progress.connect(self.increment_progress)
 
         # self._scanner_thread.result.connect(self.log)
-        self._scanner_thread.result.connect(self.receive_scan_result)
+        self._scanner_thread.result.connect(self.handle_result)
         self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result.connect(self.enable_start_scan_button)
         self._scanner_thread.result.connect(self._listener.stop)
@@ -99,7 +99,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         }
         return config
 
-    def receive_scan_result(self, data):
+    def handle_result(self, data):
         output_location = self.lineEditOutputLocation.text()
         save_to_json(data, output_location)
         self.log("Scan complete. Data saved to " + output_location)

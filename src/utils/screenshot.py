@@ -10,7 +10,8 @@ class Screenshot:
             "sort": (0.9, 0.079, 0.07, 0.033),
             "character": {
                 "count": (0.555, 0.56, 0.05, 0.035),
-                "name": (0.059, 0.0656, 0.144, 0.0314),
+                "chest": (0.3315, 0.44, 0.1245, 0.1037),
+                "name": (0.059, 0.0656, 0.16, 0.0314),
                 "level": (0.216, 0.795, 0.024, 0.034),
                 "traces": {
                     # yeah this part is quite masochistic
@@ -34,7 +35,7 @@ class Screenshot:
                             "stat_7": (0.355, 0.74, 0.011, 0.023),
                             "stat_8": (0.20, 0.605, 0.011, 0.023),
                             "stat_9": (0.227, 0.517, 0.011, 0.023),
-                            "stat_10": (0.227, 0.693, 0.011, 0.023),
+                            "stat_10": (0.227, 0.693, 0.011, 0.023)
                         }
                     },
                     "erudition": {
@@ -57,7 +58,7 @@ class Screenshot:
                             "stat_7": (0.635, 0.777, 0.011, 0.023),
                             "stat_8": (0.23, 0.515, 0.011, 0.023),
                             "stat_9": (0.23, 0.695, 0.011, 0.023),
-                            "stat_10": (0.726, 0.676, 0.011, 0.023),
+                            "stat_10": (0.726, 0.676, 0.011, 0.023)
                         }
                     },
                     "harmony": {
@@ -80,7 +81,7 @@ class Screenshot:
                             "stat_7": (0.771, 0.684, 0.011, 0.023),
                             "stat_8": (0.203, 0.605, 0.011, 0.023),
                             "stat_9": (0.231, 0.52, 0.011, 0.023),
-                            "stat_10": (0.231, 0.69, 0.011, 0.023),
+                            "stat_10": (0.231, 0.69, 0.011, 0.023)
                         }
                     },
                     "preservation": {
@@ -103,7 +104,7 @@ class Screenshot:
                             "stat_7": (0.422, 0.743, 0.011, 0.023),
                             "stat_8": (0.208, 0.605, 0.011, 0.023),
                             "stat_9": (0.231, 0.515, 0.011, 0.023),
-                            "stat_10": (0.231, 0.694, 0.011, 0.023),
+                            "stat_10": (0.231, 0.694, 0.011, 0.023)
                         }
                     },
                     "destruction": {
@@ -126,7 +127,7 @@ class Screenshot:
                             "stat_7": (0.396, 0.757, 0.011, 0.023),
                             "stat_8": (0.209, 0.605, 0.011, 0.023),
                             "stat_9": (0.232, 0.515, 0.011, 0.023),
-                            "stat_10": (0.232, 0.694, 0.011, 0.023),
+                            "stat_10": (0.232, 0.694, 0.011, 0.023)
                         }
                     },
                     "nihility": {
@@ -149,7 +150,7 @@ class Screenshot:
                             "stat_7": (0.748, 0.707, 0.011, 0.023),
                             "stat_8": (0.231, 0.515, 0.011, 0.023),
                             "stat_9": (0.231, 0.694, 0.011, 0.023),
-                            "stat_10": (0.787, 0.604, 0.011, 0.023),
+                            "stat_10": (0.787, 0.604, 0.011, 0.023)
                         }
                     },
                     "abundance": {
@@ -160,19 +161,19 @@ class Screenshot:
                             "talent": (0.462, 0.602)
                         },
                         "locks": {
-                            "ability_1": (0.685, 0.501, 0.015, 0.027),
-                            "ability_2": (0.685, 0.722, 0.015, 0.027),
+                            "ability_1": (0.685, 0.722, 0.015, 0.027),
+                            "ability_2": (0.685, 0.501, 0.015, 0.027),
                             "ability_3": (0.183, 0.611, 0.015, 0.027),
                             "stat_1": (0.782, 0.644, 0.011, 0.023),
-                            "stat_2": (0.782, 0.564, 0.011, 0.023),
-                            "stat_3": (0.595, 0.446, 0.011, 0.023),
-                            "stat_4": (0.507, 0.417, 0.011, 0.023),
-                            "stat_5": (0.414, 0.473, 0.011, 0.023),
-                            "stat_6": (0.597, 0.763, 0.011, 0.023),
-                            "stat_7": (0.507, 0.792, 0.011, 0.023),
-                            "stat_8": (0.415, 0.736, 0.011, 0.023),
-                            "stat_9": (0.238, 0.517, 0.011, 0.023),
-                            "stat_10": (0.231, 0.694, 0.011, 0.023),
+                            "stat_2": (0.597, 0.763, 0.011, 0.023),
+                            "stat_3": (0.507, 0.792, 0.011, 0.023),
+                            "stat_4": (0.415, 0.736, 0.011, 0.023),
+                            "stat_5": (0.595, 0.446, 0.011, 0.023),
+                            "stat_6": (0.507, 0.417, 0.011, 0.023),
+                            "stat_7": (0.414, 0.473, 0.011, 0.023),
+                            "stat_8": (0.238, 0.517, 0.011, 0.023),
+                            "stat_9": (0.231, 0.694, 0.011, 0.023),
+                            "stat_10": (0.782, 0.564, 0.011, 0.023)
                         }
                     }
                 },
@@ -255,6 +256,10 @@ class Screenshot:
         return self.__take_screenshot(
             *self.coords[self._aspect_ratio]["character"]["level"])
 
+    def screenshot_character(self):
+        return self.__take_screenshot(
+            *self.coords[self._aspect_ratio]["character"]["chest"])
+
     def screenshot_character_eidelons(self):
         res = []
         for c in self.coords[self._aspect_ratio]["character"]["eidelons"]:
@@ -275,10 +280,10 @@ class Screenshot:
 
     def screenshot_character_destruction_traces(self):
         return self.__screenshot_traces("destruction")
-    
+
     def screenshot_character_nihility_traces(self):
         return self.__screenshot_traces("nihility")
-    
+
     def screenshot_character_abundance_traces(self):
         return self.__screenshot_traces("abundance")
 

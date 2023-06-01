@@ -1,4 +1,4 @@
-from utils.game_data import GameData
+from utils.game_data_helpers import get_closest_light_cone_name, get_light_cone_meta_data, get_equipped_character
 from pyautogui import locate
 from PIL import Image
 from helper_functions import resource_path, image_to_string
@@ -60,9 +60,9 @@ class LightConeStrategy:
                         continue
                     stats_dict["name"] = self.extract_stats_data(
                         "name", stats_dict["name"])
-                    stats_dict["name"], _ = GameData.get_closest_light_cone_name(
+                    stats_dict["name"], _ = get_closest_light_cone_name(
                         stats_dict["name"])
-                    val = GameData.get_light_cone_meta_data(
+                    val = get_light_cone_meta_data(
                         stats_dict["name"])["rarity"]
                 elif key == "min_level":
                     # Trivial case
@@ -86,7 +86,7 @@ class LightConeStrategy:
 
     def extract_stats_data(self, key, img):
         if key == "name":
-            name, _ = GameData.get_closest_light_cone_name(
+            name, _ = get_closest_light_cone_name(
                 image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6))
             return name
         elif key == "level":
@@ -145,11 +145,11 @@ class LightConeStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = GameData.get_equipped_character(
+            location = get_equipped_character(
                 equipped_avatar, resource_path("images\\avatars\\"))
 
         result = {
-            "name": name,
+            "key": name,
             "level": int(level),
             "ascension": int(ascension),
             "superimposition": int(superimposition),

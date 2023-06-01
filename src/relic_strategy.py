@@ -1,4 +1,4 @@
-from utils.game_data import GameData
+from utils.game_data_helpers import get_closest_rarity, get_closest_relic_name, get_relic_meta_data, get_closest_relic_sub_stat, get_equipped_character, get_closest_relic_main_stat
 import numpy as np
 from helper_functions import resource_path, image_to_string
 from PIL import Image
@@ -100,7 +100,7 @@ class RelicStrategy:
             rarity_sample = np.array(img)
             rarity_sample = rarity_sample[int(
                 rarity_sample.shape[0]/2)][int(rarity_sample.shape[1]/2)]
-            return GameData.get_closest_rarity(rarity_sample)
+            return get_closest_rarity(rarity_sample)
         else:
             return img
 
@@ -120,8 +120,8 @@ class RelicStrategy:
         equipped = stats_dict["equipped"]
 
         # Fix OCR errors
-        name, _ = GameData.get_closest_relic_name(name)
-        mainStatKey, _ = GameData.get_closest_relic_main_stat(mainStatKey)
+        name, _ = get_closest_relic_name(name)
+        mainStatKey, _ = get_closest_relic_main_stat(mainStatKey)
 
         # Parse substats
         subStats = []
@@ -131,18 +131,18 @@ class RelicStrategy:
             key = image_to_string(
                 key, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7)
             if not key:
-                self._logger.emit(
-                    f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
+                # self._logger.emit(
+                #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
                 break
-            key, min_dist = GameData.get_closest_relic_sub_stat(key)
+            key, min_dist = get_closest_relic_sub_stat(key)
             if min_dist > 5:
                 break
 
             val_img = stats_dict["subStatVal_" + str(i)]
             val = image_to_string(val_img, "0123456789.%", 7)
             if not val:
-                self._logger.emit(
-                    f"Relic ID {self._curr_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
+                # self._logger.emit(
+                #     f"Relic ID {self._curr_id}: Found substat with no value: {key}. Either it doesn't exist or the OCR failed.")
                 break
 
             if val[-1] == '%':
@@ -161,7 +161,7 @@ class RelicStrategy:
                 }
             )
 
-        metadata = GameData.get_relic_meta_data(name)
+        metadata = get_relic_meta_data(name)
         setKey = metadata["setKey"]
         slotKey = metadata["slotKey"]
 
@@ -177,7 +177,7 @@ class RelicStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = GameData.get_equipped_character(
+            location = get_equipped_character(
                 equipped_avatar, resource_path("images\\avatars\\"))
 
         result = {

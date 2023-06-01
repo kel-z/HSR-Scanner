@@ -2,8 +2,10 @@ import sys
 import os
 import json
 import datetime
+import cv2
+import numpy as np
 import pytesseract
-from PIL import ImageFilter
+from PIL import ImageFilter, Image
 
 # https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
 
@@ -46,17 +48,30 @@ def preprocess_img(img):
     if img.height < 50:
         img = img.resize((img.width * 2, img.height * 2))
 
+    
     for x in range(img.width):
         for y in range(img.height):
             pixel = img.getpixel((x, y))
-            if pixel[0] > 150 and pixel[1] > 150 and pixel[2] > 150:
+            if pixel[0] > 170 and pixel[1] > 170 and pixel[2] > 170:
                 img.putpixel((x, y), (255, 255, 255))
             else:
                 img.putpixel(
-                    (x, y), (pixel[0] - 75, pixel[1] - 75, pixel[2] - 75))
+                    (x, y), (0,0,0))
+    # img = cv2.resize(np.array(img), None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 
-    img = img.convert('L')
-    img = img.filter(ImageFilter.EDGE_ENHANCE)
-    img = img.filter(ImageFilter.GaussianBlur(radius=1))
+    # img = img.convert('L')
+    img = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
+    # cv2.adaptiveThreshold(cv2.medianBlur(img, 9), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
+    # img = img.filter(ImageFilter.EDGE_ENHANCE)
+    # img = img.filter(ImageFilter.GaussianBlur(radius=1))
 
+
+    kernel = np.ones((1,1))
+    img = cv2.dilate(img, kernel, iterations=1)
+    img = cv2.erode(img, kernel, iterations=1)
+    img = cv2.GaussianBlur(img, (5,5), 0)
+    img = cv2.medianBlur(img,3)
+    
+    # return image from numpy array
+    img = Image.fromarray(img)
     return img

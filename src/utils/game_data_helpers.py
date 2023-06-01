@@ -181,6 +181,33 @@ RELIC_META_DATA = {
     "Wastelander's Powered Greaves": {"setKey": "Wastelander of Banditry Desert", "slotKey": "Feet"},
 }
 
+CHARACTER_META_DATA = {
+    "Bronya": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
+    "Seele": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "Clara": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Bailu": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "March 7th": {"e3": {"ult": 2, "basic": 1}, "e5": {"skill": 2, "talent": 2}},
+    "Dan Heng": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Arlan": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Asta": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "Herta": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Serval": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Natasha": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Pela": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Hook": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Qingque": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "Tingyun": {"e3": {"ult": 2, "basic": 1}, "e5": {"skill": 2, "talent": 2}},
+    "Sushang": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
+    "Himeko": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Welt": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Gepard": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
+    "Jing Yuan": {"e3": {"ult": 2, "basic": 1}, "e5": {"skill": 2, "talent": 2}},
+    "Yanqing": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Sampo": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "TrailblazerDestruction": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "TrailblazerPreservation": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+}
+
 RELIC_MAIN_STATS = {
     "SPD",
     "HP",
@@ -213,115 +240,91 @@ RELIC_SUB_STATS = {
     "Break Effect",
 }
 
-# Uncomment when avatars are added
-# I don't have them yet so I can't get their equipped icon :(
-CHARACTER_NAMES = {
-    "arlan",
-    "asta",
-    "bailu",
-    "bronya",
-    "clara",
-    "danheng",
-    "gepard",           # ty jack
-    "herta",
-    "himeko",           # ty james
-    "hook",
-    "jingyuan",         # ty william
-    # "kafka",
-    # "luocha",
-    "mar7th",
-    "natasha",
-    "pela",
-    "qingque",
-    "sampo",            # ty william
-    "seele",
-    "serval",
-    # "silverwolf",
-    "sushang",
-    "tingyun",
-    "playergirl1",
-    "playerboy1",       # ty jack
-    "playergirl2",
-    "playerboy2",       # ty valdi
-    "welt",             # ty valdi
-    "yanqing",          # ty william
-    # "yukong",
-}
+
+def get_relic_meta_data(name):
+    return RELIC_META_DATA[name]
 
 
-class GameData:
-
-    @staticmethod
-    def get_relic_meta_data(name):
-        return RELIC_META_DATA[name]
-
-    @staticmethod
-    def get_light_cone_meta_data(name):
-        return LIGHT_CONE_META_DATA[name]
-
-    @staticmethod
-    def get_character_names():
-        return CHARACTER_NAMES
-
-    @staticmethod
-    def get_equipped_character(equipped_avatar_img, img_path_prefix):
-        equipped_avatar_img = np.array(equipped_avatar_img)
-        min_dim = int(min(equipped_avatar_img.shape[:2]))
-
-        max_conf = 0
-        character = ""
-
-        # Get highest confidence
-        for c in CHARACTER_NAMES:
-            img = cv2.imread(f"{img_path_prefix}/{c}.png")
-            img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
-            img = cv2.resize(img, (min_dim, min_dim))
-
-            # Circle mask
-            mask = np.zeros(img.shape[:2], dtype="uint8")
-            (h, w) = img.shape[:2]
-            cv2.circle(mask, (int(w / 2), int(h / 2)),
-                       int(min_dim / 2), 255, -1)
-            img = cv2.bitwise_and(img, img, mask=mask)
-
-            # Get confidence
-            conf = cv2.matchTemplate(
-                equipped_avatar_img, img, cv2.TM_CCOEFF_NORMED).max()
-            if conf > max_conf:
-                max_conf = conf
-                character = c
-
-        return character
-
-    @staticmethod
-    def get_closest_relic_name(name):
-        return get_closest_match(name, RELIC_META_DATA)
-
-    @staticmethod
-    def get_closest_light_cone_name(name):
-        return get_closest_match(name, LIGHT_CONE_META_DATA)
-
-    @staticmethod
-    def get_closest_relic_sub_stat(name):
-        return get_closest_match(name, RELIC_SUB_STATS)
-
-    @staticmethod
-    def get_closest_relic_main_stat(name):
-        return get_closest_match(name, RELIC_MAIN_STATS)
-
-    @staticmethod
-    def get_closest_rarity(pixel):
-        # where i + 1 is the rarity
-        colors = [[94, 97, 111], [74, 100, 121], [
-            61, 90, 145], [101, 92, 142], [158, 109, 95]]
-
-        colors = np.array(colors)
-        distances = np.sqrt(np.sum((colors - pixel)**2, axis=1))
-
-        return int(np.argmin(distances)) + 1
+def get_light_cone_meta_data(name):
+    return LIGHT_CONE_META_DATA[name]
 
 
-def get_closest_match(name, targets):
+def get_character_meta_data(name):
+    return CHARACTER_META_DATA[name]
+
+
+def get_equipped_character(equipped_avatar_img, img_path_prefix):
+    equipped_avatar_img = np.array(equipped_avatar_img)
+    min_dim = int(min(equipped_avatar_img.shape[:2]))
+
+    max_conf = 0
+    character = ""
+
+    FILE_NAMES = [x.replace(" ", "") for x in CHARACTER_META_DATA.keys()]
+    if "TrailblazerDestruction" in FILE_NAMES:
+        FILE_NAMES.remove("TrailblazerDestruction")
+        FILE_NAMES.append("TrailblazerDestruction#M")
+        FILE_NAMES.append("TrailblazerDestruction#F")
+    if "TrailblazerPreservation" in FILE_NAMES:
+        FILE_NAMES.remove("TrailblazerPreservation")
+        FILE_NAMES.append("TrailblazerPreservation#M")
+        FILE_NAMES.append("TrailblazerPreservation#F")
+
+    # Get highest confidence
+    for c in FILE_NAMES:
+        img = cv2.imread(f"{img_path_prefix}/{c}.png")
+        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+        img = cv2.resize(img, (min_dim, min_dim))
+
+        # Circle mask
+        mask = np.zeros(img.shape[:2], dtype="uint8")
+        (h, w) = img.shape[:2]
+        cv2.circle(mask, (int(w / 2), int(h / 2)),
+                   int(min_dim / 2), 255, -1)
+        img = cv2.bitwise_and(img, img, mask=mask)
+
+        # Get confidence
+        conf = cv2.matchTemplate(
+            equipped_avatar_img, img, cv2.TM_CCOEFF_NORMED).max()
+        if conf > max_conf:
+            max_conf = conf
+            character = c
+
+    return character.split("#")[0]
+
+
+def get_closest_relic_name(name):
+    return __get_closest_match(name, RELIC_META_DATA)
+
+
+def get_closest_light_cone_name(name):
+    return __get_closest_match(name, LIGHT_CONE_META_DATA)
+
+
+def get_closest_relic_sub_stat(name):
+    return __get_closest_match(name, RELIC_SUB_STATS)
+
+
+def get_closest_relic_main_stat(name):
+    return __get_closest_match(name, RELIC_MAIN_STATS)
+
+
+def get_closest_character_name(name):
+    return __get_closest_match(name, CHARACTER_META_DATA)
+
+
+def get_closest_rarity(pixel):
+    # where i + 1 is the rarity
+    colors = [[94, 97, 111], [74, 100, 121], [
+        61, 90, 145], [101, 92, 142], [158, 109, 95]]
+
+    colors = np.array(colors)
+    distances = np.sqrt(np.sum((colors - pixel)**2, axis=1))
+
+    return int(np.argmin(distances)) + 1
+
+
+def __get_closest_match(name, targets):
     if not name:
         return name, 100
 
