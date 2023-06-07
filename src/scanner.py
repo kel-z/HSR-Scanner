@@ -205,8 +205,7 @@ class HSRScanner:
 
         try:
             character_count, _ = character_count.split("/")
-            # +1 for the player character
-            character_count = int(character_count) + 1
+            character_count = int(character_count)
         except ValueError:
             raise ValueError("Failed to parse character count." +
                              (f" Got \"{character_count}\" instead." if character_count else "") +
@@ -236,7 +235,7 @@ class HSRScanner:
                 return tasks
 
             self._nav.move_cursor_to(x, y)
-            time.sleep(0.1)
+            time.sleep(0.2)
             self._nav.click()
             time.sleep(1)
 
@@ -353,6 +352,7 @@ class HSRScanner:
 
             character_count -= 1
 
+        time.sleep(1)
         self._nav.key_press(Key.esc)
         time.sleep(1)
         self._nav.key_press(Key.esc)

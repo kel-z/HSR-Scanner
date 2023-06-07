@@ -3,17 +3,18 @@ import numpy as np
 import cv2
 
 # From: https://honkai-star-rail.fandom.com/wiki/Light_Cone/List
-#   res = []
-#   Array.from($('tbody')[1].children).forEach(x => {res.push('"'+x.children[1].children[0].title+'": {' +
-# 	    '"rarity": ' + x.children[2].innerText.split(' ').length
-#   +'}')})
-#   res.join(',\n')
+# res = []
+# Array.from($('tbody')[0].children).forEach(x => {res.push('"'+x.children[0].innerText.trim() +'": {' +
+#     '"rarity": ' + x.children[1].children[0].title.split(" ")[0]
+# +'}')})
+# res.join(',\n')
 LIGHT_CONE_META_DATA = {
     "A Secret Vow": {"rarity": 4},
     "Adversarial": {"rarity": 3},
     "Amber": {"rarity": 3},
     "Arrows": {"rarity": 3},
     "Before Dawn": {"rarity": 5},
+    "Before the Tutorial Mission Starts": {"rarity": 4},
     "But the Battle Isn't Over": {"rarity": 5},
     "Carve the Moon, Weave the Clouds": {"rarity": 4},
     "Chorus": {"rarity": 3},
@@ -206,6 +207,7 @@ CHARACTER_META_DATA = {
     "Sampo": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
     "TrailblazerDestruction": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
     "TrailblazerPreservation": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "Silver Wolf": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
 }
 
 RELIC_MAIN_STATS = {

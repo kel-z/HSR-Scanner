@@ -15,14 +15,14 @@ class RelicStrategy:
                 "Rarity": (0.12, 0.7),
                 "Lv": (0.12, 0.77),
             },
-            "row_start_top": (0.1, 0.25),
-            "row_start_bottom": (0.1, 0.77),
-            "scroll_start_y": 0.85,
-            "scroll_end_y": 0.186,
-            "offset_x": 0.075,
-            "offset_y": 0.157,
+            "row_start_top": (0.096875, 0.242),
+            "row_start_bottom": (0.096875, 0.776),
+            "scroll_start_y": 0.7944,
+            "scroll_end_y": 0.214,
+            "offset_x": 0.065,
+            "offset_y": 0.13796,
             "rows": 4,
-            "cols": 8
+            "cols": 9
         }
     }
 

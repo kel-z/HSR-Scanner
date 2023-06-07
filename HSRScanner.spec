@@ -48,6 +48,7 @@ a.datas += [('images\\avatars\\Qingque.png','src\\images\\avatars\\Qingque.png',
 a.datas += [('images\\avatars\\Sampo.png','src\\images\\avatars\\Sampo.png', "DATA")]
 a.datas += [('images\\avatars\\Seele.png','src\\images\\avatars\\Seele.png', "DATA")]
 a.datas += [('images\\avatars\\Serval.png','src\\images\\avatars\\Serval.png', "DATA")]
+a.datas += [('images\\avatars\\SilverWolf.png','src\\images\\avatars\\SilverWolf.png', "DATA")]
 a.datas += [('images\\avatars\\Sushang.png','src\\images\\avatars\\Sushang.png', "DATA")]
 a.datas += [('images\\avatars\\Tingyun.png','src\\images\\avatars\\Tingyun.png', "DATA")]
 a.datas += [('images\\avatars\\Welt.png','src\\images\\avatars\\Welt.png', "DATA")]
