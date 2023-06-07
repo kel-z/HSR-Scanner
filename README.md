@@ -35,7 +35,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
     - In the case of ties, namely two stat bonuses *X* and *Y* that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus *X* connects to `stat_2` and stat bonus *Y* connects to `stat_1`, then *X* would be `stat_3` and *Y* would be `stat_4`.
         - If *X* and *Y* both connect to the same `stat_#` (only found in Erudition), then visually assign from top to bottom.
-- The exact string values can be found in [game_data.py](src/utils/game_data.py).
+- The exact string values used can be found [here](src/utils/game_data_helpers.py).
 
 Current output sample: 
 ```
