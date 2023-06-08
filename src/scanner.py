@@ -92,7 +92,7 @@ class HSRScanner:
         quantity = image_to_string(quantity, "0123456789/", 7)
 
         try:
-            quantity_remaining = int(quantity.split("/")[0])
+            quantity = quantity_remaining = int(quantity.split("/")[0])
         except ValueError:
             raise ValueError("Failed to parse quantity." +
                              (f" Got \"{quantity}\" instead." if quantity else "") +
@@ -116,7 +116,7 @@ class HSRScanner:
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
         while quantity_remaining > 0:
-            if quantity_remaining <= scanned_per_scroll:
+            if quantity_remaining <= scanned_per_scroll and not quantity <= scanned_per_scroll:
                 x, y = nav_data["row_start_bottom"]
                 start_row = quantity_remaining // (nav_data["cols"] + 1)
                 y -= start_row * nav_data["offset_y"]
@@ -315,4 +315,3 @@ class HSRScanner:
         time.sleep(1)
         self._nav.key_press(Key.esc)
         return tasks
-
