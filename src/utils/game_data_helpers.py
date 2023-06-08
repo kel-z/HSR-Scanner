@@ -240,6 +240,18 @@ RELIC_SUB_STATS = {
     "Break Effect",
 }
 
+CHARACTER_KEYS = list(CHARACTER_META_DATA.keys())
+if "TrailblazerDestruction" in CHARACTER_KEYS:
+    CHARACTER_KEYS.remove("TrailblazerDestruction")
+    CHARACTER_KEYS.append("TrailblazerDestruction#M")
+    CHARACTER_KEYS.append("TrailblazerDestruction#F")
+if "TrailblazerPreservation" in CHARACTER_KEYS:
+    CHARACTER_KEYS.remove("TrailblazerPreservation")
+    CHARACTER_KEYS.append("TrailblazerPreservation#M")
+    CHARACTER_KEYS.append("TrailblazerPreservation#F")
+
+EQUIPPED_ICONS = {}
+
 
 def get_relic_meta_data(name):
     return RELIC_META_DATA[name]
@@ -255,38 +267,32 @@ def get_character_meta_data(name):
 
 def get_equipped_character(equipped_avatar_img, img_path_prefix):
     equipped_avatar_img = np.array(equipped_avatar_img)
-    min_dim = int(min(equipped_avatar_img.shape[:2]))
 
     max_conf = 0
     character = ""
 
-    CHARACTER_KEYS = list(CHARACTER_META_DATA.keys())
-    if "TrailblazerDestruction" in CHARACTER_KEYS:
-        CHARACTER_KEYS.remove("TrailblazerDestruction")
-        CHARACTER_KEYS.append("TrailblazerDestruction#M")
-        CHARACTER_KEYS.append("TrailblazerDestruction#F")
-    if "TrailblazerPreservation" in CHARACTER_KEYS:
-        CHARACTER_KEYS.remove("TrailblazerPreservation")
-        CHARACTER_KEYS.append("TrailblazerPreservation#M")
-        CHARACTER_KEYS.append("TrailblazerPreservation#F")
-
-    # Get highest confidence
+    # Get character with highest confidence
     for c in CHARACTER_KEYS:
-        file_name = c.replace(" ", "")
-        img = cv2.imread(f"{img_path_prefix}/{file_name}.png")
-        img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
-        img = cv2.resize(img, (min_dim, min_dim))
+        if c not in EQUIPPED_ICONS:
+            file_name = c.replace(" ", "")
+            img = cv2.imread(f"{img_path_prefix}/{file_name}.png")
+            img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
 
-        # Circle mask
-        mask = np.zeros(img.shape[:2], dtype="uint8")
-        (h, w) = img.shape[:2]
-        cv2.circle(mask, (int(w / 2), int(h / 2)),
-                   int(min_dim / 2), 255, -1)
-        img = cv2.bitwise_and(img, img, mask=mask)
+            min_dim = int(min(equipped_avatar_img.shape[:2]))
+            img = cv2.resize(img, (min_dim, min_dim))
+
+            # Circle mask
+            mask = np.zeros(img.shape[:2], dtype="uint8")
+            (h, w) = img.shape[:2]
+            cv2.circle(mask, (int(w / 2), int(h / 2)),
+                    int(min_dim / 2), 255, -1)
+            img = cv2.bitwise_and(img, img, mask=mask)
+
+            EQUIPPED_ICONS[c] = img
 
         # Get confidence
         conf = cv2.matchTemplate(
-            equipped_avatar_img, img, cv2.TM_CCOEFF_NORMED).max()
+            equipped_avatar_img, EQUIPPED_ICONS[c], cv2.TM_CCOEFF_NORMED).max()
         if conf > max_conf:
             max_conf = conf
             character = c

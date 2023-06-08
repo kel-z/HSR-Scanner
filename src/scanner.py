@@ -1,4 +1,3 @@
-import traceback
 from utils.navigation import Navigation
 import win32gui
 import time

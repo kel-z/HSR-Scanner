@@ -1,4 +1,4 @@
-import pyautogui
+from pyautogui import locate
 from helper_functions import resource_path, image_to_string
 from PIL import Image
 from helper_functions import resource_path
@@ -28,29 +28,11 @@ class CharacterScanner:
             Image.open(resource_path("images\\trailblazerm.png")),
             Image.open(resource_path("images\\trailblazerf.png"))
         ]
+        self._lock_img = Image.open(resource_path("./images/lock2.png"))
         self._screenshot = screenshot
         self._logger = logger
         self._trailblazerScanned = False
-
-    def get_closest_name(self, character_name, path):
-        if self.__is_trailblazer():
-            if self._trailblazerScanned:
-                self._logger.emit("WARNING: Parsed more than one Trailblazer. Please review JSON output.")
-            else:
-                self._trailblazerScanned = True
-
-            return "Trailblazer" + path.split(" ")[-1]
-        else:
-            character_name, min_dist = get_closest_character_name(
-                character_name)
-
-            if min_dist > 5:
-                raise Exception(
-                    f"Character not found in database. Got {character_name}")
             
-            return character_name
-            
-
     def parse(self, stats_dict, eidlon_images):
         if self.interrupt.is_set():
             return
@@ -77,13 +59,11 @@ class CharacterScanner:
             self.logger.emit(f"{character['key']}: Failed to parse level." +
                              (f" Got \"{level}\" instead." if level else ""))
 
-        lock = Image.open(resource_path("./images/lock2.png"))
-
         for img in eidlon_images:
             img = img.convert("L")
             min_dim = min(img.size)
-            temp = lock.resize((min_dim, min_dim))
-            unlocked = pyautogui.locate(temp, img, confidence=0.8) is None
+            lock_img = self._lock_img.resize((min_dim, min_dim))
+            unlocked = locate(lock_img, img, confidence=0.8) is None
             if not unlocked:
                 break
 
@@ -111,23 +91,14 @@ class CharacterScanner:
 
         for k, v in traces_dict["locks"].items():
             min_dim = min(v.size)
-            temp = lock.resize((min_dim, min_dim))
-            unlocked = pyautogui.locate(temp, v, confidence=0.2) is None
+            lock_img = self._lock_img.resize((min_dim, min_dim))
+            unlocked = locate(lock_img, v, confidence=0.2) is None
             character["traces"][k] = unlocked
 
         if self.update_progress:
             self.update_progress.emit(102)
 
         return character
-
-    def __is_trailblazer(self):
-        char = self._screenshot.screenshot_character()
-        for trailblazer in self._trailblazer_imgs:
-            trailblazer = trailblazer.resize(char.size)
-            if pyautogui.locate(char, trailblazer, confidence=0.8) is not None:
-                return True
-
-        return False
     
     def get_traces_dict(self, path):
         if path == "The Hunt":
@@ -148,4 +119,31 @@ class CharacterScanner:
             raise ValueError("Invalid path")
         
         return traces_dict
+
+    def get_closest_name(self, character_name, path):
+        if self.__is_trailblazer():
+            if self._trailblazerScanned:
+                self._logger.emit("WARNING: Parsed more than one Trailblazer. Please review JSON output.")
+            else:
+                self._trailblazerScanned = True
+
+            return "Trailblazer" + path.split(" ")[-1]
+        else:
+            character_name, min_dist = get_closest_character_name(
+                character_name)
+
+            if min_dist > 5:
+                raise Exception(
+                    f"Character not found in database. Got {character_name}")
+            
+            return character_name
+
+    def __is_trailblazer(self):
+        char = self._screenshot.screenshot_character()
+        for trailblazer in self._trailblazer_imgs:
+            trailblazer = trailblazer.resize(char.size)
+            if locate(char, trailblazer, confidence=0.8) is not None:
+                return True
+
+        return False
     
