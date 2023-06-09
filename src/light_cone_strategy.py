@@ -75,12 +75,15 @@ class LightConeStrategy:
 
             if not isinstance(val, int):
                 raise ValueError(
-                    f"Filter key {key} does not have an int value.")
+                    f"Filter key \"{key}\" does not have an int value.")
 
             if filter_type == "min":
                 filter_results[key] = val >= filters[key]
             elif filter_type == "max":
                 filter_results[key] = val <= filters[key]
+            else:
+                raise KeyError(
+                    f"\"{key}\" is not a valid filter.")
 
         return (filter_results, stats_dict)
 
@@ -136,10 +139,7 @@ class LightConeStrategy:
         locked = self._lock_icon.resize((min_dim, min_dim))
 
         # Check if locked by image matching
-        if locate(locked, lock, confidence=0.1):
-            lock = True
-        else:
-            lock = False
+        lock = locate(locked, lock, confidence=0.1) is not None
 
         location = ""
         if equipped == "Equipped":

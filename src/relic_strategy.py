@@ -167,11 +167,8 @@ class RelicStrategy:
 
         # Check if locked by image matching
         min_dim = min(lock.size)
-        locked = self._lock_icon.resize((min_dim, min_dim))
-        if locate(locked, lock, confidence=0.1):
-            lock = True
-        else:
-            lock = False
+        lock_img = self._lock_icon.resize((min_dim, min_dim))
+        lock = locate(lock_img, lock, confidence=0.1) is not None
 
         location = ""
         if equipped == "Equipped":
