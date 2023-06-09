@@ -224,7 +224,7 @@ class HSRScanner:
 
             # Next character
             self._nav.move_cursor_to(x, y)
-            time.sleep(0.1)
+            time.sleep(0.2)
             self._nav.click()
             time.sleep(1)
 
@@ -310,6 +310,7 @@ class HSRScanner:
 
             character_count -= 1
 
+        time.sleep(1)
         self._nav.key_press(Key.esc)
         time.sleep(1)
         self._nav.key_press(Key.esc)
