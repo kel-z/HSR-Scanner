@@ -23,7 +23,9 @@ class CharacterScanner:
         }
     }
 
-    def __init__(self, screenshot: Screenshot, logger) -> None:
+    def __init__(self, screenshot: Screenshot, logger, interrupt, update_progress) -> None:
+        self.interrupt = interrupt
+        self.update_progress = update_progress
         self._trailblazer_imgs = [
             Image.open(resource_path("images\\trailblazerm.png")),
             Image.open(resource_path("images\\trailblazerf.png"))

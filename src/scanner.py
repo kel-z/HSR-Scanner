@@ -177,7 +177,7 @@ class HSRScanner:
         return tasks
 
     def scan_characters(self):
-        char_scanner = CharacterScanner(self._screenshot, self.logger)
+        char_scanner = CharacterScanner(self._screenshot, self.logger, self.interrupt, self.update_progress)
         nav_data = char_scanner.NAV_DATA[self._aspect_ratio]
 
         # Get character count from Data Bank menu
