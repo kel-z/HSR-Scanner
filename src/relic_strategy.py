@@ -88,7 +88,7 @@ class RelicStrategy:
             if not level:
                 self._logger.emit(
                     f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
-                )
+                ) if self._logger else None
                 level = 0
             return int(level)
         elif key == "mainStatKey":
@@ -132,7 +132,7 @@ class RelicStrategy:
                 key, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7)
             if not key:
                 # self._logger.emit(
-                #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.")
+                #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.") if self._logger else None
                 break
             key, min_dist = get_closest_relic_sub_stat(key)
             if min_dist > 5:
@@ -142,7 +142,7 @@ class RelicStrategy:
             val = image_to_string(val_img, "0123456789.%", 7)
             if not val:
                 # self._logger.emit(
-                #     f"Relic ID {self._curr_id}: Found sub-stat with no value: {key}. Either it doesn't exist or the OCR failed.")
+                #     f"Relic ID {self._curr_id}: Found sub-stat with no value: {key}. Either it doesn't exist or the OCR failed.") if self._logger else None
                 break
 
             if val[-1] == '%':

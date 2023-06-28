@@ -177,7 +177,8 @@ class HSRScanner:
         return tasks
 
     def scan_characters(self):
-        char_scanner = CharacterScanner(self._screenshot, self.logger, self.interrupt, self.update_progress)
+        char_scanner = CharacterScanner(
+            self._screenshot, self.logger, self.interrupt, self.update_progress)
         nav_data = char_scanner.NAV_DATA[self._aspect_ratio]
 
         # Get character count from Data Bank menu
@@ -236,7 +237,8 @@ class HSRScanner:
             try:
                 path, character_name = map(
                     str.strip, character_name.split("/"))
-                character_name = char_scanner.get_closest_name(character_name, path)
+                character_name = char_scanner.get_closest_name(
+                    character_name, path)
                 stats_dict["name"] = character_name
 
                 # Get level
@@ -277,7 +279,7 @@ class HSRScanner:
                 tasks.add(task)
             except Exception as e:
                 self.logger.emit(
-                    f"Failed to parse character {character_name}. Got \"{e}\" error. Skipping...")
+                    f"Failed to parse character {character_name}. Got \"{e}\" error. Skipping...") if self._logger else None
 
             # Reset for next character
             self._nav.move_cursor_to(*nav_data["details_button"])

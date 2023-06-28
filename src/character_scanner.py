@@ -5,6 +5,7 @@ from helper_functions import resource_path
 from utils.game_data_helpers import get_character_meta_data, get_closest_character_name
 from utils.screenshot import Screenshot
 
+
 class CharacterScanner:
     NAV_DATA = {
         "16:9": {
@@ -34,7 +35,7 @@ class CharacterScanner:
         self._screenshot = screenshot
         self._logger = logger
         self._trailblazerScanned = False
-            
+
     def parse(self, stats_dict, eidlon_images):
         if self.interrupt.is_set():
             return
@@ -58,8 +59,8 @@ class CharacterScanner:
         try:
             character["level"] = int(level)
         except ValueError:
-            self.logger.emit(f"{character['key']}: Failed to parse level." +
-                             (f" Got \"{level}\" instead." if level else ""))
+            self._logger.emit(f"{character['key']}: Failed to parse level." +
+                              (f" Got \"{level}\" instead." if level else "")) if self._logger else None
 
         for img in eidlon_images:
             img = img.convert("L")
@@ -101,7 +102,7 @@ class CharacterScanner:
             self.update_progress.emit(102)
 
         return character
-    
+
     def get_traces_dict(self, path):
         if path == "The Hunt":
             traces_dict = self._screenshot.screenshot_character_hunt_traces()
@@ -119,13 +120,14 @@ class CharacterScanner:
             traces_dict = self._screenshot.screenshot_character_abundance_traces()
         else:
             raise ValueError("Invalid path")
-        
+
         return traces_dict
 
     def get_closest_name(self, character_name, path):
         if self.__is_trailblazer():
             if self._trailblazerScanned:
-                self._logger.emit("WARNING: Parsed more than one Trailblazer. Please review JSON output.")
+                self._logger.emit(
+                    "WARNING: Parsed more than one Trailblazer. Please review JSON output.") if self._logger else None
             else:
                 self._trailblazerScanned = True
 
@@ -137,7 +139,7 @@ class CharacterScanner:
             if min_dist > 5:
                 raise Exception(
                     f"Character not found in database. Got {character_name}")
-            
+
             return character_name
 
     def __is_trailblazer(self):
@@ -148,4 +150,3 @@ class CharacterScanner:
                 return True
 
         return False
-    

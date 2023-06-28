@@ -37,6 +37,7 @@ a.datas += [('images\\avatars\\Herta.png','src\\images\\avatars\\Herta.png', "DA
 a.datas += [('images\\avatars\\Himeko.png','src\\images\\avatars\\Himeko.png', "DATA")]
 a.datas += [('images\\avatars\\Hook.png','src\\images\\avatars\\Hook.png', "DATA")]
 a.datas += [('images\\avatars\\JingYuan.png','src\\images\\avatars\\JingYuan.png', "DATA")]
+a.datas += [('images\\avatars\\Luocha.png','src\\images\\avatars\\Luocha.png', "DATA")]
 a.datas += [('images\\avatars\\March7th.png','src\\images\\avatars\\March7th.png', "DATA")]
 a.datas += [('images\\avatars\\Natasha.png','src\\images\\avatars\\Natasha.png', "DATA")]
 a.datas += [('images\\avatars\\Pela.png','src\\images\\avatars\\Pela.png', "DATA")]
@@ -53,6 +54,7 @@ a.datas += [('images\\avatars\\Sushang.png','src\\images\\avatars\\Sushang.png',
 a.datas += [('images\\avatars\\Tingyun.png','src\\images\\avatars\\Tingyun.png', "DATA")]
 a.datas += [('images\\avatars\\Welt.png','src\\images\\avatars\\Welt.png', "DATA")]
 a.datas += [('images\\avatars\\Yanqing.png','src\\images\\avatars\\Yanqing.png', "DATA")]
+a.datas += [('images\\avatars\\Yukong.png','src\\images\\avatars\\Yukong.png', "DATA")]
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 

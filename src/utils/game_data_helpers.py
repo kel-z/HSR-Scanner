@@ -208,6 +208,8 @@ CHARACTER_META_DATA = {
     "TrailblazerDestruction": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
     "TrailblazerPreservation": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
     "Silver Wolf": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "Luocha": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Yukong": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
 }
 
 RELIC_MAIN_STATS = {

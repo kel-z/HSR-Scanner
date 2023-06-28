@@ -122,7 +122,7 @@ class LightConeStrategy:
             max_level = int(max_level)
         except ValueError:
             self._logger.emit(
-                f"Light Cone ID {self._curr_id}: Error parsing level, setting to 1")
+                f"Light Cone ID {self._curr_id}: Error parsing level, setting to 1") if self._logger else None
             level = 1
             max_level = 20
 
@@ -132,7 +132,7 @@ class LightConeStrategy:
             superimposition = int(superimposition)
         except ValueError:
             self._logger.emit(
-                f"Light Cone ID {self._curr_id}: Error parsing superimposition, setting to 1")
+                f"Light Cone ID {self._curr_id}: Error parsing superimposition, setting to 1") if self._logger else None
             superimposition = 1
 
         min_dim = min(lock.size)
