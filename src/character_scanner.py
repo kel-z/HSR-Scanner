@@ -87,10 +87,12 @@ class CharacterScanner:
             if not v:
                 # Assuming level is max since it didn't parse any numbers
                 if k == "basic":
-                    v = 7
+                    v = 6
                 else:
-                    v = 12
-            character["skills"][k] += int(v)
+                    v = 10
+                character["skills"][k] = v
+            else: 
+                character["skills"][k] += int(v)
 
         for k, v in traces_dict["locks"].items():
             min_dim = min(v.size)
