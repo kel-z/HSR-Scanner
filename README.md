@@ -14,7 +14,6 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 3. Open the cellphone menu (ESC menu).
 4. Configure the necessary [scanner settings](#scanner-settings-and-configurations) in HSR Scanner.
 5. Start the scan.
-    - If you have multiple monitors, ensure that both Star Rail and HSR Scanner are on the same monitor before starting the scan.
 6. Do not move your mouse during the scan process.
 7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
