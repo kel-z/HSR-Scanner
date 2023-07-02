@@ -53,7 +53,8 @@ def preprocess_img(img):
         for y in range(img.height):
             pixel = img.getpixel((x, y))
             if pixel[0] > 170 and pixel[1] > 170 and pixel[2] > 170:
-                img.putpixel((x, y), (255, 255, 255))
+                # img.putpixel((x, y), (255, 255, 255))
+                pass
             else:
                 img.putpixel(
                     (x, y), (0,0,0))
@@ -70,7 +71,7 @@ def preprocess_img(img):
     img = cv2.dilate(img, kernel, iterations=1)
     img = cv2.erode(img, kernel, iterations=1)
     img = cv2.GaussianBlur(img, (5,5), 0)
-    img = cv2.medianBlur(img,5)
+    img = cv2.medianBlur(img,3)
     
     # return image from numpy array
     img = Image.fromarray(img)
