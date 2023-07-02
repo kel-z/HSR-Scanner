@@ -2,7 +2,7 @@ from pyautogui import locate
 from helper_functions import resource_path, image_to_string
 from PIL import Image
 from helper_functions import resource_path
-from utils.game_data_helpers import get_character_meta_data, get_closest_character_name
+from utils.game_data_helpers import get_character_meta_data, get_closest_character_name, get_closest_path_name
 from utils.screenshot import Screenshot
 
 
@@ -91,7 +91,7 @@ class CharacterScanner:
                 else:
                     v = 10
                 character["skills"][k] = v
-            else: 
+            else:
                 character["skills"][k] += int(v)
 
         for k, v in traces_dict["locks"].items():
@@ -106,6 +106,8 @@ class CharacterScanner:
         return character
 
     def get_traces_dict(self, path):
+        path, _ = get_closest_path_name(path)
+
         if path == "The Hunt":
             traces_dict = self._screenshot.screenshot_character_hunt_traces()
         elif path == "Erudition":

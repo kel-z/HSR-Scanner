@@ -244,6 +244,16 @@ RELIC_SUB_STATS = {
     "Break Effect",
 }
 
+PATHS = {
+    "The Hunt",
+    "Erudition",
+    "Harmony",
+    "Preservation",
+    "Destruction",
+    "Nihility",
+    "Abundance",
+}
+
 CHARACTER_KEYS = list(CHARACTER_META_DATA.keys())
 if "TrailblazerDestruction" in CHARACTER_KEYS:
     CHARACTER_KEYS.remove("TrailblazerDestruction")
@@ -289,7 +299,7 @@ def get_equipped_character(equipped_avatar_img, img_path_prefix):
             mask = np.zeros(img.shape[:2], dtype="uint8")
             (h, w) = img.shape[:2]
             cv2.circle(mask, (int(w / 2), int(h / 2)),
-                    int(min_dim / 2), 255, -1)
+                       int(min_dim / 2), 255, -1)
             img = cv2.bitwise_and(img, img, mask=mask)
 
             EQUIPPED_ICONS[c] = img
@@ -322,6 +332,10 @@ def get_closest_relic_main_stat(name):
 
 def get_closest_character_name(name):
     return __get_closest_match(name, CHARACTER_META_DATA)
+
+
+def get_closest_path_name(name):
+    return __get_closest_match(name, PATHS)
 
 
 def get_closest_rarity(pixel):
