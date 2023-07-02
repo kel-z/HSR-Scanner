@@ -70,7 +70,7 @@ def preprocess_img(img):
     img = cv2.dilate(img, kernel, iterations=1)
     img = cv2.erode(img, kernel, iterations=1)
     img = cv2.GaussianBlur(img, (5,5), 0)
-    img = cv2.medianBlur(img,3)
+    img = cv2.medianBlur(img,5)
     
     # return image from numpy array
     img = Image.fromarray(img)
