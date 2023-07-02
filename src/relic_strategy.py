@@ -152,7 +152,12 @@ class RelicStrategy:
                 val = float(val[:-1])
                 key += '_'
             else:
-                val = int(val)
+                try:
+                    val = int(val)
+                except ValueError:
+                    # self._logger.emit(
+                    #     f"Relic ID {self._curr_id}: Error parsing sub-stat value: {val}.") if self._logger else None
+                    break
 
             subStats.append(
                 {

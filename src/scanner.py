@@ -117,8 +117,8 @@ class HSRScanner:
         while quantity_remaining > 0:
             if quantity_remaining <= scanned_per_scroll and not quantity <= scanned_per_scroll:
                 x, y = nav_data["row_start_bottom"]
-                start_row = quantity_remaining // (nav_data["cols"] + 1)
-                y -= start_row * nav_data["offset_y"]
+                todo_rows = self._ceildiv(quantity_remaining, nav_data["cols"]) - 1
+                y -= todo_rows * nav_data["offset_y"]
             else:
                 x, y = nav_data["row_start_top"]
 
@@ -279,7 +279,7 @@ class HSRScanner:
                 tasks.add(task)
             except Exception as e:
                 self.logger.emit(
-                    f"Failed to parse character {character_name}. Got \"{e}\" error. Skipping...") if self._logger else None
+                    f"Failed to parse character {character_name}. Got \"{e}\" error. Skipping...") if self.logger else None
 
             # Reset for next character
             self._nav.move_cursor_to(*nav_data["details_button"])
@@ -317,3 +317,6 @@ class HSRScanner:
         time.sleep(1)
         self._nav.key_press(Key.esc)
         return tasks
+
+    def _ceildiv(self, a, b):
+        return -(a // -b)
