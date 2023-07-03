@@ -48,15 +48,15 @@ def preprocess_img(img):
     if img.height < 50:
         img = img.resize((img.width * 2, img.height * 2))
 
-    
     for x in range(img.width):
         for y in range(img.height):
             pixel = img.getpixel((x, y))
-            if pixel[0] > 170 and pixel[1] > 170 and pixel[2] > 170:
-                img.putpixel((x, y), (255, 255, 255))
+            if (pixel[0] > 170 and pixel[1] > 170 and pixel[2] > 170) or (210 < pixel[0] < 230 and 190 < pixel[1] < 200 and 140 < pixel[2] < 150):
+                # img.putpixel((x, y), (255, 255, 255))
+                pass
             else:
                 img.putpixel(
-                    (x, y), (0,0,0))
+                    (x, y), (0, 0, 0))
     # img = cv2.resize(np.array(img), None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 
     # img = img.convert('L')
@@ -65,13 +65,12 @@ def preprocess_img(img):
     # img = img.filter(ImageFilter.EDGE_ENHANCE)
     # img = img.filter(ImageFilter.GaussianBlur(radius=1))
 
-
-    kernel = np.ones((1,1))
+    kernel = np.ones((1, 1))
     img = cv2.dilate(img, kernel, iterations=1)
     img = cv2.erode(img, kernel, iterations=1)
-    img = cv2.GaussianBlur(img, (5,5), 0)
-    img = cv2.medianBlur(img,3)
-    
+    img = cv2.GaussianBlur(img, (3, 3), 0)
+    img = cv2.medianBlur(img, 3)
+
     # return image from numpy array
     img = Image.fromarray(img)
     return img

@@ -1,5 +1,6 @@
-import pyautogui
+# import pyautogui
 import win32gui
+from PIL import Image, ImageGrab
 
 
 class Screenshot:
@@ -262,8 +263,19 @@ class Screenshot:
 
     def screenshot_character_eidelons(self):
         res = []
+
+        screenshot = ImageGrab.grab(all_screens=True)
+        offset, _, _ = Image.core.grabscreen_win32(False, True)
+        x0, y0 = offset
+
         for c in self.coords[self._aspect_ratio]["character"]["eidelons"]:
-            res.append(self.__take_screenshot(*c, 0.018, 0.0349))
+            left = self._left + int(self._width * c[1])
+            upper = self._top + int(self._height * c[0])
+            right = left + self._width * 0.018
+            lower = upper + self._height * 0.0349
+            res.append(screenshot.crop(
+                (left - x0, upper - y0, right - x0, lower - y0)))
+
         return res
 
     def screenshot_character_hunt_traces(self):
@@ -293,7 +305,9 @@ class Screenshot:
         width = int(self._width * width)
         height = int(self._height * height)
 
-        screenshot = pyautogui.screenshot(region=(x, y, width, height))
+        # screenshot = pyautogui.screenshot(region=(x, y, width, height))
+        screenshot = ImageGrab.grab(
+            bbox=(x, y, x + width, y + height), all_screens=True)
 
         return screenshot
 
@@ -318,10 +332,27 @@ class Screenshot:
             "levels": {},
             "locks": {}
         }
+
+        screenshot = ImageGrab.grab(all_screens=True)
+        offset, _, _ = Image.core.grabscreen_win32(False, True)
+        x0, y0 = offset
+
         for k, v in coords["character"]["traces"][key]["levels"].items():
-            res["levels"][k] = self.__take_screenshot(*v, 0.0177, 0.028)
+            left = self._left + int(self._width * v[1])
+            upper = self._top + int(self._height * v[0])
+            right = left + int(self._width * 0.0177)
+            lower = upper + int(self._height * 0.028)
+
+            res["levels"][k] = screenshot.crop(
+                (left - x0, upper - y0, right - x0, lower - y0))
 
         for k, v in coords["character"]["traces"][key]["locks"].items():
-            res["locks"][k] = self.__take_screenshot(*v)
+            left = self._left + int(self._width * v[1])
+            upper = self._top + int(self._height * v[0])
+            right = left + int(self._width * v[2])
+            lower = upper + int(self._height * v[3])
+
+            res["locks"][k] = screenshot.crop(
+                (left - x0, upper - y0, right - x0, lower - y0))
 
         return res

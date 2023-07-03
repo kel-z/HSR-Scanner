@@ -141,8 +141,12 @@ class RelicStrategy:
             val_img = stats_dict["subStatVal_" + str(i)]
             val = image_to_string(val_img, "0123456789.%", 7)
             if not val:
-                # self._logger.emit(
-                #     f"Relic ID {self._curr_id}: Found sub-stat with no value: {key}. Either it doesn't exist or the OCR failed.") if self._logger else None
+                val = image_to_string(val_img, "0123456789.%", 6)
+
+            if not val or val == '.':
+                if min_dist == 0:
+                    self._logger.emit(
+                        f"Relic ID {self._curr_id}: Failed to get value for sub-stat: {key}. Either it doesn't exist or the OCR failed.") if self._logger else None
                 break
 
             if val[-1] == '%':
@@ -152,7 +156,12 @@ class RelicStrategy:
                 val = float(val[:-1])
                 key += '_'
             else:
-                val = int(val)
+                try:
+                    val = int(val)
+                except ValueError:
+                    # self._logger.emit(
+                    #     f"Relic ID {self._curr_id}: Error parsing sub-stat value: {val}.") if self._logger else None
+                    break
 
             subStats.append(
                 {

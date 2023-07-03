@@ -2,7 +2,7 @@ from pyautogui import locate
 from helper_functions import resource_path, image_to_string
 from PIL import Image
 from helper_functions import resource_path
-from utils.game_data_helpers import get_character_meta_data, get_closest_character_name
+from utils.game_data_helpers import get_character_meta_data, get_closest_character_name, get_closest_path_name
 from utils.screenshot import Screenshot
 
 
@@ -55,7 +55,11 @@ class CharacterScanner:
         }
 
         level = stats_dict["level"]
-        level = image_to_string(level, "0123456789", 7, True)
+        res = image_to_string(level, "0123456789", 7, True)
+        if not res:
+            res = image_to_string(level, "0123456789", 6, True)
+        level = res
+
         try:
             character["level"] = int(level)
         except ValueError:
@@ -83,15 +87,23 @@ class CharacterScanner:
 
         traces_dict = stats_dict["traces"]
         for k, v in traces_dict["levels"].items():
-            v = image_to_string(v, "0123456789", 6, True)
+            res = image_to_string(v, "0123456789", 6, True)
+            if not res:
+                res = image_to_string(v, "0123456789", 7, True)
+            v = res
+
             if not v:
                 # Assuming level is max since it didn't parse any numbers
-                if k == "basic":
+                if character["ascension"] != 6:
+                    self._logger.emit(
+                        f"{character['key']}: Failed to parse '{k}' skill level. Setting to 1.") if self._logger else None
+                    v = 1
+                elif k == "basic":
                     v = 6
                 else:
                     v = 10
                 character["skills"][k] = v
-            else: 
+            else:
                 character["skills"][k] += int(v)
 
         for k, v in traces_dict["locks"].items():
@@ -106,6 +118,8 @@ class CharacterScanner:
         return character
 
     def get_traces_dict(self, path):
+        path, _ = get_closest_path_name(path)
+
         if path == "The Hunt":
             traces_dict = self._screenshot.screenshot_character_hunt_traces()
         elif path == "Erudition":
