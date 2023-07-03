@@ -172,7 +172,7 @@ class HSRScanner:
             time.sleep(0.5)
 
         self._nav.key_press(Key.esc)
-        time.sleep(1)
+        time.sleep(1.5)
         self._nav.key_press(Key.esc)
         return tasks
 
@@ -314,7 +314,7 @@ class HSRScanner:
 
         time.sleep(1)
         self._nav.key_press(Key.esc)
-        time.sleep(1)
+        time.sleep(1.5)
         self._nav.key_press(Key.esc)
         return tasks
 

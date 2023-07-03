@@ -95,7 +95,7 @@ class LightConeStrategy:
         elif key == "level":
             return image_to_string(img, "0123456789/", 7)
         elif key == "superimposition":
-            return image_to_string(img, "12345", 10)
+            return image_to_string(img, "12345", 10, True)
         elif key == "equipped":
             return image_to_string(img, "Equipped", 7)
         else:
