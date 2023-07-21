@@ -84,7 +84,7 @@ class RelicStrategy:
         if key == "name":
             return image_to_string(img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6)
         elif key == "level":
-            level = image_to_string(img, "0123456789", 7)
+            level = image_to_string(img, "0123456789", 7, True)
             if not level:
                 self._logger.emit(
                     f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."

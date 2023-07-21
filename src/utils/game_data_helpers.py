@@ -180,6 +180,12 @@ RELIC_META_DATA = {
     "Wastelander's Desert Terminal": {"setKey": "Wastelander of Banditry Desert", "slotKey": "Hand"},
     "Wastelander's Friar Robe": {"setKey": "Wastelander of Banditry Desert", "slotKey": "Body"},
     "Wastelander's Powered Greaves": {"setKey": "Wastelander of Banditry Desert", "slotKey": "Feet"},
+
+    "Taikiyan Laser Stadium": {"setKey": "Rutilant Arena", "slotKey": "Planar Sphere"},
+    "Taikiyan's Arclight Race Track": {"setKey": "Rutilant Arena", "slotKey": "Link Rope"},
+
+    "Insumousu's Frayed Hawser": {"setKey": "Broken Keel", "slotKey": "Planar Sphere"},
+    "Insumousu's Whalefall Ship": {"setKey": "Broken Keel", "slotKey": "Link Rope"},
 }
 
 CHARACTER_META_DATA = {
@@ -210,6 +216,7 @@ CHARACTER_META_DATA = {
     "Silver Wolf": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
     "Luocha": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
     "Yukong": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Blade": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
 }
 
 RELIC_MAIN_STATS = {
