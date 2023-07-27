@@ -20,21 +20,16 @@ class Screenshot:
                     (0.377, 0.793),
                     (0.826, 0.679),
                     (0.796, 0.43),
-                    (0.716, 0.197)
+                    (0.716, 0.197),
                 ],
                 "traces": {
-                    # yeah this part is quite masochistic
                     "hunt": {
-                        "levels": {
-                            "basic": (0.505, 0.5352),
-                            "skill": (0.655, 0.5352),
-                            "ult": (0.578, 0.599),
-                            "talent": (0.578, 0.462),
-                        },
-                        "locks": {
-                        },
+                        "basic": (0.505, 0.5352),
+                        "skill": (0.655, 0.5352),
+                        "ult": (0.578, 0.599),
+                        "talent": (0.578, 0.462),
                     },
-                }
+                },
             },
             # each tuple is (x1, y1, x2, y2) in % of the stat box
             "light_cone": {
@@ -52,18 +47,13 @@ class Screenshot:
                 "rarity": (0.07, 0.15, 0.2, 0.22),
                 "equipped": (0.45, 0.95, 0.68, 1),
                 "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
-
                 "mainStatKey": (0.115, 0.358, 0.7, 0.4),
-
                 "subStatKey_1": (0.115, 0.41, 0.77, 0.45),
                 "subStatVal_1": (0.77, 0.41, 1, 0.45),
-
                 "subStatKey_2": (0.115, 0.45, 0.77, 0.5),
                 "subStatVal_2": (0.77, 0.45, 1, 0.5),
-
                 "subStatKey_3": (0.115, 0.495, 0.77, 0.542),
                 "subStatVal_3": (0.77, 0.495, 1, 0.542),
-
                 "subStatKey_4": (0.115, 0.545, 0.77, 0.595),
                 "subStatVal_4": (0.77, 0.545, 1, 0.595),
             },
@@ -289,8 +279,7 @@ class Screenshot:
     def __init__(self, hwnd, aspect_ratio="16:9"):
         self._aspect_ratio = aspect_ratio
 
-        self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[
-            2:]
+        self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
     def screenshot_light_cone_stats(self):
@@ -305,28 +294,30 @@ class Screenshot:
         return self.__take_screenshot(*coords)
 
     def screenshot_light_cone_sort(self):
-        return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["sort"])
+        return self.__take_screenshot(*self.coords[self._aspect_ratio]["sort"])
 
     def screenshot_quantity(self):
-        return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["quantity"])
+        return self.__take_screenshot(*self.coords[self._aspect_ratio]["quantity"])
 
     def screenshot_character_count(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["count"])
+            *self.coords[self._aspect_ratio]["character"]["count"]
+        )
 
     def screenshot_character_name(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["name"])
+            *self.coords[self._aspect_ratio]["character"]["name"]
+        )
 
     def screenshot_character_level(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["level"])
+            *self.coords[self._aspect_ratio]["character"]["level"]
+        )
 
     def screenshot_character(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["chest"])
+            *self.coords[self._aspect_ratio]["character"]["chest"]
+        )
 
     def screenshot_character_eidelons(self):
         res = []
@@ -340,8 +331,7 @@ class Screenshot:
             upper = self._window_y + int(self._window_height * c[0])
             right = left + self._window_width * 0.018
             lower = upper + self._window_height * 0.0349
-            res.append(screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0)))
+            res.append(screenshot.crop((left - x0, upper - y0, right - x0, lower - y0)))
 
         return res
 
@@ -375,7 +365,8 @@ class Screenshot:
 
         # screenshot = pyautogui.screenshot(region=(x, y, width, height))
         screenshot = ImageGrab.grab(
-            bbox=(x, y, x + width, y + height), all_screens=True)
+            bbox=(x, y, x + width, y + height), all_screens=True
+        )
 
         return screenshot
 
@@ -386,42 +377,36 @@ class Screenshot:
         # img = img.resize((480, 842), Image.ANTIALIAS)
 
         adjusted_stat_coords = {
-            k: tuple([int(v * img.width) if i % 2 == 0 else int(v * img.height) for i, v in enumerate(v)]) for k, v in coords[key].items()}
-
-        res = {
-            k: img.crop(v) for k, v in adjusted_stat_coords.items()
+            k: tuple(
+                [
+                    int(v * img.width) if i % 2 == 0 else int(v * img.height)
+                    for i, v in enumerate(v)
+                ]
+            )
+            for k, v in coords[key].items()
         }
+
+        res = {k: img.crop(v) for k, v in adjusted_stat_coords.items()}
 
         return res
 
     def __screenshot_traces(self, key):
         coords = self.coords[self._aspect_ratio]
 
-        res = {
-            "levels": {},
-            "locks": {}
-        }
+        res = {"levels": {}, "unlocks": {}}
 
         screenshot = ImageGrab.grab(all_screens=True)
         offset, _, _ = Image.core.grabscreen_win32(False, True)
         x0, y0 = offset
 
-        for k, v in coords["character"]["traces"][key]["levels"].items():
+        for k, v in coords["character"]["traces"][key].items():
             left = self._window_x + int(self._window_width * v[0])
             upper = self._window_y + int(self._window_height * v[1])
             right = left + int(self._window_width * 0.0177)
             lower = upper + int(self._window_height * 0.028)
 
             res["levels"][k] = screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0))
-
-        for k, v in coords["character"]["traces"][key]["locks"].items():
-            left = self._window_x + int(self._window_width * v[0])
-            upper = self._window_y + int(self._window_height * v[1])
-            right = left + int(self._window_width * v[2])
-            lower = upper + int(self._window_height * v[3])
-
-            res["locks"][k] = screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0))
+                (left - x0, upper - y0, right - x0, lower - y0)
+            )
 
         return res

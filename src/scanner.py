@@ -20,7 +20,8 @@ class HSRScanner:
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
             Exception(
-                "Honkai: Star Rail not found. Please open the game and try again.")
+                "Honkai: Star Rail not found. Please open the game and try again."
+            )
 
         self._config = config
 
@@ -33,7 +34,13 @@ class HSRScanner:
         self.interrupt.clear()
 
     async def start_scan(self):
-        if not any([self._config["scan_light_cones"], self._config["scan_relics"], self._config["scan_characters"]]):
+        if not any(
+            [
+                self._config["scan_light_cones"],
+                self._config["scan_relics"],
+                self._config["scan_characters"],
+            ]
+        ):
             raise Exception("No scan options selected.")
 
         self._nav.bring_window_to_foreground()
@@ -41,12 +48,12 @@ class HSRScanner:
         light_cones = []
         if self._config["scan_light_cones"] and not self.interrupt.is_set():
             light_cones = self.scan_inventory(
-                LightConeStrategy(self._screenshot, self.logger))
+                LightConeStrategy(self._screenshot, self.logger)
+            )
 
         relics = []
         if self._config["scan_relics"] and not self.interrupt.is_set():
-            relics = self.scan_inventory(
-                RelicStrategy(self._screenshot, self.logger))
+            relics = self.scan_inventory(RelicStrategy(self._screenshot, self.logger))
 
         characters = []
         if self._config["scan_characters"] and not self.interrupt.is_set():
@@ -59,7 +66,7 @@ class HSRScanner:
         return {
             "light_cones": await asyncio.gather(*light_cones),
             "relics": await asyncio.gather(*relics),
-            "characters": await asyncio.gather(*characters)
+            "characters": await asyncio.gather(*characters),
         }
 
     def stop_scan(self):
@@ -93,15 +100,15 @@ class HSRScanner:
         try:
             quantity = quantity_remaining = int(quantity.split("/")[0])
         except ValueError:
-            raise ValueError("Failed to parse quantity." +
-                             (f" Got \"{quantity}\" instead." if quantity else "") +
-                             " Did you start the scan from the ESC menu?")
+            raise ValueError(
+                "Failed to parse quantity."
+                + (f' Got "{quantity}" instead.' if quantity else "")
+                + " Did you start the scan from the ESC menu?"
+            )
 
         current_sort_method = strategy.screenshot_sort()
-        current_sort_method = image_to_string(
-            current_sort_method, "RarityLv", 7)
-        optimal_sort_method = strategy.get_optimal_sort_method(
-            self._config["filters"])
+        current_sort_method = image_to_string(current_sort_method, "RarityLv", 7)
+        optimal_sort_method = strategy.get_optimal_sort_method(self._config["filters"])
 
         if optimal_sort_method != current_sort_method:
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
@@ -115,7 +122,10 @@ class HSRScanner:
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
         while quantity_remaining > 0:
-            if quantity_remaining <= scanned_per_scroll and not quantity <= scanned_per_scroll:
+            if (
+                quantity_remaining <= scanned_per_scroll
+                and not quantity <= scanned_per_scroll
+            ):
                 x, y = nav_data["row_start_bottom"]
                 todo_rows = self._ceildiv(quantity_remaining, nav_data["cols"]) - 1
                 y -= todo_rows * nav_data["offset_y"]
@@ -144,9 +154,15 @@ class HSRScanner:
                     # Check if item satisfies filters
                     if self._config["filters"]:
                         filter_results, stats_dict = strategy.check_filters(
-                            stats_dict, self._config["filters"])
-                        if (current_sort_method == "Lv" and not filter_results["min_level"]) or \
-                                (current_sort_method == "Rarity" and not filter_results["min_rarity"]):
+                            stats_dict, self._config["filters"]
+                        )
+                        if (
+                            current_sort_method == "Lv"
+                            and not filter_results["min_level"]
+                        ) or (
+                            current_sort_method == "Rarity"
+                            and not filter_results["min_rarity"]
+                        ):
                             quantity_remaining = 0
                             break
                         if not all(filter_results.values()):
@@ -157,7 +173,8 @@ class HSRScanner:
                         self.update_progress.emit(strategy.SCAN_TYPE)
 
                     task = asyncio.to_thread(
-                        strategy.parse, stats_dict, self.interrupt, self.update_progress)
+                        strategy.parse, stats_dict, self.interrupt, self.update_progress
+                    )
                     tasks.add(task)
 
                 # Next row
@@ -168,7 +185,8 @@ class HSRScanner:
                 break
 
             self._nav.drag_scroll(
-                x, nav_data["scroll_start_y"], nav_data["scroll_end_y"])
+                x, nav_data["scroll_start_y"], nav_data["scroll_end_y"]
+            )
             time.sleep(0.5)
 
         self._nav.key_press(Key.esc)
@@ -178,7 +196,8 @@ class HSRScanner:
 
     def scan_characters(self):
         char_scanner = CharacterScanner(
-            self._screenshot, self.logger, self.interrupt, self.update_progress)
+            self._screenshot, self.logger, self.interrupt, self.update_progress
+        )
         nav_data = char_scanner.NAV_DATA[self._aspect_ratio]
 
         # Get character count from Data Bank menu
@@ -194,9 +213,11 @@ class HSRScanner:
             character_count, _ = character_count.split("/")
             character_count = int(character_count)
         except ValueError:
-            raise ValueError("Failed to parse character count." +
-                             (f" Got \"{character_count}\" instead." if character_count else "") +
-                             " Did you start the scan from the ESC menu?")
+            raise ValueError(
+                "Failed to parse character count."
+                + (f' Got "{character_count}" instead.' if character_count else "")
+                + " Did you start the scan from the ESC menu?"
+            )
 
         # Update UI count
         if self.update_progress:
@@ -233,12 +254,13 @@ class HSRScanner:
             stats_dict = {}
             character_name = self._screenshot.screenshot_character_name()
             character_name = image_to_string(
-                character_name, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7", 7)
+                character_name,
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7",
+                7,
+            )
             try:
-                path, character_name = map(
-                    str.strip, character_name.split("/"))
-                character_name = char_scanner.get_closest_name(
-                    character_name, path)
+                path, character_name = map(str.strip, character_name.split("/"))
+                character_name = char_scanner.get_closest_name(character_name, path)
                 stats_dict["name"] = character_name
 
                 # Get level
@@ -249,15 +271,17 @@ class HSRScanner:
                 ascension = 0
                 for _ in range(6):
                     pixel = pyautogui.pixel(
-                        *self._nav.translate_percent_to_coords(*ascension_pos))
-                    dist = sum(
-                        [(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
+                        *self._nav.translate_percent_to_coords(*ascension_pos)
+                    )
+                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
                     if dist > 100:
                         break
 
                     ascension += 1
                     ascension_pos = (
-                        ascension_pos[0] + nav_data["ascension_offset_x"], ascension_pos[1])
+                        ascension_pos[0] + nav_data["ascension_offset_x"],
+                        ascension_pos[1],
+                    )
                 stats_dict["ascension"] = ascension
 
                 # Get traces
@@ -266,6 +290,10 @@ class HSRScanner:
                 self._nav.click()
                 time.sleep(1)
                 stats_dict["traces"] = char_scanner.get_traces_dict(path)
+                for k, v in nav_data["traces"][path].items():
+                    pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
+                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))])
+                    stats_dict["traces"]["unlocks"][k] = dist < 100
 
                 # Get eidelons
                 self._nav.move_cursor_to(*nav_data["eidelons_button"])
@@ -274,12 +302,12 @@ class HSRScanner:
                 time.sleep(1.5)
                 eidlon_images = self._screenshot.screenshot_character_eidelons()
 
-                task = asyncio.to_thread(
-                    char_scanner.parse, stats_dict, eidlon_images)
+                task = asyncio.to_thread(char_scanner.parse, stats_dict, eidlon_images)
                 tasks.add(task)
             except Exception as e:
                 self.logger.emit(
-                    f"Failed to parse character {character_name}. Got \"{e}\" error. Skipping...") if self.logger else None
+                    f'Failed to parse character {character_name}. Got "{e}" error. Skipping...'
+                ) if self.logger else None
 
             # Reset for next character
             self._nav.move_cursor_to(*nav_data["details_button"])
@@ -287,7 +315,10 @@ class HSRScanner:
             self._nav.click()
             time.sleep(0.1)
 
-            if character_count - 1 == nav_data["chars_per_scan"] or i == nav_data["chars_per_scan"] - 1:
+            if (
+                character_count - 1 == nav_data["chars_per_scan"]
+                or i == nav_data["chars_per_scan"] - 1
+            ):
                 # Workaround to avoid drag scrolling
                 x, y = nav_data["char_start"]
                 i += 1

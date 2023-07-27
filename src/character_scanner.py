@@ -2,7 +2,11 @@ from pyautogui import locate
 from helper_functions import resource_path, image_to_string
 from PIL import Image
 from helper_functions import resource_path
-from utils.game_data_helpers import get_character_meta_data, get_closest_character_name, get_closest_path_name
+from utils.game_data_helpers import (
+    get_character_meta_data,
+    get_closest_character_name,
+    get_closest_path_name,
+)
 from utils.screenshot import Screenshot
 
 
@@ -20,16 +24,27 @@ class CharacterScanner:
             "traces_button": (0.13, 0.315),
             "eidelons_button": (0.13, 0.49),
             "list_button": (0.033, 0.931),
-            "trailblazer": (0.3315, 0.4432, 0.126, 0.1037)
+            "trailblazer": (0.3315, 0.4432, 0.126, 0.1037),
+            "traces": {
+                "hunt": {
+                    "ability_1": (0, 0),
+                    "ability_2": (0, 0),
+                    "ability_3": (0, 0),
+                    "skill_ 1": (0, 0),
+                    "skill_ 2": (0, 0),
+                }
+            },
         }
     }
 
-    def __init__(self, screenshot: Screenshot, logger, interrupt, update_progress) -> None:
+    def __init__(
+        self, screenshot: Screenshot, logger, interrupt, update_progress
+    ) -> None:
         self.interrupt = interrupt
         self.update_progress = update_progress
         self._trailblazer_imgs = [
             Image.open(resource_path("images\\trailblazerm.png")),
-            Image.open(resource_path("images\\trailblazerf.png"))
+            Image.open(resource_path("images\\trailblazerf.png")),
         ]
         self._lock_img = Image.open(resource_path("./images/lock2.png"))
         self._screenshot = screenshot
@@ -63,8 +78,10 @@ class CharacterScanner:
         try:
             character["level"] = int(level)
         except ValueError:
-            self._logger.emit(f"{character['key']}: Failed to parse level." +
-                              (f" Got \"{level}\" instead." if level else "")) if self._logger else None
+            self._logger.emit(
+                f"{character['key']}: Failed to parse level."
+                + (f' Got "{level}" instead.' if level else "")
+            ) if self._logger else None
 
         for img in eidlon_images:
             img = img.convert("L")
@@ -92,11 +109,7 @@ class CharacterScanner:
                 res = image_to_string(v, "0123456789", 7, True)
             character["skills"][k] += int(res)
 
-        for k, v in traces_dict["locks"].items():
-            min_dim = min(v.size)
-            lock_img = self._lock_img.resize((min_dim, min_dim))
-            unlocked = locate(lock_img, v, confidence=0.2) is None
-            character["traces"][k] = unlocked
+        character["traces"] = traces_dict["unlocks"]
 
         if self.update_progress:
             self.update_progress.emit(102)
@@ -129,18 +142,19 @@ class CharacterScanner:
         if self.__is_trailblazer():
             if self._trailblazerScanned:
                 self._logger.emit(
-                    "WARNING: Parsed more than one Trailblazer. Please review JSON output.") if self._logger else None
+                    "WARNING: Parsed more than one Trailblazer. Please review JSON output."
+                ) if self._logger else None
             else:
                 self._trailblazerScanned = True
 
             return "Trailblazer" + path.split(" ")[-1]
         else:
-            character_name, min_dist = get_closest_character_name(
-                character_name)
+            character_name, min_dist = get_closest_character_name(character_name)
 
             if min_dist > 5:
                 raise Exception(
-                    f"Character not found in database. Got {character_name}")
+                    f"Character not found in database. Got {character_name}"
+                )
 
             return character_name
 
