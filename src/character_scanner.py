@@ -90,21 +90,7 @@ class CharacterScanner:
             res = image_to_string(v, "0123456789", 6, True)
             if not res:
                 res = image_to_string(v, "0123456789", 7, True)
-            v = res
-
-            if not v:
-                # Assuming level is max since it didn't parse any numbers
-                if character["ascension"] != 6:
-                    self._logger.emit(
-                        f"{character['key']}: Failed to parse '{k}' skill level. Setting to 1.") if self._logger else None
-                    v = 1
-                elif k == "basic":
-                    v = 6
-                else:
-                    v = 10
-                character["skills"][k] = v
-            else:
-                character["skills"][k] += int(v)
+            character["skills"][k] += int(res)
 
         for k, v in traces_dict["locks"].items():
             min_dim = min(v.size)

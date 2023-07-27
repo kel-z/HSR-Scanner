@@ -61,7 +61,7 @@ def preprocess_img(img):
 
     # img = img.convert('L')
     img = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
-    # cv2.adaptiveThreshold(cv2.medianBlur(img, 9), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
+    # img = cv2.adaptiveThreshold(cv2.medianBlur(img, 9), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
     # img = img.filter(ImageFilter.EDGE_ENHANCE)
     # img = img.filter(ImageFilter.GaussianBlur(radius=1))
 
