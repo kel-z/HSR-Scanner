@@ -204,10 +204,18 @@ class CharacterScanner:
 
         traces_dict = stats_dict["traces"]
         for k, v in traces_dict["levels"].items():
-            res = image_to_string(v, "0123456789", 6, True)
-            if not res:
-                res = image_to_string(v, "0123456789", 7, True)
-            character["skills"][k] += int(res)
+            try:
+                res = image_to_string(v, "0123456789", 6, False)
+                if not res:
+                    res = image_to_string(v, "0123456789", 7, False)
+                character["skills"][k] += int(res)
+            except ValueError:
+                self._logger.emit(
+                    f"{character['key']}: Failed to parse {k} level."
+                    + (f' Got "{res}" instead.' if res else "")
+                    + " Setting to 1."
+                ) if self._logger else None
+                character["skills"][k] = 1
 
         character["traces"] = traces_dict["unlocks"]
 
@@ -217,8 +225,6 @@ class CharacterScanner:
         return character
 
     def get_traces_dict(self, path):
-        path, _ = get_closest_path_name(path)
-
         if path == "The Hunt":
             traces_dict = self._screenshot.screenshot_character_hunt_traces()
         elif path == "Erudition":
@@ -238,7 +244,9 @@ class CharacterScanner:
 
         return traces_dict
 
-    def get_closest_name(self, character_name, path):
+    def get_closest_name_and_path(self, character_name, path):
+        path, _ = get_closest_path_name(path)
+
         if self.__is_trailblazer():
             if self._trailblazerScanned:
                 self._logger.emit(
@@ -247,7 +255,7 @@ class CharacterScanner:
             else:
                 self._trailblazerScanned = True
 
-            return "Trailblazer" + path.split(" ")[-1]
+            return "Trailblazer" + path.split(" ")[-1], path
         else:
             character_name, min_dist = get_closest_character_name(
                 character_name)
@@ -257,7 +265,7 @@ class CharacterScanner:
                     f"Character not found in database. Got {character_name}"
                 )
 
-            return character_name
+            return character_name, path
 
     def __is_trailblazer(self):
         char = self._screenshot.screenshot_character()
