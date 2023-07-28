@@ -37,7 +37,7 @@ class RelicStrategy:
         self._lock_icon = Image.open(resource_path("images\\lock.png"))
         self._screenshot = screenshot
         self._logger = logger
-        self._curr_id = 0
+        self._curr_id = 1
 
     def screenshot_stats(self):
         return self._screenshot.screenshot_relic_stats()

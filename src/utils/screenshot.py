@@ -26,20 +26,20 @@ class Screenshot:
                 ],
                 "traces": {
                     "hunt": {
-                        "basic": (0.501171875, 0.5347222222222222),
+                        "basic": (0.502171875, 0.5347222222222222),
                         "skill": (0.65546875, 0.5347222222222222),
                         "ult": (0.579296875, 0.6006944444444444),
                         "talent": (0.579296875, 0.4625),
                     },
                     "erudition": {
-                        "basic": (0.5046875, 0.5888888888888889),
+                        "basic": (0.5076875, 0.5888888888888889),
                         "skill": (0.651171875, 0.5888888888888889),
                         "ult": (0.579296875, 0.5888888888888889),
                         "talent": (0.579296875, 0.4395833333333333),
                     },
                     "harmony": {
                         "basic": (0.508203125, 0.5493055555555556),
-                        "skill": (0.6515625, 0.5493055555555556),
+                        "skill": (0.6505625, 0.5493055555555556),
                         "ult": (0.579078125, 0.6458333333333334),
                         "talent": (0.579078125, 0.5243055555555556),
                     },
@@ -223,7 +223,7 @@ class Screenshot:
         for k, v in coords["character"]["traces"][key].items():
             left = self._window_x + int(self._window_width * v[0])
             upper = self._window_y + int(self._window_height * v[1])
-            right = left + int(self._window_width * 0.0177)
+            right = left + int(self._window_width * 0.04)
             lower = upper + int(self._window_height * 0.028)
 
             res["levels"][k] = screenshot.crop(

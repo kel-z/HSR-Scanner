@@ -193,15 +193,15 @@ class ScannerThread(QtCore.QThread):
         self._interrupt_requested = False
 
     def run(self):
-        # try:
-        res = asyncio.run(self._scanner.start_scan())
-        # print(res)
-        if self._interrupt_requested:
-            self.error.emit("Scan interrupted")
-        else:
-            self.result.emit(res)
-        # except Exception as e:
-        #     self.error.emit("Scan aborted with error: " + str(e))
+        try:
+            res = asyncio.run(self._scanner.start_scan())
+            # print(res)
+            if self._interrupt_requested:
+                self.error.emit("Scan interrupted")
+            else:
+                self.result.emit(res)
+        except Exception as e:
+            self.error.emit("Scan aborted with error: " + str(e))
 
     def interrupt_scan(self):
         self._interrupt_requested = True

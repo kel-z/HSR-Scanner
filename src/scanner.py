@@ -295,7 +295,10 @@ class HSRScanner:
                 path_key = path.split(" ")[-1].lower()
                 for k, v in nav_data["traces"][path_key].items():
                     pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
-                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))])
+                    dist = min(
+                        sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
+                        sum([(a - b) ** 2 for a, b in zip(pixel, (178, 200, 255))]),
+                    )
                     stats_dict["traces"]["unlocks"][k] = dist < 100
 
                 # Get eidelons

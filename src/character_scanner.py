@@ -1,7 +1,7 @@
 from pyautogui import locate
 from helper_functions import resource_path, image_to_string
 from PIL import Image
-from helper_functions import resource_path
+from helper_functions import resource_path, preprocess_trace_img
 from utils.game_data_helpers import (
     get_character_meta_data,
     get_closest_character_name,
@@ -28,7 +28,7 @@ class CharacterScanner:
             # trigger warning:
             "traces": {
                 "hunt": {
-                    "ability_1": (0.502, 0.6898),
+                    "ability_1": (0.5020833333333333, 0.6833333333333333),
                     "ability_2": (0.6635, 0.6879),
                     "ability_3": (0.5828, 0.3166),
                     "skill_1": (0.58958, 0.8185),
@@ -88,7 +88,7 @@ class CharacterScanner:
                     "skill_10": (0.6796875, 0.2537),
                 },
                 "destruction": {
-                    "ability_1": (0.496354166, 0.69537037),
+                    "ability_1": (0.4901041666666667, 0.7046296296296296),
                     "ability_2": (0.678125, 0.696296296),
                     "ability_3": (0.5880208, 0.31296296),
                     "skill_1": (0.5890625, 0.813889),
@@ -96,7 +96,7 @@ class CharacterScanner:
                     "skill_3": (0.3875, 0.54537),
                     "skill_4": (0.4375, 0.41851),
                     "skill_5": (0.7395833, 0.63796296),
-                    "skill_6": (0.790234, 0.5472222),
+                    "skill_6": (0.7921875, 0.5462962962962963),
                     "skill_7": (0.741666, 0.42037),
                     "skill_8": (0.58958333, 0.229629),
                     "skill_9": (0.50052, 0.256481),
@@ -204,10 +204,12 @@ class CharacterScanner:
         traces_dict = stats_dict["traces"]
         for k, v in traces_dict["levels"].items():
             try:
-                res = image_to_string(v, "0123456789", 6, False)
-                if not res:
-                    res = image_to_string(v, "0123456789", 7, False)
-                character["skills"][k] += int(res)
+                res = image_to_string(v, "0123456789/", 6, True, preprocess_trace_img)
+                if not res or not res.find("/"):
+                    res = image_to_string(
+                        v, "0123456789/", 7, True, preprocess_trace_img
+                    )
+                character["skills"][k] += int(res.split("/")[0])
             except ValueError:
                 self._logger.emit(
                     f"{character['key']}: Failed to parse {k} level."
