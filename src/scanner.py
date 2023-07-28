@@ -53,8 +53,7 @@ class HSRScanner:
 
         relics = []
         if self._config["scan_relics"] and not self.interrupt.is_set():
-            relics = self.scan_inventory(
-                RelicStrategy(self._screenshot, self.logger))
+            relics = self.scan_inventory(RelicStrategy(self._screenshot, self.logger))
 
         characters = []
         if self._config["scan_characters"] and not self.interrupt.is_set():
@@ -108,10 +107,8 @@ class HSRScanner:
             )
 
         current_sort_method = strategy.screenshot_sort()
-        current_sort_method = image_to_string(
-            current_sort_method, "RarityLv", 7)
-        optimal_sort_method = strategy.get_optimal_sort_method(
-            self._config["filters"])
+        current_sort_method = image_to_string(current_sort_method, "RarityLv", 7)
+        optimal_sort_method = strategy.get_optimal_sort_method(self._config["filters"])
 
         if optimal_sort_method != current_sort_method:
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
@@ -130,8 +127,7 @@ class HSRScanner:
                 and not quantity <= scanned_per_scroll
             ):
                 x, y = nav_data["row_start_bottom"]
-                todo_rows = self._ceildiv(
-                    quantity_remaining, nav_data["cols"]) - 1
+                todo_rows = self._ceildiv(quantity_remaining, nav_data["cols"]) - 1
                 y -= todo_rows * nav_data["offset_y"]
             else:
                 x, y = nav_data["row_start_top"]
@@ -263,10 +259,10 @@ class HSRScanner:
                 7,
             )
             try:
-                path, character_name = map(
-                    str.strip, character_name.split("/"))
+                path, character_name = map(str.strip, character_name.split("/"))
                 character_name, path = char_scanner.get_closest_name_and_path(
-                    character_name, path)
+                    character_name, path
+                )
                 stats_dict["name"] = character_name
 
                 # Get level
@@ -279,8 +275,7 @@ class HSRScanner:
                     pixel = pyautogui.pixel(
                         *self._nav.translate_percent_to_coords(*ascension_pos)
                     )
-                    dist = sum(
-                        [(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
+                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
                     if dist > 100:
                         break
 
@@ -299,10 +294,8 @@ class HSRScanner:
                 stats_dict["traces"] = char_scanner.get_traces_dict(path)
                 path_key = path.split(" ")[-1].lower()
                 for k, v in nav_data["traces"][path_key].items():
-                    pixel = pyautogui.pixel(
-                        *self._nav.translate_percent_to_coords(*v))
-                    dist = sum(
-                        [(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))])
+                    pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
+                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))])
                     stats_dict["traces"]["unlocks"][k] = dist < 100
 
                 # Get eidelons
@@ -312,8 +305,7 @@ class HSRScanner:
                 time.sleep(1.5)
                 eidlon_images = self._screenshot.screenshot_character_eidelons()
 
-                task = asyncio.to_thread(
-                    char_scanner.parse, stats_dict, eidlon_images)
+                task = asyncio.to_thread(char_scanner.parse, stats_dict, eidlon_images)
                 tasks.add(task)
             except Exception as e:
                 self.logger.emit(

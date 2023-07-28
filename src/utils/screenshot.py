@@ -4,7 +4,6 @@ from PIL import Image, ImageGrab
 
 
 class Screenshot:
-
     # each tuple is (x0, y0, x1, y1) in % of the window size
     # otherwise, x1 and y1 are hardcoded
     coords = {
@@ -102,8 +101,7 @@ class Screenshot:
     def __init__(self, hwnd, aspect_ratio="16:9"):
         self._aspect_ratio = aspect_ratio
 
-        self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[
-            2:]
+        self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
     def screenshot_light_cone_stats(self):
@@ -114,7 +112,7 @@ class Screenshot:
 
     def screenshot_relic_sort(self):
         coords = self.coords[self._aspect_ratio]["sort"]
-        coords = (coords[0], coords[1] + 0.035, coords[2], coords[3])
+        coords = (coords[0] + 0.035, coords[1], coords[2], coords[3])
         return self.__take_screenshot(*coords)
 
     def screenshot_light_cone_sort(self):
@@ -155,8 +153,7 @@ class Screenshot:
             upper = self._window_y + int(self._window_height * c[0])
             right = left + self._window_width * 0.018
             lower = upper + self._window_height * 0.0349
-            res.append(screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0)))
+            res.append(screenshot.crop((left - x0, upper - y0, right - x0, lower - y0)))
 
         return res
 

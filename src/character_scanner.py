@@ -25,7 +25,6 @@ class CharacterScanner:
             "eidelons_button": (0.13, 0.49),
             "list_button": (0.033, 0.931),
             "trailblazer": (0.3315, 0.4432, 0.126, 0.1037),
-
             # trigger warning:
             "traces": {
                 "hunt": {
@@ -86,7 +85,7 @@ class CharacterScanner:
                     "skill_7": (0.727083, 0.4462962),
                     "skill_8": (0.589583, 0.229629),
                     "skill_9": (0.499479, 0.255555),
-                    "skill_10": (0.6796875, 0.2537)
+                    "skill_10": (0.6796875, 0.2537),
                 },
                 "destruction": {
                     "ability_1": (0.496354166, 0.69537037),
@@ -101,7 +100,7 @@ class CharacterScanner:
                     "skill_7": (0.741666, 0.42037),
                     "skill_8": (0.58958333, 0.229629),
                     "skill_9": (0.50052, 0.256481),
-                    "skill_10": (0.6791666, 0.25555)
+                    "skill_10": (0.6791666, 0.25555),
                 },
                 "nihility": {
                     "ability_1": (0.436871875, 0.4256944444),
@@ -116,7 +115,7 @@ class CharacterScanner:
                     "skill_7": (0.691796875, 0.7680555),
                     "skill_8": (0.50078125, 0.2527777),
                     "skill_9": (0.680859375, 0.25257777),
-                    "skill_10": (0.590625, 0.80763888)
+                    "skill_10": (0.590625, 0.80763888),
                 },
                 "abundance": {
                     "ability_1": (0.472265, 0.720138),
@@ -131,8 +130,8 @@ class CharacterScanner:
                     "skill_7": (0.459765625, 0.43541666),
                     "skill_8": (0.67890625, 0.2576388),
                     "skill_9": (0.504296875, 0.2583333),
-                    "skill_10": (0.550390625, 0.80416666)
-                }
+                    "skill_10": (0.550390625, 0.80416666),
+                },
             },
         }
     }
@@ -257,8 +256,7 @@ class CharacterScanner:
 
             return "Trailblazer" + path.split(" ")[-1], path
         else:
-            character_name, min_dist = get_closest_character_name(
-                character_name)
+            character_name, min_dist = get_closest_character_name(character_name)
 
             if min_dist > 5:
                 raise Exception(
