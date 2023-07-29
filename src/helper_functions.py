@@ -96,7 +96,7 @@ def preprocess_trace_img(img):
 
     img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2GRAY)
     img = cv2.GaussianBlur(img, (3, 3), 0)
-    img = cv2.dilate(img, np.ones((2, 2), np.uint8), iterations=1)
+    img = cv2.dilate(img, np.ones((3, 2), np.uint8), iterations=1)
 
     img = Image.fromarray(img)
     return img

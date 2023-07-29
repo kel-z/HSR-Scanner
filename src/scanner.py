@@ -299,7 +299,7 @@ class HSRScanner:
                         sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
                         sum([(a - b) ** 2 for a, b in zip(pixel, (178, 200, 255))]),
                     )
-                    stats_dict["traces"]["unlocks"][k] = dist < 100
+                    stats_dict["traces"]["unlocks"][k] = dist < 3000
 
                 # Get eidelons
                 self._nav.move_cursor_to(*nav_data["eidelons_button"])

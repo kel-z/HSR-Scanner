@@ -89,8 +89,8 @@ class CharacterScanner:
                 },
                 "destruction": {
                     "ability_1": (0.4901041666666667, 0.7046296296296296),
-                    "ability_2": (0.678125, 0.696296296),
-                    "ability_3": (0.5880208, 0.31296296),
+                    "ability_2": (0.6734375, 0.7),
+                    "ability_3": (0.5822916666666667, 0.3138888888888889),
                     "skill_1": (0.5890625, 0.813889),
                     "skill_2": (0.4395833, 0.63425925),
                     "skill_3": (0.3875, 0.54537),
@@ -210,11 +210,11 @@ class CharacterScanner:
                         v, "0123456789/", 7, True, preprocess_trace_img
                     )
                 character["skills"][k] += int(res.split("/")[0])
+                if not 1 <= character["skills"][k] <= (6 if k == "basic" else 10):
+                    raise ValueError
             except ValueError:
                 self._logger.emit(
-                    f"{character['key']}: Failed to parse {k} level."
-                    + (f' Got "{res}" instead.' if res else "")
-                    + " Setting to 1."
+                    f"{character['key']}: Failed to parse '{k}' level. Setting to 1."
                 ) if self._logger else None
                 character["skills"][k] = 1
 
