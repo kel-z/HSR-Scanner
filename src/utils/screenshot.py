@@ -4,189 +4,72 @@ from PIL import Image, ImageGrab
 
 
 class Screenshot:
+    # each tuple is (x0, y0, x1, y1) in % of the window size
+    # otherwise, x1 and y1 are hardcoded
     coords = {
         "16:9": {
-            "quantity": (0.89, 0.46, 0.13, 0.06),
-            "stats": (0.09, 0.72, 0.25, 0.78),
-            "sort": (0.9, 0.079, 0.07, 0.033),
+            "quantity": (0.46, 0.89, 0.13, 0.06),
+            "stats": (0.72, 0.09, 0.25, 0.78),
+            "sort": (0.079, 0.9, 0.07, 0.033),
             "character": {
-                "count": (0.555, 0.56, 0.05, 0.035),
-                "chest": (0.3315, 0.44, 0.1245, 0.1037),
-                "name": (0.059, 0.0656, 0.16, 0.0314),
-                "level": (0.216, 0.795, 0.024, 0.034),
-                "traces": {
-                    # yeah this part is quite masochistic
-                    "hunt": {
-                        "levels": {
-                            "basic": (0.5324, 0.526),
-                            "skill": (0.5324, 0.679),
-                            "ult": (0.599, 0.601),
-                            "talent": (0.462, 0.601),
-                        },
-                        "locks": {
-                            "ability_1": (0.647, 0.53, 0.015, 0.027),
-                            "ability_2": (0.647, 0.692, 0.015, 0.027),
-                            "ability_3": (0.278, 0.611, 0.015, 0.027),
-                            "stat_1": (0.797, 0.605, 0.011, 0.023),
-                            "stat_2": (0.572, 0.468, 0.011, 0.023),
-                            "stat_3": (0.479, 0.413, 0.011, 0.023),
-                            "stat_4": (0.354, 0.469, 0.011, 0.023),
-                            "stat_5": (0.574, 0.741, 0.011, 0.023),
-                            "stat_6": (0.479, 0.797, 0.011, 0.023),
-                            "stat_7": (0.355, 0.74, 0.011, 0.023),
-                            "stat_8": (0.20, 0.605, 0.011, 0.023),
-                            "stat_9": (0.227, 0.517, 0.011, 0.023),
-                            "stat_10": (0.227, 0.693, 0.011, 0.023)
-                        }
-                    },
-                    "erudition": {
-                        "levels": {
-                            "basic": (0.588, 0.528),
-                            "skill": (0.588, 0.673),
-                            "ult": (0.588, 0.601),
-                            "talent": (0.438, 0.601)
-                        },
-                        "locks": {
-                            "ability_1": (0.504, 0.479, 0.015, 0.027),
-                            "ability_2": (0.504, 0.742, 0.015, 0.027),
-                            "ability_3": (0.185, 0.61, 0.015, 0.027),
-                            "stat_1": (0.726, 0.533, 0.011, 0.023),
-                            "stat_2": (0.523, 0.417, 0.011, 0.023),
-                            "stat_3": (0.412, 0.433, 0.011, 0.023),
-                            "stat_4": (0.635, 0.433, 0.011, 0.023),
-                            "stat_5": (0.523, 0.791, 0.011, 0.023),
-                            "stat_6": (0.413, 0.777, 0.011, 0.023),
-                            "stat_7": (0.635, 0.777, 0.011, 0.023),
-                            "stat_8": (0.23, 0.515, 0.011, 0.023),
-                            "stat_9": (0.23, 0.695, 0.011, 0.023),
-                            "stat_10": (0.726, 0.676, 0.011, 0.023)
-                        }
-                    },
-                    "harmony": {
-                        "levels": {
-                            "basic": (0.548, 0.528),
-                            "skill": (0.548, 0.673),
-                            "ult": (0.644, 0.601),
-                            "talent": (0.522, 0.601)
-                        },
-                        "locks": {
-                            "ability_1": (0.526, 0.442, 0.015, 0.027),
-                            "ability_2": (0.526, 0.78, 0.015, 0.027),
-                            "ability_3": (0.298, 0.61, 0.015, 0.027),
-                            "stat_1": (0.798, 0.605, 0.011, 0.023),
-                            "stat_2": (0.452, 0.398, 0.011, 0.023),
-                            "stat_3": (0.389, 0.461, 0.011, 0.023),
-                            "stat_4": (0.771, 0.525, 0.011, 0.023),
-                            "stat_5": (0.656, 0.741, 0.011, 0.023),
-                            "stat_6": (0.618, 0.682, 0.011, 0.023),
-                            "stat_7": (0.771, 0.684, 0.011, 0.023),
-                            "stat_8": (0.203, 0.605, 0.011, 0.023),
-                            "stat_9": (0.231, 0.52, 0.011, 0.023),
-                            "stat_10": (0.231, 0.69, 0.011, 0.023)
-                        }
-                    },
-                    "preservation": {
-                        "levels": {
-                            "basic": (0.606, 0.527),
-                            "skill": (0.606, 0.677),
-                            "ult": (0.588, 0.602),
-                            "talent": (0.461, 0.602)
-                        },
-                        "locks": {
-                            "ability_1": (0.762, 0.526, 0.015, 0.027),
-                            "ability_2": (0.762, 0.695, 0.015, 0.027),
-                            "ability_3": (0.281, 0.611, 0.015, 0.027),
-                            "stat_1": (0.776, 0.605, 0.011, 0.023),
-                            "stat_2": (0.639, 0.451, 0.011, 0.023),
-                            "stat_3": (0.529, 0.398, 0.011, 0.023),
-                            "stat_4": (0.422, 0.467, 0.011, 0.023),
-                            "stat_5": (0.639, 0.758, 0.011, 0.023),
-                            "stat_6": (0.528, 0.811, 0.011, 0.023),
-                            "stat_7": (0.422, 0.743, 0.011, 0.023),
-                            "stat_8": (0.208, 0.605, 0.011, 0.023),
-                            "stat_9": (0.231, 0.515, 0.011, 0.023),
-                            "stat_10": (0.231, 0.694, 0.011, 0.023)
-                        }
-                    },
-                    "destruction": {
-                        "levels": {
-                            "basic": (0.569, 0.516),
-                            "skill": (0.569, 0.689),
-                            "ult": (0.588, 0.602),
-                            "talent": (0.461, 0.602)
-                        },
-                        "locks": {
-                            "ability_1": (0.664, 0.520, 0.015, 0.027),
-                            "ability_2": (0.664, 0.703, 0.015, 0.027),
-                            "ability_3": (0.281, 0.610, 0.015, 0.027),
-                            "stat_1": (0.788, 0.604, 0.011, 0.023),
-                            "stat_2": (0.612, 0.454, 0.011, 0.023),
-                            "stat_3": (0.523, 0.402, 0.011, 0.023),
-                            "stat_4": (0.396, 0.452, 0.011, 0.023),
-                            "stat_5": (0.612, 0.755, 0.011, 0.023),
-                            "stat_6": (0.524, 0.807, 0.011, 0.023),
-                            "stat_7": (0.396, 0.757, 0.011, 0.023),
-                            "stat_8": (0.209, 0.605, 0.011, 0.023),
-                            "stat_9": (0.232, 0.515, 0.011, 0.023),
-                            "stat_10": (0.232, 0.694, 0.011, 0.023)
-                        }
-                    },
-                    "nihility": {
-                        "levels": {
-                            "basic": (0.517, 0.521),
-                            "skill": (0.517, 0.683),
-                            "ult": (0.501, 0.602),
-                            "talent": (0.387, 0.602)
-                        },
-                        "locks": {
-                            "ability_1": (0.388, 0.465, 0.015, 0.027),
-                            "ability_2": (0.388, 0.757, 0.015, 0.027),
-                            "ability_3": (0.19, 0.611, 0.015, 0.027),
-                            "stat_1": (0.68, 0.604, 0.011, 0.023),
-                            "stat_2": (0.524, 0.401, 0.011, 0.023),
-                            "stat_3": (0.638, 0.449, 0.011, 0.023),
-                            "stat_4": (0.748, 0.502, 0.011, 0.023),
-                            "stat_5": (0.524, 0.808, 0.011, 0.023),
-                            "stat_6": (0.638, 0.760, 0.011, 0.023),
-                            "stat_7": (0.748, 0.707, 0.011, 0.023),
-                            "stat_8": (0.231, 0.515, 0.011, 0.023),
-                            "stat_9": (0.231, 0.694, 0.011, 0.023),
-                            "stat_10": (0.787, 0.604, 0.011, 0.023)
-                        }
-                    },
-                    "abundance": {
-                        "levels": {
-                            "basic": (0.566, 0.53),
-                            "skill": (0.566, 0.674),
-                            "ult": (0.592, 0.602),
-                            "talent": (0.462, 0.602)
-                        },
-                        "locks": {
-                            "ability_1": (0.685, 0.722, 0.015, 0.027),
-                            "ability_2": (0.685, 0.501, 0.015, 0.027),
-                            "ability_3": (0.183, 0.611, 0.015, 0.027),
-                            "stat_1": (0.782, 0.644, 0.011, 0.023),
-                            "stat_2": (0.597, 0.763, 0.011, 0.023),
-                            "stat_3": (0.507, 0.792, 0.011, 0.023),
-                            "stat_4": (0.415, 0.736, 0.011, 0.023),
-                            "stat_5": (0.595, 0.446, 0.011, 0.023),
-                            "stat_6": (0.507, 0.417, 0.011, 0.023),
-                            "stat_7": (0.414, 0.473, 0.011, 0.023),
-                            "stat_8": (0.238, 0.517, 0.011, 0.023),
-                            "stat_9": (0.231, 0.694, 0.011, 0.023),
-                            "stat_10": (0.782, 0.564, 0.011, 0.023)
-                        }
-                    }
-                },
+                "count": (0.56, 0.555, 0.05, 0.035),
+                "chest": (0.44, 0.3315, 0.1245, 0.1037),
+                "name": (0.0656, 0.059, 0.16, 0.0314),
+                "level": (0.795, 0.216, 0.024, 0.034),
                 "eidelons": [
                     (0.198, 0.34),
                     (0.187, 0.546),
                     (0.377, 0.793),
                     (0.826, 0.679),
                     (0.796, 0.43),
-                    (0.716, 0.197)
-                ]
+                    (0.716, 0.197),
+                ],
+                "traces": {
+                    "hunt": {
+                        "basic": (0.502171875, 0.5347222222222222),
+                        "skill": (0.65546875, 0.5347222222222222),
+                        "ult": (0.579296875, 0.6006944444444444),
+                        "talent": (0.579296875, 0.4625),
+                    },
+                    "erudition": {
+                        "basic": (0.5076875, 0.5888888888888889),
+                        "skill": (0.651171875, 0.5888888888888889),
+                        "ult": (0.579296875, 0.5888888888888889),
+                        "talent": (0.579296875, 0.4395833333333333),
+                    },
+                    "harmony": {
+                        "basic": (0.508203125, 0.5493055555555556),
+                        "skill": (0.6505625, 0.5493055555555556),
+                        "ult": (0.579078125, 0.6458333333333334),
+                        "talent": (0.579078125, 0.5243055555555556),
+                    },
+                    "preservation": {
+                        "basic": (0.503515625, 0.6076388888888888),
+                        "skill": (0.653125, 0.6069444444444444),
+                        "ult": (0.577734375, 0.5881944444444445),
+                        "talent": (0.578125, 0.4625),
+                    },
+                    "destruction": {
+                        "basic": (0.491796875, 0.56875),
+                        "skill": (0.6640625, 0.56875),
+                        "ult": (0.577734375, 0.5888888888888889),
+                        "talent": (0.577734375, 0.4625),
+                    },
+                    "nihility": {
+                        "basic": (0.498046875, 0.5173611111111112),
+                        "skill": (0.658984375, 0.5173611111111112),
+                        "ult": (0.57734375, 0.5048611111111111),
+                        "talent": (0.57734375, 0.3875),
+                    },
+                    "abundance": {
+                        "basic": (0.506640625, 0.5673611111111111),
+                        "skill": (0.651953125, 0.5673611111111111),
+                        "ult": (0.5796875, 0.59375),
+                        "talent": (0.5796875, 0.4625),
+                    },
+                },
             },
+            # % of the stats screenshot
             "light_cone": {
                 "name": (0, 0, 1, 0.09),
                 "level": (0.13, 0.32, 0.35, 0.37),
@@ -202,29 +85,24 @@ class Screenshot:
                 "rarity": (0.07, 0.15, 0.2, 0.22),
                 "equipped": (0.45, 0.95, 0.68, 1),
                 "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
-
                 "mainStatKey": (0.115, 0.358, 0.7, 0.4),
-
                 "subStatKey_1": (0.115, 0.41, 0.77, 0.45),
                 "subStatVal_1": (0.77, 0.41, 1, 0.45),
-
                 "subStatKey_2": (0.115, 0.45, 0.77, 0.5),
                 "subStatVal_2": (0.77, 0.45, 1, 0.5),
-
                 "subStatKey_3": (0.115, 0.495, 0.77, 0.542),
                 "subStatVal_3": (0.77, 0.495, 1, 0.542),
-
                 "subStatKey_4": (0.115, 0.545, 0.77, 0.595),
                 "subStatVal_4": (0.77, 0.545, 1, 0.595),
-            }
+            },
         }
     }
 
     def __init__(self, hwnd, aspect_ratio="16:9"):
         self._aspect_ratio = aspect_ratio
 
-        self._width, self._height = win32gui.GetClientRect(hwnd)[2:]
-        self._left, self._top = win32gui.ClientToScreen(hwnd, (0, 0))
+        self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
+        self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
     def screenshot_light_cone_stats(self):
         return self.__screenshot_stats("light_cone")
@@ -234,32 +112,34 @@ class Screenshot:
 
     def screenshot_relic_sort(self):
         coords = self.coords[self._aspect_ratio]["sort"]
-        coords = (coords[0], coords[1] + 0.035, coords[2], coords[3])
+        coords = (coords[0] + 0.035, coords[1], coords[2], coords[3])
         return self.__take_screenshot(*coords)
 
     def screenshot_light_cone_sort(self):
-        return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["sort"])
+        return self.__take_screenshot(*self.coords[self._aspect_ratio]["sort"])
 
     def screenshot_quantity(self):
-        return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["quantity"])
+        return self.__take_screenshot(*self.coords[self._aspect_ratio]["quantity"])
 
     def screenshot_character_count(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["count"])
+            *self.coords[self._aspect_ratio]["character"]["count"]
+        )
 
     def screenshot_character_name(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["name"])
+            *self.coords[self._aspect_ratio]["character"]["name"]
+        )
 
     def screenshot_character_level(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["level"])
+            *self.coords[self._aspect_ratio]["character"]["level"]
+        )
 
     def screenshot_character(self):
         return self.__take_screenshot(
-            *self.coords[self._aspect_ratio]["character"]["chest"])
+            *self.coords[self._aspect_ratio]["character"]["chest"]
+        )
 
     def screenshot_character_eidelons(self):
         res = []
@@ -269,12 +149,11 @@ class Screenshot:
         x0, y0 = offset
 
         for c in self.coords[self._aspect_ratio]["character"]["eidelons"]:
-            left = self._left + int(self._width * c[1])
-            upper = self._top + int(self._height * c[0])
-            right = left + self._width * 0.018
-            lower = upper + self._height * 0.0349
-            res.append(screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0)))
+            left = self._window_x + int(self._window_width * c[1])
+            upper = self._window_y + int(self._window_height * c[0])
+            right = left + self._window_width * 0.018
+            lower = upper + self._window_height * 0.0349
+            res.append(screenshot.crop((left - x0, upper - y0, right - x0, lower - y0)))
 
         return res
 
@@ -299,15 +178,17 @@ class Screenshot:
     def screenshot_character_abundance_traces(self):
         return self.__screenshot_traces("abundance")
 
-    def __take_screenshot(self, top, left, width, height):
-        x = self._left + int(self._width * left)
-        y = self._top + int(self._height * top)
-        width = int(self._width * width)
-        height = int(self._height * height)
+    def __take_screenshot(self, x, y, width, height):
+        # adjust coordinates to window
+        x = self._window_x + int(self._window_width * x)
+        y = self._window_y + int(self._window_height * y)
+        width = int(self._window_width * width)
+        height = int(self._window_height * height)
 
         # screenshot = pyautogui.screenshot(region=(x, y, width, height))
         screenshot = ImageGrab.grab(
-            bbox=(x, y, x + width, y + height), all_screens=True)
+            bbox=(x, y, x + width, y + height), all_screens=True
+        )
 
         return screenshot
 
@@ -317,42 +198,36 @@ class Screenshot:
         img = self.__take_screenshot(*coords["stats"])
 
         adjusted_stat_coords = {
-            k: tuple([int(v * img.width) if i % 2 == 0 else int(v * img.height) for i, v in enumerate(v)]) for k, v in coords[key].items()}
-
-        res = {
-            k: img.crop(v) for k, v in adjusted_stat_coords.items()
+            k: tuple(
+                [
+                    int(v * img.width) if i % 2 == 0 else int(v * img.height)
+                    for i, v in enumerate(v)
+                ]
+            )
+            for k, v in coords[key].items()
         }
+
+        res = {k: img.crop(v) for k, v in adjusted_stat_coords.items()}
 
         return res
 
     def __screenshot_traces(self, key):
         coords = self.coords[self._aspect_ratio]
 
-        res = {
-            "levels": {},
-            "locks": {}
-        }
+        res = {"levels": {}, "unlocks": {}}
 
         screenshot = ImageGrab.grab(all_screens=True)
         offset, _, _ = Image.core.grabscreen_win32(False, True)
         x0, y0 = offset
 
-        for k, v in coords["character"]["traces"][key]["levels"].items():
-            left = self._left + int(self._width * v[1])
-            upper = self._top + int(self._height * v[0])
-            right = left + int(self._width * 0.0177)
-            lower = upper + int(self._height * 0.028)
+        for k, v in coords["character"]["traces"][key].items():
+            left = self._window_x + int(self._window_width * v[0])
+            upper = self._window_y + int(self._window_height * v[1])
+            right = left + int(self._window_width * 0.04)
+            lower = upper + int(self._window_height * 0.028)
 
             res["levels"][k] = screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0))
-
-        for k, v in coords["character"]["traces"][key]["locks"].items():
-            left = self._left + int(self._width * v[1])
-            upper = self._top + int(self._height * v[0])
-            right = left + int(self._width * v[2])
-            lower = upper + int(self._height * v[3])
-
-            res["locks"][k] = screenshot.crop(
-                (left - x0, upper - y0, right - x0, lower - y0))
+                (left - x0, upper - y0, right - x0, lower - y0)
+            )
 
         return res

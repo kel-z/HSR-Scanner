@@ -9,8 +9,7 @@ import pytesseract
 import sys
 
 
-pytesseract.pytesseract.tesseract_cmd = resource_path(
-    ".\\tesseract\\tesseract.exe")
+pytesseract.pytesseract.tesseract_cmd = resource_path(".\\tesseract\\tesseract.exe")
 
 
 class IncrementType(Enum):
@@ -34,13 +33,13 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         super().setupUi(MainWindow)
         self.pushButtonStartScan.clicked.connect(self.start_scan)
         self.lineEditOutputLocation.setText(executable_path("StarRailData"))
-        self.pushButtonChangeLocation.clicked.connect(
-            self.change_output_location)
+        self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
 
     def change_output_location(self):
         new_output_location = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Select Output Location", self.lineEditOutputLocation.text())
+            self, "Select Output Location", self.lineEditOutputLocation.text()
+        )
         if new_output_location:
             self.lineEditOutputLocation.setText(new_output_location)
 
@@ -49,13 +48,21 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if output_location:
             try:
                 QtGui.QDesktopServices.openUrl(
-                    QtCore.QUrl.fromLocalFile(output_location))
+                    QtCore.QUrl.fromLocalFile(output_location)
+                )
             except Exception as e:
                 self.log(f"Error opening output location: {e}")
 
     def start_scan(self):
         self.disable_start_scan_button()
-        for label in [self.labelLightConeCount, self.labelRelicCount, self.labelCharacterCount, self.labelLightConeProcessed, self.labelRelicProcessed, self.labelCharacterProcessed]:
+        for label in [
+            self.labelLightConeCount,
+            self.labelRelicCount,
+            self.labelCharacterCount,
+            self.labelLightConeProcessed,
+            self.labelRelicProcessed,
+            self.labelCharacterProcessed,
+        ]:
             label.setText("0")
         self.textEditLog.clear()
 
@@ -108,22 +115,26 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         switch = IncrementType(enum)
         if switch == IncrementType.LIGHT_CONE_ADD:
             self.labelLightConeCount.setText(
-                str(int(self.labelLightConeCount.text()) + 1))
+                str(int(self.labelLightConeCount.text()) + 1)
+            )
         elif switch == IncrementType.RELIC_ADD:
-            self.labelRelicCount.setText(
-                str(int(self.labelRelicCount.text()) + 1))
+            self.labelRelicCount.setText(str(int(self.labelRelicCount.text()) + 1))
         elif switch == IncrementType.CHARACTER_ADD:
             self.labelCharacterCount.setText(
-                str(int(self.labelCharacterCount.text()) + 1))
+                str(int(self.labelCharacterCount.text()) + 1)
+            )
         elif switch == IncrementType.LIGHT_CONE_SUCCESS:
             self.labelLightConeProcessed.setText(
-                str(int(self.labelLightConeProcessed.text()) + 1))
+                str(int(self.labelLightConeProcessed.text()) + 1)
+            )
         elif switch == IncrementType.RELIC_SUCCESS:
             self.labelRelicProcessed.setText(
-                str(int(self.labelRelicProcessed.text()) + 1))
+                str(int(self.labelRelicProcessed.text()) + 1)
+            )
         elif switch == IncrementType.CHARACTER_SUCCESS:
             self.labelCharacterProcessed.setText(
-                str(int(self.labelCharacterProcessed.text()) + 1))
+                str(int(self.labelCharacterProcessed.text()) + 1)
+            )
 
     def disable_start_scan_button(self):
         self.is_scanning = True
@@ -190,7 +201,7 @@ class ScannerThread(QtCore.QThread):
             else:
                 self.result.emit(res)
         except Exception as e:
-            self.error.emit(e)
+            self.error.emit("Scan aborted with error: " + str(e))
 
     def interrupt_scan(self):
         self._interrupt_requested = True
@@ -199,6 +210,7 @@ class ScannerThread(QtCore.QThread):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(resource_path("images\\app.ico")))
     MainWindow = QtWidgets.QMainWindow()
