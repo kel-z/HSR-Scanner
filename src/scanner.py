@@ -64,6 +64,8 @@ class HSRScanner:
             return
 
         return {
+            "source": "HSR_Scanner",
+            "version": 1,
             "light_cones": await asyncio.gather(*light_cones),
             "relics": await asyncio.gather(*relics),
             "characters": await asyncio.gather(*characters),
