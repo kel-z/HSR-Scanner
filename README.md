@@ -46,6 +46,8 @@ Current output sample:
 
 ```
 {
+    "source": "HSR_Scanner",
+    "version": 1,
     "light_cones": [
         {
             "key": "Cruising in the Stellar Sea",

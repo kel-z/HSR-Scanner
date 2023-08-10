@@ -361,6 +361,7 @@ CHARACTER_META_DATA = {
     "Luocha": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
     "Yukong": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
     "Blade": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
+    "Kafka": {"e3": {"skil": 2, "basic": 1}, "e5": {"ult": 2, "talent": 1}},
 }
 
 RELIC_MAIN_STATS = {

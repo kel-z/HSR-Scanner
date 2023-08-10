@@ -19,7 +19,7 @@ class HSRScanner:
     def __init__(self, config):
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
-            Exception(
+            raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
             )
 
@@ -64,6 +64,8 @@ class HSRScanner:
             return
 
         return {
+            "source": "HSR_Scanner",
+            "version": 1,
             "light_cones": await asyncio.gather(*light_cones),
             "relics": await asyncio.gather(*relics),
             "characters": await asyncio.gather(*characters),
