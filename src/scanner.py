@@ -19,7 +19,7 @@ class HSRScanner:
     def __init__(self, config):
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
-            Exception(
+            raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
             )
 

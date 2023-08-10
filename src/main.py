@@ -66,7 +66,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             label.setText("0")
         self.textEditLog.clear()
 
-        scanner = HSRScanner(self.get_config())
+        try:
+            scanner = HSRScanner(self.get_config())
+        except Exception as e:
+            self.log(e)
+            self.enable_start_scan_button()
+            return
 
         self._scanner_thread = ScannerThread(scanner)
 
