@@ -38,6 +38,7 @@ a.datas += [('images\\avatars\\Herta.png','src\\images\\avatars\\Herta.png', "DA
 a.datas += [('images\\avatars\\Himeko.png','src\\images\\avatars\\Himeko.png', "DATA")]
 a.datas += [('images\\avatars\\Hook.png','src\\images\\avatars\\Hook.png', "DATA")]
 a.datas += [('images\\avatars\\JingYuan.png','src\\images\\avatars\\JingYuan.png', "DATA")]
+a.datas += [('images\\avatars\\Kafka.png','src\\images\\avatars\\Kafka.png', "DATA")]
 a.datas += [('images\\avatars\\Luocha.png','src\\images\\avatars\\Luocha.png', "DATA")]
 a.datas += [('images\\avatars\\March7th.png','src\\images\\avatars\\March7th.png', "DATA")]
 a.datas += [('images\\avatars\\Natasha.png','src\\images\\avatars\\Natasha.png', "DATA")]
