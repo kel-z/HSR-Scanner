@@ -92,7 +92,7 @@ LIGHT_CONE_META_DATA = {
 #           + '": {'
 #           + '"setKey": "' +$('.mw-page-title-main')[0].innerText.trim()
 #           + '", "slotKey": "'
-#           + $('.pi-data-value b')[i].innerText.trim().toLowerCase()
+#           + $('.pi-data-value b')[i].innerText.trim()
 #           + '"},\n'
 #   }
 #   res
@@ -324,6 +324,29 @@ RELIC_META_DATA = {
     },
     "Insumousu's Frayed Hawser": {"setKey": "Broken Keel", "slotKey": "Planar Sphere"},
     "Insumousu's Whalefall Ship": {"setKey": "Broken Keel", "slotKey": "Link Rope"},
+    "Messenger's Holovisor": {
+        "setKey": "Messenger Traversing Hackerspace",
+        "slotKey": "Head",
+    },
+    "Messenger's Transformative Arm": {
+        "setKey": "Messenger Traversing Hackerspace",
+        "slotKey": "Hand",
+    },
+    "Messenger's Secret Satchel": {
+        "setKey": "Messenger Traversing Hackerspace",
+        "slotKey": "Body",
+    },
+    "Messenger's Par-kool Sneakers": {
+        "setKey": "Messenger Traversing Hackerspace",
+        "slotKey": "Feet",
+    },
+    "Disciple's Prosthetic Eye": {"setKey": "Longevous Disciple", "slotKey": "Head"},
+    "Disciple's Ingenium Hand": {"setKey": "Longevous Disciple", "slotKey": "Hand"},
+    "Disciple's Dewy Feather Garb": {"setKey": "Longevous Disciple", "slotKey": "Body"},
+    "Disciple's Celestial Silk Sandals": {
+        "setKey": "Longevous Disciple",
+        "slotKey": "Feet",
+    },
 }
 
 CHARACTER_META_DATA = {
