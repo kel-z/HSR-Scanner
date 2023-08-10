@@ -5,7 +5,6 @@ from pynput import mouse, keyboard
 
 
 class Navigation:
-
     def __init__(self, hwnd):
         self._hwnd = hwnd
         self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
@@ -62,8 +61,7 @@ class Navigation:
 
     def get_mouse_position(self):
         mouse_x, mouse_y = self._mouse.position
-        right, bottom = win32gui.ClientToScreen(
-            self._hwnd, (self._width, self._height))
+        right, bottom = win32gui.ClientToScreen(self._hwnd, (self._width, self._height))
 
         x_percent = (mouse_x - self._left) / (right - self._left)
         y_percent = (mouse_y - self._top) / (bottom - self._top)
