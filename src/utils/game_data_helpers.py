@@ -203,11 +203,11 @@ RELIC_META_DATA = {
     "Hunter's Lizard Gloves": {"setKey": "Hunter of Glacial Forest", "slotKey": "Hand"},
     "Hunter's Soft Elkskin Boots": {
         "setKey": "Hunter of Glacial Forest",
-        "slotKey": "Body",
+        "slotKey": "Feet",
     },
     "Hunter's Ice Dragon Cloak": {
         "setKey": "Hunter of Glacial Forest",
-        "slotKey": "Feet",
+        "slotKey": "Body",
     },
     "Salsotto's Moving City": {"setKey": "Inert Salsotto", "slotKey": "Planar Sphere"},
     "Salsotto's Terminator Line": {"setKey": "Inert Salsotto", "slotKey": "Link Rope"},
