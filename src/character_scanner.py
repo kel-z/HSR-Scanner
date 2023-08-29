@@ -22,7 +22,7 @@ class CharacterScanner:
             "offset_x": 0.055729,
             "details_button": (0.13, 0.143),
             "traces_button": (0.13, 0.315),
-            "eidelons_button": (0.13, 0.49),
+            "eidolons_button": (0.13, 0.49),
             "list_button": (0.033, 0.931),
             "trailblazer": (0.3315, 0.4432, 0.126, 0.1037),
             # trigger warning:
@@ -158,7 +158,7 @@ class CharacterScanner:
             "key": stats_dict["name"],
             "level": 1,
             "ascension": stats_dict["ascension"],
-            "eidelon": 0,
+            "eidolon": 0,
             "skills": {
                 "basic": 0,
                 "skill": 0,
@@ -190,14 +190,14 @@ class CharacterScanner:
             if not unlocked:
                 break
 
-            character["eidelon"] += 1
+            character["eidolon"] += 1
 
-        if character["eidelon"] >= 5:
+        if character["eidolon"] >= 5:
             character["skills"]["basic"] -= 1
             character["skills"]["skill"] -= 2
             character["skills"]["ult"] -= 2
             character["skills"]["talent"] -= 2
-        elif character["eidelon"] >= 3:
+        elif character["eidolon"] >= 3:
             for k, v in get_character_meta_data(character["key"])["e3"].items():
                 character["skills"][k] -= v
 

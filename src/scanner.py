@@ -11,6 +11,8 @@ import pyautogui
 from character_scanner import CharacterScanner
 from PIL import Image
 
+SUPPORTED_ASPECT_RATIOS = ["16:9"]
+
 
 class HSRScanner:
     update_progress = None
@@ -29,6 +31,11 @@ class HSRScanner:
         self._nav = Navigation(self._hwnd)
 
         self._aspect_ratio = self._nav.get_aspect_ratio()
+
+        if self._aspect_ratio not in SUPPORTED_ASPECT_RATIOS:
+            raise Exception(
+                f"Aspect ratio {self._aspect_ratio} not supported. Supported aspect ratios: {SUPPORTED_ASPECT_RATIOS}"
+            )
 
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
 
@@ -320,12 +327,12 @@ class HSRScanner:
                     )
                     stats_dict["traces"]["unlocks"][k] = dist < 3000
 
-                # Get eidelons
-                self._nav.move_cursor_to(*nav_data["eidelons_button"])
+                # Get eidolons
+                self._nav.move_cursor_to(*nav_data["eidolons_button"])
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(1.5)
-                eidlon_images = self._screenshot.screenshot_character_eidelons()
+                eidlon_images = self._screenshot.screenshot_character_eidolons()
 
                 task = asyncio.to_thread(char_scanner.parse, stats_dict, eidlon_images)
                 tasks.add(task)
