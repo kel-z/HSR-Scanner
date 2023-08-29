@@ -207,10 +207,13 @@ class HSRScanner:
         )
         nav_data = char_scanner.NAV_DATA[self._aspect_ratio]
 
-        # Get character count from Data Bank menu
+        # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
         time.sleep(1)
+
+        # Locate and click databank button
         needle = self._databank_img.resize(
+            # Scale image to match current resolution
             (
                 int(self._width * 0.0296875),
                 int(self._height * 0.05625),
@@ -221,6 +224,8 @@ class HSRScanner:
         time.sleep(0.1)
         self._nav.click()
         time.sleep(1)
+
+        # Get character count
         character_count = self._screenshot.screenshot_character_count()
         character_count = image_to_string(character_count, "0123456789/", 7)
         try:
@@ -264,7 +269,7 @@ class HSRScanner:
             self._nav.click()
             time.sleep(1)
 
-            # Get character name
+            # Get character name and path
             stats_dict = {}
             character_name = self._screenshot.screenshot_character_name()
             character_name = image_to_string(
@@ -339,7 +344,7 @@ class HSRScanner:
                 character_count - 1 == nav_data["chars_per_scan"]
                 or i == nav_data["chars_per_scan"] - 1
             ):
-                # Workaround to avoid drag scrolling
+                # Click on list button to align first character icon (Workaround to avoid drag scrolling)
                 x, y = nav_data["char_start"]
                 i += 1
                 x = x + nav_data["offset_x"] * i
