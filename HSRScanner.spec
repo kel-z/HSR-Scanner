@@ -21,6 +21,7 @@ a = Analysis(
 )
 a.datas += [('tesseract\\tesseract.exe', 'src\\tesseract\\tesseract.exe', 'BINARY')]
 a.datas += [('tesseract\\tessdata\\eng.traineddata','src\\tesseract\\tessdata\\eng.traineddata', "DATA")]
+a.datas += [('images\\databank.png','src\\images\\databank.png', "DATA")]
 a.datas += [('images\\lock.png','src\\images\\lock.png', "DATA")]
 a.datas += [('images\\lock2.png','src\\images\\lock2.png', "DATA")]
 a.datas += [('images\\trailblazerm.png','src\\images\\trailblazerm.png', "DATA")]

@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 import win32gui
 import pyautogui
 import time
@@ -30,6 +32,23 @@ class Navigation:
         x, y = self.translate_percent_to_coords(x_percent, y_percent)
 
         self._mouse.position = (x, y)
+
+    def move_cursor_to_image(self, haystack, needle):
+        haystack = np.array(haystack)
+        needle = np.array(needle)
+
+        pos = cv2.matchTemplate(haystack, needle, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(pos)
+
+        offset_x = 0.5 * needle.shape[1] / haystack.shape[1]
+        offset_y = 0.5 * needle.shape[0] / haystack.shape[0]
+
+        pos = (
+            max_loc[0] / haystack.shape[1] + offset_x,
+            max_loc[1] / haystack.shape[0] + offset_y,
+        )
+
+        self.move_cursor_to(*pos)
 
     def key_press(self, key):
         self._keyboard.tap(key)

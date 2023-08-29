@@ -6,9 +6,10 @@ import asyncio
 from light_cone_strategy import LightConeStrategy
 from relic_strategy import RelicStrategy
 from pynput.keyboard import Key
-from helper_functions import image_to_string
+from helper_functions import image_to_string, resource_path
 import pyautogui
 from character_scanner import CharacterScanner
+from PIL import Image
 
 
 class HSRScanner:
@@ -30,6 +31,10 @@ class HSRScanner:
         self._aspect_ratio = self._nav.get_aspect_ratio()
 
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
+
+        self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
+
+        self._databank_img = Image.open(resource_path("./images/databank.png"))
 
         self.interrupt.clear()
 
@@ -205,7 +210,14 @@ class HSRScanner:
         # Get character count from Data Bank menu
         self._nav.bring_window_to_foreground()
         time.sleep(1)
-        self._nav.move_cursor_to(*nav_data["data_bank"])
+        needle = self._databank_img.resize(
+            (
+                int(self._width * 0.0296875),
+                int(self._height * 0.05625),
+            )
+        )
+        haystack = self._screenshot.screenshot_screen()
+        self._nav.move_cursor_to_image(haystack, needle)
         time.sleep(0.1)
         self._nav.click()
         time.sleep(1)

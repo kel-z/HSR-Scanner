@@ -104,6 +104,9 @@ class Screenshot:
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
+    def screenshot_screen(self):
+        return self.__take_screenshot(0, 0, 1, 1)
+
     def screenshot_light_cone_stats(self):
         return self.__screenshot_stats("light_cone")
 
