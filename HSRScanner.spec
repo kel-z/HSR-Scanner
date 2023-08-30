@@ -44,6 +44,7 @@ a.datas += [('images\\avatars\\ImbibitorLunae#DanHengImbibitorLunae.png','src\\i
 a.datas += [('images\\avatars\\Jingliu.png','src\\images\\avatars\\Jingliu.png', "DATA")]
 a.datas += [('images\\avatars\\JingYuan.png','src\\images\\avatars\\JingYuan.png', "DATA")]
 a.datas += [('images\\avatars\\Kafka.png','src\\images\\avatars\\Kafka.png', "DATA")]
+a.datas += [('images\\avatars\\Luka.png','src\\images\\avatars\\Luka.png', "DATA")]
 a.datas += [('images\\avatars\\Luocha.png','src\\images\\avatars\\Luocha.png', "DATA")]
 a.datas += [('images\\avatars\\Lynx.png','src\\images\\avatars\\Lynx.png', "DATA")]
 a.datas += [('images\\avatars\\March7th.png','src\\images\\avatars\\March7th.png', "DATA")]
