@@ -104,6 +104,9 @@ class Screenshot:
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
+        self._x_scaling_factor = self._window_width / 1920
+        self._y_scaling_factor = self._window_height / 1080
+
     def screenshot_screen(self):
         return self.__take_screenshot(0, 0, 1, 1)
 
@@ -191,6 +194,10 @@ class Screenshot:
         # screenshot = pyautogui.screenshot(region=(x, y, width, height))
         screenshot = ImageGrab.grab(
             bbox=(x, y, x + width, y + height), all_screens=True
+        )
+
+        screenshot = screenshot.resize(
+            (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
 
         return screenshot

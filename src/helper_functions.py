@@ -89,7 +89,7 @@ def preprocess_trace_img(img):
                 sum([(a - b) ** 2 for a, b in zip(pixel, (45, 251, 249))]),
                 sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
             )
-            if dist < 100:
+            if dist < 3000:
                 img.putpixel((x, y), (255, 255, 255))
             else:
                 img.putpixel((x, y), (pixel[0] // 4, pixel[1] // 4, pixel[2] // 4))

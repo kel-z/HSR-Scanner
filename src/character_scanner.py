@@ -13,7 +13,6 @@ from utils.screenshot import Screenshot
 class CharacterScanner:
     NAV_DATA = {
         "16:9": {
-            "data_bank": (0.765, 0.715),
             "ascension_start": (0.78125, 0.203),
             "ascension_offset_x": 0.01328,
             "chars_per_scan": 9,
@@ -23,7 +22,6 @@ class CharacterScanner:
             "details_button": (0.13, 0.143),
             "traces_button": (0.13, 0.315),
             "eidolons_button": (0.13, 0.49),
-            "list_button": (0.033, 0.931),
             "trailblazer": (0.3315, 0.4432, 0.126, 0.1037),
             # trigger warning:
             "traces": {
@@ -150,12 +148,12 @@ class CharacterScanner:
         self._logger = logger
         self._trailblazerScanned = False
 
-    def parse(self, stats_dict, eidlon_images):
+    def parse(self, stats_dict, eidolon_images):
         if self.interrupt.is_set():
             return
 
         character = {
-            "key": stats_dict["name"],
+            "key": stats_dict["name"].split("#")[0],
             "level": 1,
             "ascension": stats_dict["ascension"],
             "eidolon": 0,
@@ -182,7 +180,7 @@ class CharacterScanner:
                 + (f' Got "{level}" instead.' if level else "")
             ) if self._logger else None
 
-        for img in eidlon_images:
+        for img in eidolon_images:
             img = img.convert("L")
             min_dim = min(img.size)
             lock_img = self._lock_img.resize((min_dim, min_dim))

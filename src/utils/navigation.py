@@ -62,14 +62,16 @@ class Navigation:
     def click(self):
         self._mouse.click(mouse.Button.left)
 
-    def drag_scroll(self, x, start_y, end_y):
-        x = self._left + int(self._width * x)
+    def drag_scroll(self, start_x, start_y, end_x, end_y):
+        start_x = self._left + int(self._width * start_x)
         start_y = self._top + int(self._height * start_y)
+        end_x = self._left + int(self._width * end_x)
         end_y = self._top + int(self._height * end_y)
 
-        pyautogui.moveTo(x, start_y)
+        pyautogui.moveTo(start_x, start_y)
         pyautogui.mouseDown()
-        pyautogui.dragTo(x, end_y, duration=1, mouseDownUp=False)
+        pyautogui.moveTo(end_x, end_y, duration=1)
+
         time.sleep(0.5)
         pyautogui.mouseUp()
 

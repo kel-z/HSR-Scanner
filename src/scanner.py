@@ -199,7 +199,7 @@ class HSRScanner:
                 break
 
             self._nav.drag_scroll(
-                x, nav_data["scroll_start_y"], nav_data["scroll_end_y"]
+                x, nav_data["scroll_start_y"], x, nav_data["scroll_end_y"]
             )
             time.sleep(0.5)
 
@@ -274,6 +274,12 @@ class HSRScanner:
             self._nav.move_cursor_to(x, y)
             time.sleep(0.2)
             self._nav.click()
+            time.sleep(0.1)
+
+            # Open details
+            self._nav.move_cursor_to(*nav_data["details_button"])
+            time.sleep(0.2)
+            self._nav.click()
             time.sleep(1)
 
             # Get character name and path
@@ -341,17 +347,10 @@ class HSRScanner:
                     f'Failed to parse character {character_name}. Got "{e}" error. Skipping...'
                 ) if self.logger else None
 
-            # Reset for next character
-            self._nav.move_cursor_to(*nav_data["details_button"])
-            time.sleep(0.1)
-            self._nav.click()
-            time.sleep(0.1)
-
             if (
                 character_count - 1 == nav_data["chars_per_scan"]
                 or i == nav_data["chars_per_scan"] - 1
             ):
-                # Click on list button to align first character icon (Workaround to avoid drag scrolling)
                 x, y = nav_data["char_start"]
                 i += 1
                 x = x + nav_data["offset_x"] * i
@@ -359,12 +358,13 @@ class HSRScanner:
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(0.1)
-                x, y = nav_data["list_button"]
-                self._nav.move_cursor_to(x, y)
-                time.sleep(0.1)
-                self._nav.click()
-                time.sleep(0.3)
+                self._nav.drag_scroll(x, y, nav_data["char_start"][0] - 0.031, y)
+
+                # Move mouse to avoid clicking anything on next iteration since
+                # we're already on the correct character
+                x, y = 0, 0
                 i = 0
+
             elif character_count <= nav_data["chars_per_scan"]:
                 x, y = nav_data["char_end"]
                 x -= nav_data["offset_x"] * (character_count - 2)

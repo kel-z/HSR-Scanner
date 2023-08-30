@@ -560,6 +560,6 @@ def __get_closest_match(name, targets: set):
         if dist < min_dist:
             min_dist = dist
             min_name = t
-    name = min_name.split("#")[0]
+    name = min_name
 
     return name, min_dist
