@@ -399,6 +399,7 @@ CHARACTER_META_DATA = {
     },
     "Fu Xuan": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
     "Lynx": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Luka": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
 }
 
 RELIC_MAIN_STATS = {
