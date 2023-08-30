@@ -123,7 +123,7 @@ Current output sample:
             "key": "Seele",
             "level": 59,
             "ascension": 4,
-            "eidelon": 0,
+            "eidolon": 0,
             "skills": {
                 "basic": 4,
                 "skill": 6,
@@ -150,7 +150,7 @@ Current output sample:
             "key": "Bronya",
             "level": 20,
             "ascension": 1,
-            "eidelon": 0,
+            "eidolon": 0,
             "skills": {
                 "basic": 1,
                 "skill": 1,

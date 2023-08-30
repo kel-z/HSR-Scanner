@@ -16,7 +16,7 @@ class Screenshot:
                 "chest": (0.44, 0.3315, 0.1245, 0.1037),
                 "name": (0.0656, 0.059, 0.16, 0.0314),
                 "level": (0.795, 0.216, 0.024, 0.034),
-                "eidelons": [
+                "eidolons": [
                     (0.198, 0.34),
                     (0.187, 0.546),
                     (0.377, 0.793),
@@ -104,6 +104,12 @@ class Screenshot:
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
+        self._x_scaling_factor = self._window_width / 1920
+        self._y_scaling_factor = self._window_height / 1080
+
+    def screenshot_screen(self):
+        return self.__take_screenshot(0, 0, 1, 1)
+
     def screenshot_light_cone_stats(self):
         return self.__screenshot_stats("light_cone")
 
@@ -141,14 +147,14 @@ class Screenshot:
             *self.coords[self._aspect_ratio]["character"]["chest"]
         )
 
-    def screenshot_character_eidelons(self):
+    def screenshot_character_eidolons(self):
         res = []
 
         screenshot = ImageGrab.grab(all_screens=True)
         offset, _, _ = Image.core.grabscreen_win32(False, True)
         x0, y0 = offset
 
-        for c in self.coords[self._aspect_ratio]["character"]["eidelons"]:
+        for c in self.coords[self._aspect_ratio]["character"]["eidolons"]:
             left = self._window_x + int(self._window_width * c[1])
             upper = self._window_y + int(self._window_height * c[0])
             right = left + self._window_width * 0.018
@@ -188,6 +194,10 @@ class Screenshot:
         # screenshot = pyautogui.screenshot(region=(x, y, width, height))
         screenshot = ImageGrab.grab(
             bbox=(x, y, x + width, y + height), all_screens=True
+        )
+
+        screenshot = screenshot.resize(
+            (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
 
         return screenshot

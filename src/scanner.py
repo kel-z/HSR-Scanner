@@ -6,9 +6,12 @@ import asyncio
 from light_cone_strategy import LightConeStrategy
 from relic_strategy import RelicStrategy
 from pynput.keyboard import Key
-from helper_functions import image_to_string
+from helper_functions import image_to_string, resource_path
 import pyautogui
 from character_scanner import CharacterScanner
+from PIL import Image
+
+SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
 
 class HSRScanner:
@@ -29,7 +32,16 @@ class HSRScanner:
 
         self._aspect_ratio = self._nav.get_aspect_ratio()
 
+        if self._aspect_ratio not in SUPPORTED_ASPECT_RATIOS:
+            raise Exception(
+                f"Aspect ratio {self._aspect_ratio} not supported. Supported aspect ratios: {SUPPORTED_ASPECT_RATIOS}"
+            )
+
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
+
+        self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
+
+        self._databank_img = Image.open(resource_path("./images/databank.png"))
 
         self.interrupt.clear()
 
@@ -187,7 +199,7 @@ class HSRScanner:
                 break
 
             self._nav.drag_scroll(
-                x, nav_data["scroll_start_y"], nav_data["scroll_end_y"]
+                x, nav_data["scroll_start_y"], x, nav_data["scroll_end_y"]
             )
             time.sleep(0.5)
 
@@ -202,13 +214,25 @@ class HSRScanner:
         )
         nav_data = char_scanner.NAV_DATA[self._aspect_ratio]
 
-        # Get character count from Data Bank menu
+        # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
         time.sleep(1)
-        self._nav.move_cursor_to(*nav_data["data_bank"])
+
+        # Locate and click databank button
+        needle = self._databank_img.resize(
+            # Scale image to match current resolution
+            (
+                int(self._width * 0.0296875),
+                int(self._height * 0.05625),
+            )
+        )
+        haystack = self._screenshot.screenshot_screen()
+        self._nav.move_cursor_to_image(haystack, needle)
         time.sleep(0.1)
         self._nav.click()
         time.sleep(1)
+
+        # Get character count
         character_count = self._screenshot.screenshot_character_count()
         character_count = image_to_string(character_count, "0123456789/", 7)
         try:
@@ -250,9 +274,15 @@ class HSRScanner:
             self._nav.move_cursor_to(x, y)
             time.sleep(0.2)
             self._nav.click()
+            time.sleep(0.1)
+
+            # Open details
+            self._nav.move_cursor_to(*nav_data["details_button"])
+            time.sleep(0.2)
+            self._nav.click()
             time.sleep(1)
 
-            # Get character name
+            # Get character name and path
             stats_dict = {}
             character_name = self._screenshot.screenshot_character_name()
             character_name = image_to_string(
@@ -303,12 +333,12 @@ class HSRScanner:
                     )
                     stats_dict["traces"]["unlocks"][k] = dist < 3000
 
-                # Get eidelons
-                self._nav.move_cursor_to(*nav_data["eidelons_button"])
+                # Get eidolons
+                self._nav.move_cursor_to(*nav_data["eidolons_button"])
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(1.5)
-                eidlon_images = self._screenshot.screenshot_character_eidelons()
+                eidlon_images = self._screenshot.screenshot_character_eidolons()
 
                 task = asyncio.to_thread(char_scanner.parse, stats_dict, eidlon_images)
                 tasks.add(task)
@@ -317,17 +347,10 @@ class HSRScanner:
                     f'Failed to parse character {character_name}. Got "{e}" error. Skipping...'
                 ) if self.logger else None
 
-            # Reset for next character
-            self._nav.move_cursor_to(*nav_data["details_button"])
-            time.sleep(0.1)
-            self._nav.click()
-            time.sleep(0.1)
-
             if (
                 character_count - 1 == nav_data["chars_per_scan"]
                 or i == nav_data["chars_per_scan"] - 1
             ):
-                # Workaround to avoid drag scrolling
                 x, y = nav_data["char_start"]
                 i += 1
                 x = x + nav_data["offset_x"] * i
@@ -335,12 +358,13 @@ class HSRScanner:
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(0.1)
-                x, y = nav_data["list_button"]
-                self._nav.move_cursor_to(x, y)
-                time.sleep(0.1)
-                self._nav.click()
-                time.sleep(0.3)
+                self._nav.drag_scroll(x, y, nav_data["char_start"][0] - 0.031, y)
+
+                # Move mouse to avoid clicking anything on next iteration since
+                # we're already on the correct character
+                x, y = 0, 0
                 i = 0
+
             elif character_count <= nav_data["chars_per_scan"]:
                 x, y = nav_data["char_end"]
                 x -= nav_data["offset_x"] * (character_count - 2)

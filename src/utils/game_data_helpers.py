@@ -15,6 +15,7 @@ LIGHT_CONE_META_DATA = {
     "Arrows": {"rarity": 3},
     "Before Dawn": {"rarity": 5},
     "Before the Tutorial Mission Starts": {"rarity": 4},
+    "Brighter Than the Sun": {"rarity": 5},
     "But the Battle Isn't Over": {"rarity": 5},
     "Carve the Moon, Weave the Clouds": {"rarity": 4},
     "Chorus": {"rarity": 3},
@@ -33,6 +34,7 @@ LIGHT_CONE_META_DATA = {
     "Geniuses' Repose": {"rarity": 4},
     "Good Night and Sleep Well": {"rarity": 4},
     "Hidden Shadow": {"rarity": 3},
+    "I Shall Be My Own Sword": {"rarity": 5},
     "In the Name of the World": {"rarity": 5},
     "In the Night": {"rarity": 5},
     "Incessant Rain": {"rarity": 5},
@@ -63,7 +65,9 @@ LIGHT_CONE_META_DATA = {
     "Sagacity": {"rarity": 3},
     "Shared Feeling": {"rarity": 4},
     "Shattered Home": {"rarity": 3},
+    "She Already Shut Her Eyes": {"rarity": 5},
     "Sleep Like the Dead": {"rarity": 5},
+    "Solitary Healing": {"rarity": 5},
     "Something Irreplaceable": {"rarity": 5},
     "Subscribe for More!": {"rarity": 4},
     "Swordplay": {"rarity": 4},
@@ -82,6 +86,7 @@ LIGHT_CONE_META_DATA = {
     "We Are Wildfire": {"rarity": 4},
     "We Will Meet Again": {"rarity": 4},
     "Woof! Walk Time!": {"rarity": 4},
+    "Worrisome, Blissful": {"rarity": 5},
 }
 
 # From: https://honkai-star-rail.fandom.com/wiki/Relic/Sets
@@ -384,7 +389,16 @@ CHARACTER_META_DATA = {
     "Luocha": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
     "Yukong": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
     "Blade": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
-    "Kafka": {"e3": {"skil": 2, "basic": 1}, "e5": {"ult": 2, "talent": 1}},
+    "Kafka": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 1}},
+    "Topaz and Numby": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Guinaifen": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
+    "Jingliu": {"e3": {"ult": 2, "talent": 2}, "e5": {"skill": 2, "basic": 1}},
+    "Imbibitor Lunae#Dan Heng Imbibitor Lunae": {
+        "e3": {"skill": 2, "basic": 1},
+        "e5": {"ult": 2, "talent": 2},
+    },
+    "Fu Xuan": {"e3": {"skill": 2, "talent": 2}, "e5": {"ult": 2, "basic": 1}},
+    "Lynx": {"e3": {"skill": 2, "basic": 1}, "e5": {"ult": 2, "talent": 2}},
 }
 
 RELIC_MAIN_STATS = {
@@ -529,7 +543,7 @@ def get_closest_rarity(pixel):
     return int(np.argmin(distances)) + 1
 
 
-def __get_closest_match(name, targets):
+def __get_closest_match(name, targets: set):
     if not name:
         return name, 100
 
@@ -538,11 +552,14 @@ def __get_closest_match(name, targets):
 
     min_dist = 100
     min_name = ""
-    for x in targets:
-        dist = Levenshtein.distance(name, x)
+    for t in targets:
+        to_compare = t
+        if "#" in t:
+            to_compare = t.split("#")[1]
+        dist = Levenshtein.distance(name, to_compare)
         if dist < min_dist:
             min_dist = dist
-            min_name = x
+            min_name = t
     name = min_name
 
     return name, min_dist

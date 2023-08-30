@@ -6400,7 +6400,7 @@
       "key": "Seele",
       "level": 80,
       "ascension": 6,
-      "eidelon": 0,
+      "eidolon": 0,
       "skills": {
         "basic": 6,
         "skill": 10,
@@ -6427,7 +6427,7 @@
       "key": "Clara",
       "level": 75,
       "ascension": 6,
-      "eidelon": 0,
+      "eidolon": 0,
       "skills": {
         "basic": 4,
         "skill": 8,
@@ -6454,7 +6454,7 @@
       "key": "TrailblazerPreservation",
       "level": 70,
       "ascension": 6,
-      "eidelon": 4,
+      "eidolon": 4,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6481,7 +6481,7 @@
       "key": "Silver Wolf",
       "level": 69,
       "ascension": 5,
-      "eidelon": 1,
+      "eidolon": 1,
       "skills": {
         "basic": 2,
         "skill": 4,
@@ -6508,7 +6508,7 @@
       "key": "Sushang",
       "level": 69,
       "ascension": 5,
-      "eidelon": 4,
+      "eidolon": 4,
       "skills": {
         "basic": 5,
         "skill": 8,
@@ -6535,7 +6535,7 @@
       "key": "Bronya",
       "level": 69,
       "ascension": 5,
-      "eidelon": 0,
+      "eidolon": 0,
       "skills": {
         "basic": 3,
         "skill": 7,
@@ -6562,7 +6562,7 @@
       "key": "Qingque",
       "level": 60,
       "ascension": 4,
-      "eidelon": 2,
+      "eidolon": 2,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6589,7 +6589,7 @@
       "key": "March 7th",
       "level": 69,
       "ascension": 5,
-      "eidelon": 5,
+      "eidolon": 5,
       "skills": {
         "basic": 1,
         "skill": 8,
@@ -6616,7 +6616,7 @@
       "key": "Pela",
       "level": 60,
       "ascension": 5,
-      "eidelon": 6,
+      "eidolon": 6,
       "skills": {
         "basic": 2,
         "skill": 3,
@@ -6643,7 +6643,7 @@
       "key": "Yanqing",
       "level": 40,
       "ascension": 3,
-      "eidelon": 0,
+      "eidolon": 0,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6670,7 +6670,7 @@
       "key": "Natasha",
       "level": 40,
       "ascension": 3,
-      "eidelon": 5,
+      "eidolon": 5,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6697,7 +6697,7 @@
       "key": "Herta",
       "level": 40,
       "ascension": 3,
-      "eidelon": 4,
+      "eidolon": 4,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6724,7 +6724,7 @@
       "key": "Yukong",
       "level": 20,
       "ascension": 1,
-      "eidelon": 3,
+      "eidolon": 3,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6751,7 +6751,7 @@
       "key": "Tingyun",
       "level": 20,
       "ascension": 1,
-      "eidelon": 3,
+      "eidolon": 3,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6778,7 +6778,7 @@
       "key": "Bailu",
       "level": 69,
       "ascension": 5,
-      "eidelon": 0,
+      "eidolon": 0,
       "skills": {
         "basic": 2,
         "skill": 7,
@@ -6805,7 +6805,7 @@
       "key": "Serval",
       "level": 20,
       "ascension": 1,
-      "eidelon": 2,
+      "eidolon": 2,
       "skills": {
         "basic": 1,
         "skill": 2,
@@ -6832,7 +6832,7 @@
       "key": "Asta",
       "level": 60,
       "ascension": 5,
-      "eidelon": 5,
+      "eidolon": 5,
       "skills": {
         "basic": 2,
         "skill": 6,
@@ -6859,7 +6859,7 @@
       "key": "Dan Heng",
       "level": 20,
       "ascension": 1,
-      "eidelon": 1,
+      "eidolon": 1,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6886,7 +6886,7 @@
       "key": "Hook",
       "level": 20,
       "ascension": 1,
-      "eidelon": 0,
+      "eidolon": 0,
       "skills": {
         "basic": 1,
         "skill": 1,
@@ -6913,7 +6913,7 @@
       "key": "Arlan",
       "level": 20,
       "ascension": 1,
-      "eidelon": 3,
+      "eidolon": 3,
       "skills": {
         "basic": 1,
         "skill": 1,

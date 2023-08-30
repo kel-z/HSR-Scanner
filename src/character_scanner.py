@@ -13,7 +13,6 @@ from utils.screenshot import Screenshot
 class CharacterScanner:
     NAV_DATA = {
         "16:9": {
-            "data_bank": (0.765, 0.715),
             "ascension_start": (0.78125, 0.203),
             "ascension_offset_x": 0.01328,
             "chars_per_scan": 9,
@@ -22,8 +21,7 @@ class CharacterScanner:
             "offset_x": 0.055729,
             "details_button": (0.13, 0.143),
             "traces_button": (0.13, 0.315),
-            "eidelons_button": (0.13, 0.49),
-            "list_button": (0.033, 0.931),
+            "eidolons_button": (0.13, 0.49),
             "trailblazer": (0.3315, 0.4432, 0.126, 0.1037),
             # trigger warning:
             "traces": {
@@ -150,15 +148,15 @@ class CharacterScanner:
         self._logger = logger
         self._trailblazerScanned = False
 
-    def parse(self, stats_dict, eidlon_images):
+    def parse(self, stats_dict, eidolon_images):
         if self.interrupt.is_set():
             return
 
         character = {
-            "key": stats_dict["name"],
+            "key": stats_dict["name"].split("#")[0],
             "level": 1,
             "ascension": stats_dict["ascension"],
-            "eidelon": 0,
+            "eidolon": 0,
             "skills": {
                 "basic": 0,
                 "skill": 0,
@@ -182,7 +180,7 @@ class CharacterScanner:
                 + (f' Got "{level}" instead.' if level else "")
             ) if self._logger else None
 
-        for img in eidlon_images:
+        for img in eidolon_images:
             img = img.convert("L")
             min_dim = min(img.size)
             lock_img = self._lock_img.resize((min_dim, min_dim))
@@ -190,14 +188,14 @@ class CharacterScanner:
             if not unlocked:
                 break
 
-            character["eidelon"] += 1
+            character["eidolon"] += 1
 
-        if character["eidelon"] >= 5:
+        if character["eidolon"] >= 5:
             character["skills"]["basic"] -= 1
             character["skills"]["skill"] -= 2
             character["skills"]["ult"] -= 2
             character["skills"]["talent"] -= 2
-        elif character["eidelon"] >= 3:
+        elif character["eidolon"] >= 3:
             for k, v in get_character_meta_data(character["key"])["e3"].items():
                 character["skills"][k] -= v
 
