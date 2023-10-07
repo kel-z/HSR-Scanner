@@ -79,11 +79,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self._scanner_thread.update_progress.connect(self.increment_progress)
 
+        self._scanner_thread.complete.connect(self._listener.stop)
+
         # self._scanner_thread.result.connect(self.log)
         self._scanner_thread.result.connect(self.handle_result)
         self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result.connect(self.enable_start_scan_button)
-        self._scanner_thread.result.connect(self._listener.stop)
 
         self._scanner_thread.error.connect(self.log)
         self._scanner_thread.error.connect(self._scanner_thread.deleteLater)
@@ -188,12 +189,14 @@ class ScannerThread(QtCore.QThread):
     result = QtCore.pyqtSignal(object)
     error = QtCore.pyqtSignal(object)
     log = QtCore.pyqtSignal(str)
+    complete = QtCore.pyqtSignal()
 
     def __init__(self, scanner):
         super().__init__()
         self._scanner = scanner
         self._scanner.update_progress = self.update_progress
         self._scanner.logger = self.log
+        self._scanner.complete = self.complete
 
         self._interrupt_requested = False
 

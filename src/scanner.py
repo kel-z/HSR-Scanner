@@ -17,6 +17,7 @@ SUPPORTED_ASPECT_RATIOS = ["16:9"]
 class HSRScanner:
     update_progress = None
     logger = None
+    complete = None
     interrupt = asyncio.Event()
 
     def __init__(self, config):
@@ -70,6 +71,8 @@ class HSRScanner:
         characters = []
         if self._config["scan_characters"] and not self.interrupt.is_set():
             characters = self.scan_characters()
+
+        self.complete.emit() if self.complete else None
 
         if self.interrupt.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
