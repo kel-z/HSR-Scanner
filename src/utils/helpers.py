@@ -7,19 +7,39 @@ import numpy as np
 import pytesseract
 from PIL import ImageFilter, Image
 
-# https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
 
+def resource_path(relative_path: str) -> str:
+    """Get resource path for PyInstaller
+    https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
 
-def resource_path(relative_path):
-    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    :param relative_path: The relative path to the resource
+    :return: The absolute path to the resource
+    """
+    # get current directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # get src directory: assuming the utils module is under the `src` directory
+    src_dir = os.path.dirname(current_dir)
+
+    base_path = getattr(sys, "_MEIPASS", src_dir)
     return os.path.join(base_path, relative_path)
 
 
-def executable_path(path):
+def executable_path(path: str) -> str:
+    """Get executable path for PyInstaller
+
+    :param path: The relative path to the executable
+    :return: The absolute path to the executable
+    """
     return os.path.join(os.path.dirname(sys.executable), path)
 
 
-def save_to_json(data, output_location):
+def save_to_json(data: dict, output_location: str) -> None:
+    """Save data to json file
+
+    :param data: The data to save
+    :param output_location: The output location
+    """
     if not os.path.exists(output_location):
         os.makedirs(output_location)
 
@@ -29,8 +49,17 @@ def save_to_json(data, output_location):
 
 
 def image_to_string(
-    img, whitelist, psm, force_preprocess=False, preprocess_func=None
+    img: Image, whitelist: str, psm: int, force_preprocess=False, preprocess_func=None
 ) -> str:
+    """Convert image to string
+
+    :param img: The image to convert
+    :param whitelist: The whitelist of characters to use
+    :param psm: The page segmentation mode to use
+    :param force_preprocess: The flag to force preprocessing, defaults to False
+    :param preprocess_func: The preprocessing function to use, defaults to None
+    :return: The string representation of the image
+    """
     config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
 
     res = ""
@@ -48,7 +77,12 @@ def image_to_string(
     return res
 
 
-def preprocess_img(img):
+def preprocess_img(img: Image) -> Image:
+    """Preprocess image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
     # if img.height < 50:
     #     img = img.resize((img.width * 2, img.height * 2))
 
@@ -81,7 +115,12 @@ def preprocess_img(img):
     return img
 
 
-def preprocess_trace_img(img):
+def preprocess_trace_img(img: Image) -> Image:
+    """Preprocess trace image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
     for x in range(img.width):
         for y in range(img.height):
             pixel = img.getpixel((x, y))

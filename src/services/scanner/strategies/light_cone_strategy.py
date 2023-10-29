@@ -1,53 +1,69 @@
-from utils.game_data_helpers import (
+from models.game_data import (
     get_closest_light_cone_name,
     get_light_cone_meta_data,
     get_equipped_character,
 )
 from pyautogui import locate
 from PIL import Image
-from helper_functions import resource_path, image_to_string
+from utils.helpers import resource_path, image_to_string
+from config.light_cone_scanner_config import LIGHT_CONE_NAV_DATA
+from enums.increment_type import IncrementType
+from utils.screenshot import Screenshot
+from PyQt6.QtCore import pyqtBoundSignal
+from asyncio import Event
 
 
 class LightConeStrategy:
-    SCAN_TYPE = 0
-    NAV_DATA = {
-        "16:9": {
-            "inv_tab": (0.38, 0.06),
-            "sort": {
-                "button": (0.093, 0.91),
-                "Rarity": (0.093, 0.49),
-                "Lv": (0.093, 0.56),
-            },
-            "row_start_top": (0.096, 0.175),
-            "row_start_bottom": (0.1, 0.77),
-            "scroll_start_y": 0.849,
-            "scroll_end_y": 0.124,
-            "offset_x": 0.065,
-            "offset_y": 0.13796,
-            "rows": 5,
-            "cols": 9,
-        }
-    }
+    """LightConeStrategy class for parsing light cone data from screenshots."""
 
-    def __init__(self, screenshot, logger):
-        self._lock_icon = Image.open(resource_path("images\\lock.png"))
+    SCAN_TYPE = IncrementType.LIGHT_CONE_ADD
+    NAV_DATA = LIGHT_CONE_NAV_DATA
+
+    def __init__(self, screenshot: Screenshot, logger: pyqtBoundSignal) -> None:
+        """Constructor
+
+        :param screenshot: The Screenshot class instance
+        :param logger: The logger signal
+        """
+        self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
         self._screenshot = screenshot
         self._logger = logger
         self._curr_id = 1
 
-    def screenshot_stats(self):
+    def screenshot_stats(self) -> Image:
+        """Takes a screenshot of the light cone stats
+
+        :return: The screenshot
+        """
         return self._screenshot.screenshot_light_cone_stats()
 
-    def screenshot_sort(self):
+    def screenshot_sort(self) -> Image:
+        """Takes a screenshot of the light cone sort
+
+        :return: The screenshot
+        """
         return self._screenshot.screenshot_light_cone_sort()
 
-    def get_optimal_sort_method(self, filters):
+    def get_optimal_sort_method(self, filters: dict) -> str:
+        """Gets the optimal sort method based on the filters
+
+        :param filters: The filters
+        :return: The optimal sort method
+        """
         if filters["light_cone"]["min_level"] > 1:
             return "Lv"
         else:
             return "Rarity"
 
-    def check_filters(self, stats_dict, filters):
+    def check_filters(self, stats_dict: dict, filters: dict) -> tuple[dict, dict]:
+        """Check if the stats dictionary passes the filters
+
+        :param stats_dict: The stats dictionary
+        :param filters: The filters
+        :raises ValueError: Thrown if the filter key does not have an int value
+        :raises KeyError: Thrown if the filter key is not valid
+        :return: The filter results and the stats dictionary
+        """
         filters = filters["light_cone"]
 
         filter_results = {}
@@ -91,24 +107,45 @@ class LightConeStrategy:
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key, img):
-        if key == "name":
-            name, _ = get_closest_light_cone_name(
-                image_to_string(
-                    img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
-                )
-            )
-            return name
-        elif key == "level":
-            return image_to_string(img, "0123456789/", 7)
-        elif key == "superimposition":
-            return image_to_string(img, "12345", 10)
-        elif key == "equipped":
-            return image_to_string(img, "Equipped", 7)
-        else:
-            return img
+    def extract_stats_data(self, key: str, img: Image):
+        """Extracts the stats data from the image
 
-    def parse(self, stats_dict, interrupt, update_progress):
+        :param key: The key
+        :param img: The image
+        :return: The extracted data, or the image if the key is not recognized
+        """
+        match key:
+            case "name":
+                name, _ = get_closest_light_cone_name(
+                    image_to_string(
+                        img,
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-",
+                        6,
+                    )
+                )
+                return name
+            case "level":
+                return image_to_string(img, "0123456789/", 7)
+            case "superimposition":
+                return image_to_string(img, "12345", 10)
+            case "equipped":
+                return image_to_string(img, "Equipped", 7)
+            case _:
+                return img
+
+    def parse(
+        self,
+        stats_dict: dict,
+        interrupt: Event,
+        update_progress: pyqtBoundSignal,
+    ) -> dict:
+        """Parses the stats dictionary
+
+        :param stats_dict: The stats dictionary
+        :param interrupt: The interrupt event
+        :param update_progress: The update progress signal
+        :return: The parsed stats dictionary
+        """
         if interrupt.is_set():
             return
 
@@ -154,9 +191,7 @@ class LightConeStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = get_equipped_character(
-                equipped_avatar, resource_path("images\\avatars\\")
-            )
+            location = get_equipped_character(equipped_avatar)
 
         result = {
             "key": name,
@@ -168,7 +203,7 @@ class LightConeStrategy:
             "_id": f"light_cone_{self._curr_id}",
         }
 
-        update_progress.emit(100)
+        update_progress.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
         self._curr_id += 1
 
         return result

@@ -1,49 +1,49 @@
 import asyncio
 from ui.hsr_scanner import Ui_MainWindow
 from PyQt6 import QtCore, QtGui, QtWidgets
-from scanner import HSRScanner
-from enum import Enum
+from services.scanner.scanner import HSRScanner
+from enums.increment_type import IncrementType
 from pynput.keyboard import Key, Listener
-from helper_functions import resource_path, save_to_json, executable_path
+from utils.helpers import resource_path, save_to_json, executable_path
 import pytesseract
 import sys
 
 
-pytesseract.pytesseract.tesseract_cmd = resource_path(".\\tesseract\\tesseract.exe")
-
-
-class IncrementType(Enum):
-    LIGHT_CONE_ADD = 0
-    LIGHT_CONE_SUCCESS = 100
-    RELIC_ADD = 1
-    RELIC_SUCCESS = 101
-    CHARACTER_ADD = 2
-    CHARACTER_SUCCESS = 102
+pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
 
 class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
+    """HSRScannerUI handles the UI for the HSR Scanner application"""
+
     is_scanning = False
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Constructor"""
         super().__init__()
         self._scanner_thread = None
         self._listener = InterruptListener()
 
-    def setupUi(self, MainWindow):
+    def setupUi(self, MainWindow: QtWidgets.QMainWindow) -> None:
+        """Sets up the UI for the application
+
+        :param MainWindow: The main window of the application
+        """
         super().setupUi(MainWindow)
         self.pushButtonStartScan.clicked.connect(self.start_scan)
         self.lineEditOutputLocation.setText(executable_path("StarRailData"))
         self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
 
-    def change_output_location(self):
+    def change_output_location(self) -> None:
+        """Opens a dialog to change the output location of the scan"""
         new_output_location = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Select Output Location", self.lineEditOutputLocation.text()
         )
         if new_output_location:
             self.lineEditOutputLocation.setText(new_output_location)
 
-    def open_output_location(self):
+    def open_output_location(self) -> None:
+        """Opens the output location of the scan in the file explorer"""
         output_location = self.lineEditOutputLocation.text()
         if output_location:
             try:
@@ -53,7 +53,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             except Exception as e:
                 self.log(f"Error opening output location: {e}")
 
-    def start_scan(self):
+    def start_scan(self) -> None:
+        """Starts the scan"""
         self.disable_start_scan_button()
         for label in [
             self.labelLightConeCount,
@@ -95,7 +96,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread.start()
         self._listener.start()
 
-    def get_config(self):
+    def get_config(self) -> dict:
+        """Gets the configuration for the scan
+
+        :return: The configuration for the scan
+        """
         config = {}
         config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
         config["scan_relics"] = self.checkBoxScanRelics.isChecked()
@@ -112,86 +117,109 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         }
         return config
 
-    def handle_result(self, data):
+    def handle_result(self, data: dict) -> None:
+        """Handles the result of the scan
+
+        :param data: The data from the scan
+        """
         output_location = self.lineEditOutputLocation.text()
         save_to_json(data, output_location)
         self.log("Scan complete. Data saved to " + output_location)
 
-    def increment_progress(self, enum):
-        switch = IncrementType(enum)
-        if switch == IncrementType.LIGHT_CONE_ADD:
-            self.labelLightConeCount.setText(
-                str(int(self.labelLightConeCount.text()) + 1)
-            )
-        elif switch == IncrementType.RELIC_ADD:
-            self.labelRelicCount.setText(str(int(self.labelRelicCount.text()) + 1))
-        elif switch == IncrementType.CHARACTER_ADD:
-            self.labelCharacterCount.setText(
-                str(int(self.labelCharacterCount.text()) + 1)
-            )
-        elif switch == IncrementType.LIGHT_CONE_SUCCESS:
-            self.labelLightConeProcessed.setText(
-                str(int(self.labelLightConeProcessed.text()) + 1)
-            )
-        elif switch == IncrementType.RELIC_SUCCESS:
-            self.labelRelicProcessed.setText(
-                str(int(self.labelRelicProcessed.text()) + 1)
-            )
-        elif switch == IncrementType.CHARACTER_SUCCESS:
-            self.labelCharacterProcessed.setText(
-                str(int(self.labelCharacterProcessed.text()) + 1)
-            )
+    def increment_progress(self, enum: IncrementType) -> None:
+        """Increments the number on the UI based on the enum
 
-    def disable_start_scan_button(self):
+        :param enum: The enum to increment the progress for
+        """
+        match IncrementType(enum):
+            case IncrementType.LIGHT_CONE_ADD:
+                self.labelLightConeCount.setText(
+                    str(int(self.labelLightConeCount.text()) + 1)
+                )
+            case IncrementType.RELIC_ADD:
+                self.labelRelicCount.setText(str(int(self.labelRelicCount.text()) + 1))
+            case IncrementType.CHARACTER_ADD:
+                self.labelCharacterCount.setText(
+                    str(int(self.labelCharacterCount.text()) + 1)
+                )
+            case IncrementType.LIGHT_CONE_SUCCESS:
+                self.labelLightConeProcessed.setText(
+                    str(int(self.labelLightConeProcessed.text()) + 1)
+                )
+            case IncrementType.RELIC_SUCCESS:
+                self.labelRelicProcessed.setText(
+                    str(int(self.labelRelicProcessed.text()) + 1)
+                )
+            case IncrementType.CHARACTER_SUCCESS:
+                self.labelCharacterProcessed.setText(
+                    str(int(self.labelCharacterProcessed.text()) + 1)
+                )
+
+    def disable_start_scan_button(self) -> None:
+        """Disables the start scan button and sets the text to Processing"""
         self.is_scanning = True
         self.pushButtonStartScan.setText("Processing...")
         self.pushButtonStartScan.setEnabled(False)
 
-    def enable_start_scan_button(self):
+    def enable_start_scan_button(self) -> None:
+        """Enables the start scan button and sets the text to Start Scan"""
         self.is_scanning = False
         self.pushButtonStartScan.setText("Start Scan")
         self.pushButtonStartScan.setEnabled(True)
 
-    def log(self, message):
-        self.textEditLog.appendPlainText(str(message))
+    def log(self, message: str) -> None:
+        """Logs a message to the log box
 
-    def setupButtonStartScan(self):
-        self.pushButtonStartScan.clicked.connect(self.start_scan)
+        :param message: The message to log
+        """
+        self.textEditLog.appendPlainText(str(message))
 
 
 class InterruptListener(QtCore.QThread):
+    """InterruptListener class listens for the enter key to interrupt the scan"""
+
     interrupt = QtCore.pyqtSignal()
 
     def __init__(self):
+        """Constructor"""
         super().__init__()
         self.listener = None
 
     def run(self):
-        with Listener(on_press=self.on_press, on_release=self.on_release) as listener:
+        """Runs the listener"""
+        with Listener(on_press=self.on_press) as listener:
             self.listener = listener
             listener.join()
 
     def stop(self):
+        """Stops the listener"""
         if self.listener:
             self.listener.stop()
 
-    def on_press(self, key):
+    def on_press(self, key: Key) -> None:
+        """Handles the key press. If the key is enter, emit the interrupt signal
+
+        :param key: The key that was pressed
+        """
+
         if key == Key.enter:
             self.interrupt.emit()
 
-    def on_release(self, key):
-        if key == Key.enter:
-            return False
-
 
 class ScannerThread(QtCore.QThread):
+    """ScannerThread class handles the scanning in a separate thread"""
+
     update_progress = QtCore.pyqtSignal(int)
     result = QtCore.pyqtSignal(object)
     error = QtCore.pyqtSignal(object)
     log = QtCore.pyqtSignal(str)
     complete = QtCore.pyqtSignal()
 
-    def __init__(self, scanner):
+    def __init__(self, scanner: HSRScanner) -> None:
+        """Constructor
+
+        :param scanner: The HSRScanner class instance
+        """
         super().__init__()
         self._scanner = scanner
         self._scanner.update_progress = self.update_progress
@@ -200,7 +228,8 @@ class ScannerThread(QtCore.QThread):
 
         self._interrupt_requested = False
 
-    def run(self):
+    def run(self) -> None:
+        """Runs the scan"""
         try:
             res = asyncio.run(self._scanner.start_scan())
             # print(res)
@@ -211,7 +240,8 @@ class ScannerThread(QtCore.QThread):
         except Exception as e:
             self.error.emit("Scan aborted with error: " + str(e))
 
-    def interrupt_scan(self):
+    def interrupt_scan(self) -> None:
+        """Interrupts the scan"""
         self._interrupt_requested = True
         self._scanner.stop_scan()
 
@@ -220,7 +250,7 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(resource_path("images\\app.ico")))
+    app.setWindowIcon(QtGui.QIcon(resource_path("assets/images/app.ico")))
     MainWindow = QtWidgets.QMainWindow()
     ui = HSRScannerUI()
     ui.setupUi(MainWindow)

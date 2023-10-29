@@ -1,4 +1,4 @@
-from utils.game_data_helpers import (
+from models.game_data import (
     get_closest_rarity,
     get_closest_relic_name,
     get_relic_meta_data,
@@ -7,51 +7,66 @@ from utils.game_data_helpers import (
     get_closest_relic_main_stat,
 )
 import numpy as np
-from helper_functions import resource_path, image_to_string
+from config.relic_scanner_config import RELIC_NAV_DATA
+from utils.helpers import resource_path, image_to_string
 from PIL import Image
 from pyautogui import locate
+from enums.increment_type import IncrementType
+from utils.screenshot import Screenshot
+from PyQt6.QtCore import pyqtBoundSignal
+from asyncio import Event
 
 
 class RelicStrategy:
-    SCAN_TYPE = 1
-    NAV_DATA = {
-        "16:9": {
-            "inv_tab": (0.43, 0.06),
-            "sort": {
-                "button": (0.12, 0.91),
-                "Rarity": (0.12, 0.7),
-                "Lv": (0.12, 0.77),
-            },
-            "row_start_top": (0.096875, 0.242),
-            "row_start_bottom": (0.096875, 0.776),
-            "scroll_start_y": 0.7944,
-            "scroll_end_y": 0.2135,
-            "offset_x": 0.065,
-            "offset_y": 0.13796,
-            "rows": 4,
-            "cols": 9,
-        }
-    }
+    """RelicStrategy class for parsing relic data from screenshots."""
 
-    def __init__(self, screenshot, logger):
-        self._lock_icon = Image.open(resource_path("images\\lock.png"))
+    SCAN_TYPE = IncrementType.RELIC_ADD
+    NAV_DATA = RELIC_NAV_DATA
+
+    def __init__(self, screenshot: Screenshot, logger: pyqtBoundSignal) -> None:
+        """Constructor
+
+        :param screenshot: The Screenshot class instance
+        :param logger: The logger signal
+        """
+        self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
         self._screenshot = screenshot
         self._logger = logger
         self._curr_id = 1
 
-    def screenshot_stats(self):
+    def screenshot_stats(self) -> Image:
+        """Takes a screenshot of the relic stats
+
+        :return: The screenshot
+        """
         return self._screenshot.screenshot_relic_stats()
 
-    def screenshot_sort(self):
+    def screenshot_sort(self) -> Image:
+        """Takes a screenshot of the relic sort
+
+        :return: The screenshot
+        """
         return self._screenshot.screenshot_relic_sort()
 
-    def get_optimal_sort_method(self, filters):
+    def get_optimal_sort_method(self, filters: dict) -> str:
+        """Gets the optimal sort method based on the filters
+
+        :param filters: The filters
+        :return: The optimal sort method
+        """
         if filters["relic"]["min_level"] > 0:
             return "Lv"
         else:
             return "Rarity"
 
-    def check_filters(self, stats_dict, filters):
+    def check_filters(self, stats_dict: dict, filters: dict) -> tuple[dict, dict]:
+        """Checks if the relic passes the filters
+
+        :param stats_dict: The stats dict
+        :param filters: The filters
+        :raises ValueError: Thrown if the filter key does not have an int value
+        :return: A tuple of the filter results and the stats dict
+        """
         filters = filters["relic"]
 
         filter_results = {}
@@ -88,36 +103,52 @@ class RelicStrategy:
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key, img):
-        if key == "name":
-            return image_to_string(
-                img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
-            )
-        elif key == "level":
-            level = image_to_string(img, "0123456789", 7, True)
-            if not level:
-                self._logger.emit(
-                    f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
-                ) if self._logger else None
-                level = 0
-            return int(level)
-        elif key == "mainStatKey":
-            return image_to_string(
-                img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7
-            )
-        elif key == "equipped":
-            return image_to_string(img, "Equiped", 7)
-        elif key == "rarity":
-            # Get rarity by color matching
-            rarity_sample = np.array(img)
-            rarity_sample = rarity_sample[int(rarity_sample.shape[0] / 2)][
-                int(rarity_sample.shape[1] / 2)
-            ]
-            return get_closest_rarity(rarity_sample)
-        else:
-            return img
+    def extract_stats_data(self, key: str, img: Image):
+        """Extracts the stats data from the image
 
-    def parse(self, stats_dict, interrupt, update_progress):
+        :param key: The key
+        :param img: The image
+        :return: The extracted data, or the image if the key is not recognized
+        """
+        match key:
+            case "name":
+                return image_to_string(
+                    img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
+                )
+            case "level":
+                level = image_to_string(img, "0123456789", 7, True)
+                if not level:
+                    self._logger.emit(
+                        f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
+                    ) if self._logger else None
+                    level = 0
+                return int(level)
+            case "mainStatKey":
+                return image_to_string(
+                    img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7
+                )
+            case "equipped":
+                return image_to_string(img, "Equiped", 7)
+            case "rarity":
+                # Get rarity by color matching
+                rarity_sample = np.array(img)
+                rarity_sample = rarity_sample[int(rarity_sample.shape[0] / 2)][
+                    int(rarity_sample.shape[1] / 2)
+                ]
+                return get_closest_rarity(rarity_sample)
+            case _:
+                return img
+
+    def parse(
+        self, stats_dict: dict, interrupt: Event, update_progress: pyqtBoundSignal
+    ) -> dict:
+        """Parses the relic data
+
+        :param stats_dict: The stats dict
+        :param interrupt: The interrupt event
+        :param update_progress: The update progress signal
+        :return: The parsed relic data
+        """
         if interrupt.is_set():
             return
 
@@ -192,9 +223,7 @@ class RelicStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = get_equipped_character(
-                equipped_avatar, resource_path("images\\avatars\\")
-            )
+            location = get_equipped_character(equipped_avatar)
 
         result = {
             "setKey": setKey,
@@ -208,7 +237,7 @@ class RelicStrategy:
             "_id": f"relic_{self._curr_id}",
         }
 
-        update_progress.emit(101)
+        update_progress.emit(IncrementType.RELIC_SUCCESS.value)
         self._curr_id += 1
 
         return result

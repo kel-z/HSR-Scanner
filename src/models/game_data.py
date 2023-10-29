@@ -1,6 +1,8 @@
 import Levenshtein
 import numpy as np
 import cv2
+from PIL import Image
+from utils.helpers import resource_path
 
 # From: https://honkai-star-rail.fandom.com/wiki/Light_Cone/List
 # res = []
@@ -444,39 +446,51 @@ PATHS = {
     "Abundance",
 }
 
-CHARACTER_KEYS = list(CHARACTER_META_DATA.keys())
-if "TrailblazerDestruction" in CHARACTER_KEYS:
-    CHARACTER_KEYS.remove("TrailblazerDestruction")
-    CHARACTER_KEYS.append("TrailblazerDestruction#M")
-    CHARACTER_KEYS.append("TrailblazerDestruction#F")
-if "TrailblazerPreservation" in CHARACTER_KEYS:
-    CHARACTER_KEYS.remove("TrailblazerPreservation")
-    CHARACTER_KEYS.append("TrailblazerPreservation#M")
-    CHARACTER_KEYS.append("TrailblazerPreservation#F")
+
+def get_relic_meta_data(name: str) -> dict:
+    """Get relic meta data from name
+
+    :param name: The name of the relic
+    :return: The relic meta data
+    """
+    return RELIC_META_DATA[name]
+
+
+def get_light_cone_meta_data(name: str) -> dict:
+    """Get light cone meta data from name
+
+    :param name: The name of the light cone
+    :return: The light cone meta data
+    """
+    return LIGHT_CONE_META_DATA[name]
+
+
+def get_character_meta_data(name: str) -> dict:
+    """Get character meta data from name
+
+    :param name: The name of the character
+    :return: The character meta data
+    """
+    return CHARACTER_META_DATA[name]
+
 
 EQUIPPED_ICONS = {}
 
 
-def get_relic_meta_data(name):
-    return RELIC_META_DATA[name]
+def get_equipped_character(equipped_avatar_img: Image) -> str:
+    """Get equipped character from equipped avatar image
 
-
-def get_light_cone_meta_data(name):
-    return LIGHT_CONE_META_DATA[name]
-
-
-def get_character_meta_data(name):
-    return CHARACTER_META_DATA[name]
-
-
-def get_equipped_character(equipped_avatar_img, img_path_prefix):
+    :param equipped_avatar_img: The equipped avatar image
+    :return: The character name
+    """
+    img_path_prefix = resource_path("assets/images/avatars")
     equipped_avatar_img = np.array(equipped_avatar_img)
 
     max_conf = 0
     character = ""
 
     # Get character with highest confidence
-    for c in CHARACTER_KEYS:
+    for c in _get_character_keys():
         if c not in EQUIPPED_ICONS:
             file_name = c.replace(" ", "")
             img = cv2.imread(f"{img_path_prefix}/{file_name}.png")
@@ -504,38 +518,73 @@ def get_equipped_character(equipped_avatar_img, img_path_prefix):
     return character.split("#")[0]
 
 
-def get_closest_relic_name(name):
-    return __get_closest_match(name, RELIC_META_DATA)
+def get_closest_relic_name(name: str) -> str:
+    """Get closest relic name from name
+
+    :param name: The name of the relic
+    :return: The closest relic name
+    """
+    return _get_closest_match(name, RELIC_META_DATA)
 
 
-def get_closest_light_cone_name(name):
-    return __get_closest_match(name, LIGHT_CONE_META_DATA)
+def get_closest_light_cone_name(name: str) -> str:
+    """Get closest light cone name from name
+
+    :param name: The name of the light cone
+    :return: The closest light cone name
+    """
+    return _get_closest_match(name, LIGHT_CONE_META_DATA)
 
 
-def get_closest_relic_sub_stat(name):
-    return __get_closest_match(name, RELIC_SUB_STATS)
+def get_closest_relic_sub_stat(name: str) -> str:
+    """Get closest relic sub stat from name
+
+    :param name: The name of the relic sub stat
+    :return: The closest relic sub stat
+    """
+    return _get_closest_match(name, RELIC_SUB_STATS)
 
 
-def get_closest_relic_main_stat(name):
-    return __get_closest_match(name, RELIC_MAIN_STATS)
+def get_closest_relic_main_stat(name: str) -> str:
+    """Get closest relic main stat from name
+
+    :param name: The name of the relic main stat
+    :return: The closest relic main stat
+    """
+    return _get_closest_match(name, RELIC_MAIN_STATS)
 
 
-def get_closest_character_name(name):
-    return __get_closest_match(name, CHARACTER_META_DATA)
+def get_closest_character_name(name: str) -> str:
+    """Get closest character name from name
+
+    :param name: The name of the character
+    :return: The closest character name
+    """
+    return _get_closest_match(name, CHARACTER_META_DATA)
 
 
-def get_closest_path_name(name):
-    return __get_closest_match(name, PATHS)
+def get_closest_path_name(name: str) -> str:
+    """Get closest path name from name
+
+    :param name: The name of the path
+    :return: The closest path name
+    """
+    return _get_closest_match(name, PATHS)
 
 
-def get_closest_rarity(pixel):
+def get_closest_rarity(pixel: list) -> int:
+    """Get closest rarity from pixel
+
+    :param pixel: The pixel to get the rarity from
+    :return: The closest rarity
+    """
     # where i + 1 is the rarity
     colors = [
-        [94, 97, 111],
-        [74, 100, 121],
-        [61, 90, 145],
-        [101, 92, 142],
-        [158, 109, 95],
+        [94, 97, 111],  # gray
+        [74, 100, 121],  # green
+        [61, 90, 145],  # blue
+        [101, 92, 142],  # purple
+        [158, 109, 95],  # gold
     ]
 
     colors = np.array(colors)
@@ -544,7 +593,13 @@ def get_closest_rarity(pixel):
     return int(np.argmin(distances)) + 1
 
 
-def __get_closest_match(name, targets: set):
+def _get_closest_match(name, targets: set) -> str:
+    """Get closest match from name
+
+    :param name: The name to get the closest match from
+    :param targets: The targets to compare against
+    :return: The closest match
+    """
     if not name:
         return name, 100
 
@@ -564,3 +619,21 @@ def __get_closest_match(name, targets: set):
     name = min_name
 
     return name, min_dist
+
+
+def _get_character_keys() -> list:
+    """Get character keys
+
+    :return: The character keys
+    """
+    character_keys = list(CHARACTER_META_DATA.keys())
+    if "TrailblazerDestruction" in character_keys:
+        character_keys.remove("TrailblazerDestruction")
+        character_keys.append("TrailblazerDestruction#M")
+        character_keys.append("TrailblazerDestruction#F")
+    if "TrailblazerPreservation" in character_keys:
+        character_keys.remove("TrailblazerPreservation")
+        character_keys.append("TrailblazerPreservation#M")
+        character_keys.append("TrailblazerPreservation#F")
+
+    return character_keys

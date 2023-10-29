@@ -3,24 +3,33 @@ import win32gui
 import time
 from utils.screenshot import Screenshot
 import asyncio
-from light_cone_strategy import LightConeStrategy
-from relic_strategy import RelicStrategy
+from .strategies.light_cone_strategy import LightConeStrategy
+from .strategies.relic_strategy import RelicStrategy
 from pynput.keyboard import Key
-from helper_functions import image_to_string, resource_path
+from utils.helpers import image_to_string, resource_path
 import pyautogui
-from character_scanner import CharacterScanner
+from .character_parser import CharacterParser
+from config.character_scanner_config import CHARACTER_NAV_DATA
 from PIL import Image
 
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
 
 class HSRScanner:
+    """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
+
     update_progress = None
     logger = None
     complete = None
     interrupt = asyncio.Event()
 
-    def __init__(self, config):
+    def __init__(self, config: dict) -> None:
+        """Constructor
+
+        :param config: The config dict
+        :raises Exception: Thrown if the game is not found
+        :raises Exception: Thrown if no scan options are selected
+        """
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
             raise Exception(
@@ -42,11 +51,16 @@ class HSRScanner:
 
         self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
 
-        self._databank_img = Image.open(resource_path("./images/databank.png"))
+        self._databank_img = Image.open(resource_path("assets/images/databank.png"))
 
         self.interrupt.clear()
 
-    async def start_scan(self):
+    async def start_scan(self) -> dict:
+        """Starts the scan
+
+        :raises Exception: Thrown if no scan options are selected
+        :return: The scan results
+        """
         if not any(
             [
                 self._config["scan_light_cones"],
@@ -86,10 +100,19 @@ class HSRScanner:
             "characters": await asyncio.gather(*characters),
         }
 
-    def stop_scan(self):
+    def stop_scan(self) -> None:
+        """Stops the scan"""
         self.interrupt.set()
 
-    def scan_inventory(self, strategy):
+    def scan_inventory(
+        self, strategy: LightConeStrategy | RelicStrategy
+    ) -> set[asyncio.Task]:
+        """Scans the inventory for light cones or relics
+
+        :param strategy: The strategy to use
+        :raises ValueError: Thrown if the quantity could not be parsed
+        :return: The tasks to await
+        """
         nav_data = strategy.NAV_DATA[self._aspect_ratio]
 
         # Navigate to correct tab from cellphone menu
@@ -187,7 +210,7 @@ class HSRScanner:
 
                     # Update UI count
                     if self.update_progress:
-                        self.update_progress.emit(strategy.SCAN_TYPE)
+                        self.update_progress.emit(strategy.SCAN_TYPE.value)
 
                     task = asyncio.to_thread(
                         strategy.parse, stats_dict, self.interrupt, self.update_progress
@@ -211,11 +234,16 @@ class HSRScanner:
         self._nav.key_press(Key.esc)
         return tasks
 
-    def scan_characters(self):
-        char_scanner = CharacterScanner(
+    def scan_characters(self) -> set[asyncio.Task]:
+        """Scans the characters
+
+        :raises ValueError: Thrown if the character count could not be parsed
+        :return: The tasks to await
+        """
+        char_parser = CharacterParser(
             self._screenshot, self.logger, self.interrupt, self.update_progress
         )
-        nav_data = char_scanner.NAV_DATA[self._aspect_ratio]
+        nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
         # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
@@ -295,7 +323,7 @@ class HSRScanner:
             )
             try:
                 path, character_name = map(str.strip, character_name.split("/"))
-                character_name, path = char_scanner.get_closest_name_and_path(
+                character_name, path = char_parser.get_closest_name_and_path(
                     character_name, path
                 )
                 stats_dict["name"] = character_name
@@ -326,7 +354,10 @@ class HSRScanner:
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(1)
-                stats_dict["traces"] = char_scanner.get_traces_dict(path)
+                stats_dict["traces"] = {
+                    "levels": char_parser.get_traces_levels_dict(path),
+                    "unlocks": {},
+                }
                 path_key = path.split(" ")[-1].lower()
                 for k, v in nav_data["traces"][path_key].items():
                     pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
@@ -343,7 +374,7 @@ class HSRScanner:
                 time.sleep(1.5)
                 eidlon_images = self._screenshot.screenshot_character_eidolons()
 
-                task = asyncio.to_thread(char_scanner.parse, stats_dict, eidlon_images)
+                task = asyncio.to_thread(char_parser.parse, stats_dict, eidlon_images)
                 tasks.add(task)
             except Exception as e:
                 self.logger.emit(
@@ -384,5 +415,11 @@ class HSRScanner:
         self._nav.key_press(Key.esc)
         return tasks
 
-    def _ceildiv(self, a, b):
+    def _ceildiv(self, a, b) -> int:
+        """Divides a by b and rounds up
+
+        :param a: The dividend
+        :param b: The divisor
+        :return: The quotient
+        """
         return -(a // -b)

@@ -3,11 +3,18 @@ import numpy as np
 import win32gui
 import pyautogui
 import time
+from PIL import Image
 from pynput import mouse, keyboard
 
 
 class Navigation:
-    def __init__(self, hwnd):
+    """Navigation class for navigating the game window"""
+
+    def __init__(self, hwnd: int) -> None:
+        """Constructor
+
+        :param hwnd: The window handle of the game window
+        """
         self._hwnd = hwnd
         self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
         if self._width == 0 or self._height == 0:
@@ -18,22 +25,44 @@ class Navigation:
         self._mouse = mouse.Controller()
         self._keyboard = keyboard.Controller()
 
-    def bring_window_to_foreground(self, cmd_show=5):
+    def bring_window_to_foreground(self, cmd_show: int = 5) -> None:
+        """Bring the game window to the foreground
+
+        :param cmd_show: The command to show the window, defaults to 5
+        """
         win32gui.ShowWindow(self._hwnd, cmd_show)
         win32gui.SetForegroundWindow(self._hwnd)
 
-    def translate_percent_to_coords(self, x_percent, y_percent):
+    def translate_percent_to_coords(
+        self, x_percent: float, y_percent: float
+    ) -> tuple[int, int]:
+        """Translate percentage coordinates to pixel coordinates
+
+        :param x_percent: The x percentage coordinate
+        :param y_percent: The y percentage coordinate
+        :return: The pixel coordinates
+        """
         x = self._left + int(self._width * x_percent)
         y = self._top + int(self._height * y_percent)
 
         return x, y
 
-    def move_cursor_to(self, x_percent, y_percent):
+    def move_cursor_to(self, x_percent: float, y_percent: float) -> None:
+        """Move the cursor to the specified percentage coordinates
+
+        :param x_percent: The x percentage coordinate
+        :param y_percent: The y percentage coordinate
+        """
         x, y = self.translate_percent_to_coords(x_percent, y_percent)
 
         self._mouse.position = (x, y)
 
-    def move_cursor_to_image(self, haystack, needle):
+    def move_cursor_to_image(self, haystack: Image, needle: Image) -> None:
+        """Move the cursor to the center of the needle image in the haystack image
+
+        :param haystack: The haystack image
+        :param needle: The needle image
+        """
         haystack = np.array(haystack)
         needle = np.array(needle)
 
@@ -50,19 +79,41 @@ class Navigation:
 
         self.move_cursor_to(*pos)
 
-    def key_press(self, key):
+    def key_press(self, key: keyboard.Key) -> None:
+        """Press a key
+
+        :param key: The key to press
+        """
         self._keyboard.tap(key)
 
-    def key_hold(self, key):
+    def key_hold(self, key: keyboard.Key) -> None:
+        """Hold a key
+
+        :param key: The key to hold
+        """
         self._keyboard.press(key)
 
-    def key_release(self, key):
+    def key_release(self, key: keyboard.Key) -> None:
+        """Release a key
+
+        :param key: The key to release
+        """
         self._keyboard.release(key)
 
-    def click(self):
+    def click(self) -> None:
+        """Click the left mouse button"""
         self._mouse.click(mouse.Button.left)
 
-    def drag_scroll(self, start_x, start_y, end_x, end_y):
+    def drag_scroll(
+        self, start_x: float, start_y: float, end_x: float, end_y: float
+    ) -> None:
+        """Drag scroll from start coordinates to end coordinates
+
+        :param start_x: The start x coordinate
+        :param start_y: The start y coordinate
+        :param end_x: The end x coordinate
+        :param end_y: The end y coordinate
+        """
         start_x = self._left + int(self._width * start_x)
         start_y = self._top + int(self._height * start_y)
         end_x = self._left + int(self._width * end_x)
@@ -75,12 +126,17 @@ class Navigation:
         time.sleep(0.5)
         pyautogui.mouseUp()
 
-    def print_mouse_position(self):
+    def print_mouse_position(self) -> None:
+        """Print the current mouse position"""
         x_percent, y_percent = self.get_mouse_position()
 
         print("x: " + str(x_percent) + ", y: " + str(y_percent))
 
-    def get_mouse_position(self):
+    def get_mouse_position(self) -> tuple[float, float]:
+        """Get the current mouse position
+
+        :return: The current mouse position
+        """
         mouse_x, mouse_y = self._mouse.position
         right, bottom = win32gui.ClientToScreen(self._hwnd, (self._width, self._height))
 
@@ -89,12 +145,22 @@ class Navigation:
 
         return x_percent, y_percent
 
-    def get_aspect_ratio(self):
+    def get_aspect_ratio(self) -> str:
+        """Get the aspect ratio of the game window
+
+        :return: The aspect ratio of the game window
+        """
         x, y = self._width, self._height
-        gcd = self.gcd(x, y)
+        gcd = self._gcd(x, y)
         return f"{x // gcd}:{y // gcd}"
 
-    def gcd(self, a, b):
+    def _gcd(self, a: int, b: int) -> int:
+        """Calculate the greatest common divisor of two numbers
+
+        :param a: The first number
+        :param b: The second number
+        :return: The greatest common divisor of the two numbers
+        """
         while b:
             a, b = b, a % b
         return a
