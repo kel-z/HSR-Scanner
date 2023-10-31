@@ -167,23 +167,27 @@ class RelicStrategy:
         # Parse sub-stats
         sub_stats = []
         for i in range(1, 5):
-            key = stats_dict["subStatKey_" + str(i)]
+            sub_stat_img = stats_dict["subStat_" + str(i)]
 
-            key = image_to_string(
-                key, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7
+            parsed_sub_stat_str = image_to_string(
+                sub_stat_img,
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz 0123456789.%",
+                7,
             )
-            if not key:
+            if not parsed_sub_stat_str:
                 # self._logger.emit(
                 #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.") if self._logger else None
                 break
-            key, min_dist = self._game_data.get_closest_relic_sub_stat(key)
-            if min_dist > 5:
+
+            try:
+                key, val = parsed_sub_stat_str.rsplit(" ", 1)
+                val = val.strip()
+            except ValueError:
                 break
 
-            val_img = stats_dict["subStatVal_" + str(i)]
-            val = image_to_string(val_img, "0123456789.%", 7)
-            if not val:
-                val = image_to_string(val_img, "0123456789.%", 6)
+            key, min_dist = self._game_data.get_closest_relic_sub_stat(key.strip())
+            if min_dist > 5:
+                break
 
             if not val or val == ".":
                 if min_dist == 0:
@@ -192,18 +196,18 @@ class RelicStrategy:
                     ) if self._logger else None
                 break
 
-            if val[-1] == "%":
-                if "." not in val:
-                    val = image_to_string(val_img, "0123456789.%", 7, True)
-                val = float(val[:-1])
-                key += "_"
-            else:
-                try:
+            try:
+                if val[-1] == "%":
+                    val = float(val[:-1])
+                    key += "_"
+                else:
                     val = int(val)
-                except ValueError:
-                    # self._logger.emit(
-                    #     f"Relic ID {self._curr_id}: Error parsing sub-stat value: {val}.") if self._logger else None
-                    break
+            except ValueError:
+                if min_dist == 0:
+                    self._logger.emit(
+                        f"Relic ID {self._curr_id}: Failed to get value for sub-stat: {key}. Error parsing sub-stat value: {val}."
+                    ) if self._logger else None
+                break
 
             sub_stats.append({"key": key, "value": val})
 
