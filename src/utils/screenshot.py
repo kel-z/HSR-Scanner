@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 import win32gui
 from PIL import Image, ImageGrab
 from config.screenshot import SCREENSHOT_COORDS
@@ -103,7 +105,7 @@ class Screenshot:
             *SCREENSHOT_COORDS[self._aspect_ratio]["character"]["chest"]
         )
 
-    def screenshot_character_eidolons(self) -> list:
+    def screenshot_character_eidolons(self) -> list[np.ndarray]:
         """Takes a screenshot of the character eidolons
 
         :return: A list of the screenshots
@@ -113,13 +115,25 @@ class Screenshot:
         screenshot = ImageGrab.grab(all_screens=True)
         offset, _, _ = Image.core.grabscreen_win32(False, True)
         x0, y0 = offset
+        dim = 81
+
+        # Circle mask
+        mask = np.zeros((dim, dim), dtype="uint8")
+        cv2.circle(mask, (int(dim / 2), int(dim / 2)), int(dim / 2), 255, -1)
 
         for c in SCREENSHOT_COORDS[self._aspect_ratio]["character"]["eidolons"]:
-            left = self._window_x + int(self._window_width * c[1])
-            upper = self._window_y + int(self._window_height * c[0])
-            right = left + self._window_width * 0.018
-            lower = upper + self._window_height * 0.0349
-            res.append(screenshot.crop((left - x0, upper - y0, right - x0, lower - y0)))
+            left = self._window_x + int(self._window_width * c[0])
+            upper = self._window_y + int(self._window_height * c[1])
+            right = left + self._window_width * 0.042
+            lower = upper + self._window_height * 0.075
+            img = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
+
+            # Apply circle mask
+            img = np.array(img)
+            img = cv2.resize(img, (dim, dim))
+            img = cv2.bitwise_and(img, img, mask=mask)
+
+            res.append(img)
 
         return res
 
@@ -181,7 +195,7 @@ class Screenshot:
         :param y: The y coordinate of the top left corner of the screenshot
         :param width: The width of the screenshot
         :param height: The height of the screenshot
-        :return: The screenshot
+        :return: The screenshot normalized to 1920x1080
         """
         # adjust coordinates to window
         x = self._window_x + int(self._window_width * x)

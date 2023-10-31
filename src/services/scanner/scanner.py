@@ -53,8 +53,6 @@ class HSRScanner:
 
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
 
-        self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
-
         self._databank_img = Image.open(resource_path("assets/images/databank.png"))
 
         self.interrupt.clear()
@@ -260,14 +258,14 @@ class HSRScanner:
         time.sleep(1)
 
         # Locate and click databank button
+        haystack = self._screenshot.screenshot_screen()
         needle = self._databank_img.resize(
-            # Scale image to match current resolution
+            # Scale image to match capture size
             (
-                int(self._width * 0.0296875),
-                int(self._height * 0.05625),
+                int(haystack.size[0] * 0.0296875),
+                int(haystack.size[1] * 0.05625),
             )
         )
-        haystack = self._screenshot.screenshot_screen()
         self._nav.move_cursor_to_image(haystack, needle)
         time.sleep(0.1)
         self._nav.click()

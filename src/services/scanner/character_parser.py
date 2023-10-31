@@ -1,3 +1,5 @@
+import cv2
+import numpy as np
 from pyautogui import locate
 from utils.helpers import resource_path, image_to_string
 from PIL import Image
@@ -33,7 +35,6 @@ class CharacterParser:
             Image.open(resource_path("assets/images/trailblazerm.png")),
             Image.open(resource_path("assets/images/trailblazerf.png")),
         ]
-        self._lock_img = Image.open(resource_path("assets/images/lock2.png"))
         self._screenshot = screenshot
         self._logger = logger
         self._trailblazerScanned = False
@@ -53,7 +54,7 @@ class CharacterParser:
             "key": stats_dict["name"].split("#")[0],
             "level": 1,
             "ascension": stats_dict["ascension"],
-            "eidolon": 0,
+            "eidolon": self._process_eidolons(eidolon_images),
             "skills": {
                 "basic": 0,
                 "skill": 0,
@@ -76,16 +77,6 @@ class CharacterParser:
                 f"{character['key']}: Failed to parse level."
                 + (f' Got "{level}" instead.' if level else "")
             ) if self._logger else None
-
-        for img in eidolon_images:
-            img = img.convert("L")
-            min_dim = min(img.size)
-            lock_img = self._lock_img.resize((min_dim, min_dim))
-            unlocked = locate(lock_img, img, confidence=0.8) is None
-            if not unlocked:
-                break
-
-            character["eidolon"] += 1
 
         if character["eidolon"] >= 5:
             character["skills"]["basic"] -= 1
@@ -115,8 +106,6 @@ class CharacterParser:
                     + (f"Got '{res}' instead. " if res else "")
                     + "Setting to 1."
                 ) if self._logger else None
-                print(character)
-                print(stats_dict)
                 character["skills"][k] = 1
 
         character["traces"] = traces_dict["unlocks"]
@@ -196,3 +185,32 @@ class CharacterParser:
                 return True
 
         return False
+
+    def _process_eidolons(self, eidolon_images: list[Image.Image]) -> int:
+        """Process eidolons
+
+        :param eidolon_images: The eidolon images
+        :return: The number of eidolons unlocked
+        """
+        lower_orange = np.array([127, 104, 51])
+        upper_orange = np.array([210, 175, 100])
+
+        eidolon = 0
+        for img_np in eidolon_images:
+            img_bw = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
+            white = cv2.Laplacian(img_bw, cv2.CV_64F).var()
+
+            # Eidolon is locked if the image is too dark
+            if white < 10000:
+                break
+
+            mask = cv2.inRange(img_np, lower_orange, upper_orange)
+            orange = cv2.countNonZero(mask)
+
+            # Eidolon is unlocked but not activated if the image is too orange
+            if orange > 200:
+                break
+
+            eidolon += 1
+
+        return eidolon
