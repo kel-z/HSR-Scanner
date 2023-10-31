@@ -2,11 +2,7 @@ from pyautogui import locate
 from utils.helpers import resource_path, image_to_string
 from PIL import Image
 from utils.helpers import resource_path, preprocess_trace_img
-from models.game_data import (
-    get_character_meta_data,
-    get_closest_character_name,
-    get_closest_path_name,
-)
+from models.game_data import GameData
 from utils.screenshot import Screenshot
 from PyQt6.QtCore import pyqtBoundSignal
 
@@ -16,6 +12,7 @@ class CharacterParser:
 
     def __init__(
         self,
+        game_data: GameData,
         screenshot: Screenshot,
         logger: pyqtBoundSignal,
         interrupt: pyqtBoundSignal,
@@ -23,11 +20,13 @@ class CharacterParser:
     ) -> None:
         """Constructor
 
+        :param game_data: The GameData class instance
         :param screenshot: The Screenshot class instance
         :param logger: The logger signal
         :param interrupt: The interrupt signal
         :param update_progress: The update progress signal
         """
+        self._game_data = game_data
         self.interrupt = interrupt
         self.update_progress = update_progress
         self._trailblazer_imgs = [
@@ -94,7 +93,9 @@ class CharacterParser:
             character["skills"]["ult"] -= 2
             character["skills"]["talent"] -= 2
         elif character["eidolon"] >= 3:
-            for k, v in get_character_meta_data(character["key"])["e3"].items():
+            for k, v in self._game_data.get_character_meta_data(character["key"])[
+                "e3"
+            ].items():
                 character["skills"][k] -= v
 
         traces_dict = stats_dict["traces"]
@@ -110,8 +111,12 @@ class CharacterParser:
                     raise ValueError
             except ValueError:
                 self._logger.emit(
-                    f"{character['key']}: Failed to parse '{k}' level. Setting to 1."
+                    f"{character['key']}: Failed to parse '{k}' level. "
+                    + (f"Got '{res}' instead. " if res else "")
+                    + "Setting to 1."
                 ) if self._logger else None
+                print(character)
+                print(stats_dict)
                 character["skills"][k] = 1
 
         character["traces"] = traces_dict["unlocks"]
@@ -156,7 +161,7 @@ class CharacterParser:
         :raises Exception: If the character is not found in the database
         :return: The closest name and path
         """
-        path, _ = get_closest_path_name(path)
+        path, _ = self._game_data.get_closest_path_name(path)
 
         if self._is_trailblazer():
             if self._trailblazerScanned:
@@ -168,7 +173,9 @@ class CharacterParser:
 
             return "Trailblazer" + path.split(" ")[-1], path
         else:
-            character_name, min_dist = get_closest_character_name(character_name)
+            character_name, min_dist = self._game_data.get_closest_character_name(
+                character_name
+            )
 
             if min_dist > 5:
                 raise Exception(

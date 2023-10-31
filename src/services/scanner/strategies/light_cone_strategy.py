@@ -1,12 +1,8 @@
-from models.game_data import (
-    get_closest_light_cone_name,
-    get_light_cone_meta_data,
-    get_equipped_character,
-)
+from models.game_data import GameData
 from pyautogui import locate
 from PIL import Image
 from utils.helpers import resource_path, image_to_string
-from config.light_cone_scanner_config import LIGHT_CONE_NAV_DATA
+from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
 from utils.screenshot import Screenshot
 from PyQt6.QtCore import pyqtBoundSignal
@@ -19,12 +15,16 @@ class LightConeStrategy:
     SCAN_TYPE = IncrementType.LIGHT_CONE_ADD
     NAV_DATA = LIGHT_CONE_NAV_DATA
 
-    def __init__(self, screenshot: Screenshot, logger: pyqtBoundSignal) -> None:
+    def __init__(
+        self, game_data: GameData, screenshot: Screenshot, logger: pyqtBoundSignal
+    ) -> None:
         """Constructor
 
+        :param game_data: The GameData class instance
         :param screenshot: The Screenshot class instance
         :param logger: The logger signal
         """
+        self._game_data = game_data
         self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
         self._screenshot = screenshot
         self._logger = logger
@@ -81,10 +81,12 @@ class LightConeStrategy:
                     stats_dict["name"] = self.extract_stats_data(
                         "name", stats_dict["name"]
                     )
-                    stats_dict["name"], _ = get_closest_light_cone_name(
+                    stats_dict["name"], _ = self._game_data.get_closest_light_cone_name(
                         stats_dict["name"]
                     )
-                    val = get_light_cone_meta_data(stats_dict["name"])["rarity"]
+                    val = self._game_data.get_light_cone_meta_data(stats_dict["name"])[
+                        "rarity"
+                    ]
                 elif key == "min_level":
                     # Trivial case
                     if filters[key] <= 1:
@@ -116,7 +118,7 @@ class LightConeStrategy:
         """
         match key:
             case "name":
-                name, _ = get_closest_light_cone_name(
+                name, _ = self._game_data.get_closest_light_cone_name(
                     image_to_string(
                         img,
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-",
@@ -191,7 +193,7 @@ class LightConeStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = get_equipped_character(equipped_avatar)
+            location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
             "key": name,

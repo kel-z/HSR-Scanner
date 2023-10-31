@@ -1,13 +1,6 @@
-from models.game_data import (
-    get_closest_rarity,
-    get_closest_relic_name,
-    get_relic_meta_data,
-    get_closest_relic_sub_stat,
-    get_equipped_character,
-    get_closest_relic_main_stat,
-)
+from models.game_data import GameData
 import numpy as np
-from config.relic_scanner_config import RELIC_NAV_DATA
+from config.relic_scan import RELIC_NAV_DATA
 from utils.helpers import resource_path, image_to_string
 from PIL import Image
 from pyautogui import locate
@@ -23,12 +16,16 @@ class RelicStrategy:
     SCAN_TYPE = IncrementType.RELIC_ADD
     NAV_DATA = RELIC_NAV_DATA
 
-    def __init__(self, screenshot: Screenshot, logger: pyqtBoundSignal) -> None:
+    def __init__(
+        self, game_data: GameData, screenshot: Screenshot, logger: pyqtBoundSignal
+    ) -> None:
         """Constructor
 
+        :param game_data: The GameData class instance
         :param screenshot: The Screenshot class instance
         :param logger: The logger signal
         """
+        self._game_data = game_data
         self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
         self._screenshot = screenshot
         self._logger = logger
@@ -135,7 +132,7 @@ class RelicStrategy:
                 rarity_sample = rarity_sample[int(rarity_sample.shape[0] / 2)][
                     int(rarity_sample.shape[1] / 2)
                 ]
-                return get_closest_rarity(rarity_sample)
+                return self._game_data.get_closest_rarity(rarity_sample)
             case _:
                 return img
 
@@ -158,17 +155,17 @@ class RelicStrategy:
 
         name = stats_dict["name"]
         level = stats_dict["level"]
-        mainStatKey = stats_dict["mainStatKey"]
+        main_stat_key = stats_dict["mainStatKey"]
         lock = stats_dict["lock"]
         rarity = stats_dict["rarity"]
         equipped = stats_dict["equipped"]
 
         # Fix OCR errors
-        name, _ = get_closest_relic_name(name)
-        mainStatKey, _ = get_closest_relic_main_stat(mainStatKey)
+        name, _ = self._game_data.get_closest_relic_name(name)
+        main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)
 
         # Parse sub-stats
-        subStats = []
+        sub_stats = []
         for i in range(1, 5):
             key = stats_dict["subStatKey_" + str(i)]
 
@@ -179,7 +176,7 @@ class RelicStrategy:
                 # self._logger.emit(
                 #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.") if self._logger else None
                 break
-            key, min_dist = get_closest_relic_sub_stat(key)
+            key, min_dist = self._game_data.get_closest_relic_sub_stat(key)
             if min_dist > 5:
                 break
 
@@ -208,11 +205,11 @@ class RelicStrategy:
                     #     f"Relic ID {self._curr_id}: Error parsing sub-stat value: {val}.") if self._logger else None
                     break
 
-            subStats.append({"key": key, "value": val})
+            sub_stats.append({"key": key, "value": val})
 
-        metadata = get_relic_meta_data(name)
-        setKey = metadata["setKey"]
-        slotKey = metadata["slotKey"]
+        metadata = self._game_data.get_relic_meta_data(name)
+        set_key = metadata["setKey"]
+        slot_key = metadata["slotKey"]
 
         # Check if locked by image matching
         min_dim = min(lock.size)
@@ -223,15 +220,15 @@ class RelicStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
 
-            location = get_equipped_character(equipped_avatar)
+            location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
-            "setKey": setKey,
-            "slotKey": slotKey,
+            "setKey": set_key,
+            "slotKey": slot_key,
             "rarity": rarity,
             "level": level,
-            "mainStatKey": mainStatKey,
-            "subStats": subStats,
+            "mainStatKey": main_stat_key,
+            "subStats": sub_stats,
             "location": location,
             "lock": lock,
             "_id": f"relic_{self._curr_id}",

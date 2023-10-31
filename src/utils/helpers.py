@@ -34,18 +34,28 @@ def executable_path(path: str) -> str:
     return os.path.join(os.path.dirname(sys.executable), path)
 
 
-def save_to_json(data: dict, output_location: str) -> None:
+def save_to_json(data: dict, output_location: str, file_name: str) -> None:
     """Save data to json file
 
     :param data: The data to save
     :param output_location: The output location
+    :param file_name: The file name
     """
     if not os.path.exists(output_location):
         os.makedirs(output_location)
 
-    file_name = f"HSRScanData_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(os.path.join(output_location, file_name), "w") as outfile:
         json.dump(data, outfile, indent=4)
+
+
+def get_json_data(file_path: str) -> dict:
+    """Get json data from file
+
+    :param file_path: The file path
+    :return: The json data
+    """
+    with open(file_path) as json_file:
+        return json.load(json_file)
 
 
 def image_to_string(
@@ -60,7 +70,7 @@ def image_to_string(
     :param preprocess_func: The preprocessing function to use, defaults to None
     :return: The string representation of the image
     """
-    config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
+    config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm} -l DIN-Alternate'
 
     res = ""
     if not force_preprocess:
@@ -69,7 +79,9 @@ def image_to_string(
     if not res:
         preprocess_func = preprocess_func or preprocess_img
         res = (
-            pytesseract.image_to_string(preprocess_func(img), config=config)
+            pytesseract.image_to_string(
+                preprocess_func(img), config=config + " -l DIN-Alternate"
+            )
             .replace("\n", " ")
             .strip()
         )
@@ -105,7 +117,7 @@ def preprocess_img(img: Image) -> Image:
     # img = img.filter(ImageFilter.GaussianBlur(radius=1))
 
     kernel = np.ones((2, 2))
-    img = cv2.GaussianBlur(img, (3, 3), 0)
+    # img = cv2.GaussianBlur(img, (3, 3), 0)
     img = cv2.dilate(img, kernel, iterations=1)
     # img = cv2.erode(img, kernel, iterations=1)
     # img = cv2.medianBlur(img, 3)
@@ -128,7 +140,7 @@ def preprocess_trace_img(img: Image) -> Image:
                 sum([(a - b) ** 2 for a, b in zip(pixel, (45, 251, 249))]),
                 sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
             )
-            if dist < 3000:
+            if dist < 2000:
                 img.putpixel((x, y), (255, 255, 255))
             else:
                 img.putpixel((x, y), (pixel[0] // 4, pixel[1] // 4, pixel[2] // 4))

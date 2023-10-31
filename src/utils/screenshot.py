@@ -1,7 +1,6 @@
-# import pyautogui
 import win32gui
 from PIL import Image, ImageGrab
-from config.screenshot_config import SCREENSHOT_COORDS
+from config.screenshot import SCREENSHOT_COORDS
 
 
 class Screenshot:
@@ -190,7 +189,6 @@ class Screenshot:
         width = int(self._window_width * width)
         height = int(self._window_height * height)
 
-        # screenshot = pyautogui.screenshot(region=(x, y, width, height))
         screenshot = ImageGrab.grab(
             bbox=(x, y, x + width, y + height), all_screens=True
         )

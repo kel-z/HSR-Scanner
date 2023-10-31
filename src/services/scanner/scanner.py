@@ -9,8 +9,9 @@ from pynput.keyboard import Key
 from utils.helpers import image_to_string, resource_path
 import pyautogui
 from .character_parser import CharacterParser
-from config.character_scanner_config import CHARACTER_NAV_DATA
+from config.character_scan import CHARACTER_NAV_DATA
 from PIL import Image
+from models.game_data import GameData
 
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
@@ -23,10 +24,11 @@ class HSRScanner:
     complete = None
     interrupt = asyncio.Event()
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: dict, game_data: GameData) -> None:
         """Constructor
 
         :param config: The config dict
+        :param game_data: The GameData class instance
         :raises Exception: Thrown if the game is not found
         :raises Exception: Thrown if no scan options are selected
         """
@@ -35,6 +37,8 @@ class HSRScanner:
             raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
             )
+
+        self._game_data = game_data
 
         self._config = config
 
@@ -75,12 +79,14 @@ class HSRScanner:
         light_cones = []
         if self._config["scan_light_cones"] and not self.interrupt.is_set():
             light_cones = self.scan_inventory(
-                LightConeStrategy(self._screenshot, self.logger)
+                LightConeStrategy(self._game_data, self._screenshot, self.logger)
             )
 
         relics = []
         if self._config["scan_relics"] and not self.interrupt.is_set():
-            relics = self.scan_inventory(RelicStrategy(self._screenshot, self.logger))
+            relics = self.scan_inventory(
+                RelicStrategy(self._game_data, self._screenshot, self.logger)
+            )
 
         characters = []
         if self._config["scan_characters"] and not self.interrupt.is_set():
@@ -241,7 +247,11 @@ class HSRScanner:
         :return: The tasks to await
         """
         char_parser = CharacterParser(
-            self._screenshot, self.logger, self.interrupt, self.update_progress
+            self._game_data,
+            self._screenshot,
+            self.logger,
+            self.interrupt,
+            self.update_progress,
         )
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 

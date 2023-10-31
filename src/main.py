@@ -1,10 +1,12 @@
 import asyncio
+import datetime
 from ui.hsr_scanner import Ui_MainWindow
 from PyQt6 import QtCore, QtGui, QtWidgets
 from services.scanner.scanner import HSRScanner
 from enums.increment_type import IncrementType
 from pynput.keyboard import Key, Listener
 from utils.helpers import resource_path, save_to_json, executable_path
+from models.game_data import GameData
 import pytesseract
 import sys
 
@@ -22,6 +24,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         super().__init__()
         self._scanner_thread = None
         self._listener = InterruptListener()
+        self.game_data = GameData()
 
     def setupUi(self, MainWindow: QtWidgets.QMainWindow) -> None:
         """Sets up the UI for the application
@@ -68,7 +71,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.textEditLog.clear()
 
         try:
-            scanner = HSRScanner(self.get_config())
+            scanner = HSRScanner(self.get_config(), self.game_data)
         except Exception as e:
             self.log(e)
             self.enable_start_scan_button()
@@ -123,7 +126,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param data: The data from the scan
         """
         output_location = self.lineEditOutputLocation.text()
-        save_to_json(data, output_location)
+        file_name = (
+            f"HSRScanData_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
+        save_to_json(data, output_location, file_name)
         self.log("Scan complete. Data saved to " + output_location)
 
     def increment_progress(self, enum: IncrementType) -> None:
