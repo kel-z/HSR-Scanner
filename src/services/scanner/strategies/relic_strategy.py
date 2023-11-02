@@ -1,7 +1,12 @@
 from models.game_data import GameData
 import numpy as np
 from config.relic_scan import RELIC_NAV_DATA
-from utils.helpers import resource_path, image_to_string
+from utils.helpers import (
+    resource_path,
+    image_to_string,
+    preprocess_main_stat_img,
+    preprocess_equipped_img,
+)
 from PIL import Image
 from pyautogui import locate
 from enums.increment_type import IncrementType
@@ -113,7 +118,7 @@ class RelicStrategy:
                     img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
                 )
             case "level":
-                level = image_to_string(img, "0123456789", 7, True)
+                level = image_to_string(img, "0123456789", 7)
                 if not level:
                     self._logger.emit(
                         f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
@@ -122,10 +127,14 @@ class RelicStrategy:
                 return int(level)
             case "mainStatKey":
                 return image_to_string(
-                    img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz", 7
+                    img,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz",
+                    7,
+                    True,
+                    preprocess_main_stat_img,
                 )
             case "equipped":
-                return image_to_string(img, "Equiped", 7)
+                return image_to_string(img, "Equiped", 7, True, preprocess_equipped_img)
             case "rarity":
                 # Get rarity by color matching
                 rarity_sample = np.array(img)
@@ -173,6 +182,7 @@ class RelicStrategy:
                 sub_stat_img,
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz 0123456789.%",
                 7,
+                True,
             )
             if not parsed_sub_stat_str:
                 # self._logger.emit(

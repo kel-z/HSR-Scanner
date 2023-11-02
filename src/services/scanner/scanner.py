@@ -123,11 +123,7 @@ class HSRScanner:
         time.sleep(1)
         self._nav.key_press(Key.esc)
         time.sleep(1)
-        self._nav.key_hold(Key.tab)
-        time.sleep(0.1)
-        self._nav.move_cursor_to(0.75, 0.5)
-        time.sleep(0.1)
-        self._nav.key_release(Key.tab)
+        self._nav.key_press("b")
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
@@ -296,11 +292,7 @@ class HSRScanner:
         time.sleep(1)
         self._nav.key_press("1")
         time.sleep(0.2)
-        self._nav.key_hold(Key.tab)
-        time.sleep(0.2)
-        self._nav.move_cursor_to(0.5, 0.75)
-        time.sleep(0.1)
-        self._nav.key_release(Key.tab)
+        self._nav.key_press("c")
 
         tasks = set()
         x, y = nav_data["char_start"]
@@ -330,7 +322,7 @@ class HSRScanner:
                 7,
             )
             try:
-                path, character_name = map(str.strip, character_name.split("/"))
+                path, character_name = map(str.strip, character_name.split("/")[:2])
                 character_name, path = char_parser.get_closest_name_and_path(
                     character_name, path
                 )

@@ -1,7 +1,7 @@
 from models.game_data import GameData
 from pyautogui import locate
 from PIL import Image
-from utils.helpers import resource_path, image_to_string
+from utils.helpers import resource_path, image_to_string, preprocess_equipped_img
 from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
 from utils.screenshot import Screenshot
@@ -131,7 +131,9 @@ class LightConeStrategy:
             case "superimposition":
                 return image_to_string(img, "12345", 10)
             case "equipped":
-                return image_to_string(img, "Equipped", 7)
+                return image_to_string(
+                    img, "Equipped", 7, True, preprocess_equipped_img
+                )
             case _:
                 return img
 

@@ -1,13 +1,13 @@
-# each tuple is (x0, y0, x1, y1) in % of the image
-# otherwise, x1 and y1 are hardcoded
+# each tuple is (x, y, w, h) in % of the image
+# w and h are hardcoded if missing
 SCREENSHOT_COORDS = {
     "16:9": {
-        "quantity": (0.46, 0.89, 0.13, 0.06),
+        "quantity": (0.475, 0.89, 0.13, 0.06),
         "sort": (0.079, 0.9, 0.07, 0.033),
         "character": {
             "count": (0.56, 0.555, 0.05, 0.035),
             "chest": (0.44, 0.3315, 0.1245, 0.1037),
-            "name": (0.0656, 0.059, 0.16, 0.0314),
+            "name": (0.0656, 0.059, 0.165, 0.0314),
             "level": (0.795, 0.216, 0.024, 0.034),
             "eidolons": [
                 (0.3270416666666667, 0.17777777777777778),
@@ -62,23 +62,23 @@ SCREENSHOT_COORDS = {
                 },
             },
         },
-        # screenshot of item info in inventory screen
+        # stats screenshot of selected item in inventory screen
         "stats": (0.72, 0.09, 0.25, 0.78),
-        # % of the stats screenshot
+        # (x0, y0, x1, y1) in % of the stats screenshot
         "light_cone": {
             "name": (0, 0, 1, 0.09),
             "level": (0.13, 0.32, 0.35, 0.37),
-            "superimposition": (0.53, 0.48, 0.6, 0.55),
+            "superimposition": (0.53, 0.495, 0.6, 0.55),
             "equipped": (0.45, 0.95, 0.68, 1),
             "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
             "lock": (0.896, 0.321, 0.97, 0.365),
         },
         "relic": {
             "name": (0, 0, 1, 0.09),
-            "level": (0.115, 0.25, 0.235, 0.305),
+            "level": (0.05, 0.25, 0.235, 0.305),
             "lock": (0.865, 0.253, 0.935, 0.293),
             "rarity": (0.07, 0.15, 0.2, 0.22),
-            "equipped": (0.45, 0.95, 0.68, 1),
+            "equipped": (0.45, 0.96, 0.67, 0.99),
             "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
             "mainStatKey": (0.115, 0.358, 0.7, 0.4),
             "subStat_1": (0.115, 0.41, 1, 0.45),

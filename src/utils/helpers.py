@@ -1,11 +1,10 @@
 import sys
 import os
 import json
-import datetime
 import cv2
 import numpy as np
 import pytesseract
-from PIL import ImageFilter, Image
+from PIL import Image
 
 
 def resource_path(relative_path: str) -> str:
@@ -95,9 +94,6 @@ def preprocess_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    # if img.height < 50:
-    #     img = img.resize((img.width * 2, img.height * 2))
-
     for x in range(img.width):
         for y in range(img.height):
             pixel = img.getpixel((x, y))
@@ -107,22 +103,9 @@ def preprocess_img(img: Image) -> Image:
                 # img.putpixel((x, y), (255, 255, 255))
                 pass
             else:
-                img.putpixel((x, y), (pixel[0] // 4, pixel[1] // 4, pixel[2] // 4))
-    # img = cv2.resize(np.array(img), None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+                img.putpixel((x, y), (0, 0, 0))
 
-    # img = img.convert('L')
-    img = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
-    # img = cv2.adaptiveThreshold(cv2.medianBlur(img, 9), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
-    # img = img.filter(ImageFilter.EDGE_ENHANCE)
-    # img = img.filter(ImageFilter.GaussianBlur(radius=1))
-
-    kernel = np.ones((2, 2))
-    # img = cv2.GaussianBlur(img, (3, 3), 0)
-    img = cv2.dilate(img, kernel, iterations=1)
-    # img = cv2.erode(img, kernel, iterations=1)
-    # img = cv2.medianBlur(img, 3)
-
-    # return image from numpy array
+    img = cv2.dilate(np.array(img), (2, 2), iterations=1)
     img = Image.fromarray(img)
     return img
 
@@ -148,6 +131,57 @@ def preprocess_trace_img(img: Image) -> Image:
     img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2GRAY)
     img = cv2.GaussianBlur(img, (3, 3), 0)
     img = cv2.dilate(img, np.ones((3, 2), np.uint8), iterations=1)
+
+    img = Image.fromarray(img)
+    return img
+
+
+def preprocess_equipped_img(img: Image) -> Image:
+    """Preprocess equipped image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    return _preprocess_img_by_colour_filter(img, (219, 191, 145), 50)
+
+
+def preprocess_main_stat_img(img: Image) -> Image:
+    """Preprocess main stat image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    return _preprocess_img_by_colour_filter(img, (248, 166, 59), 50)
+
+
+def preprocess_superimposition_img(img: Image) -> Image:
+    """Preprocess superimposition image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    img = _preprocess_img_by_colour_filter(img, (220, 196, 145), 50)
+    return img
+
+
+def _preprocess_img_by_colour_filter(img: Image, colour: tuple, variance: int) -> Image:
+    """Preprocess image by filtering out colours that are not within the variance of the colour
+
+    :param img: The image to preprocess
+    :param colour: The colour to filter
+    :param variance: The variance of the colour
+    :return: The preprocessed image
+    """
+
+    lower = np.array([max(0, c - variance) for c in colour], dtype="uint8")
+    upper = np.array([min(255, c + variance) for c in colour], dtype="uint8")
+
+    mask = cv2.inRange(np.array(img), lower, upper)
+    img = cv2.bitwise_and(np.array(img), np.array(img), mask=mask)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+    img = cv2.GaussianBlur(img, (3, 3), 0)
+    img[img > 0] = 255
 
     img = Image.fromarray(img)
     return img
