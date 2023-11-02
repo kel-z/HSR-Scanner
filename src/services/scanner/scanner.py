@@ -60,18 +60,8 @@ class HSRScanner:
     async def start_scan(self) -> dict:
         """Starts the scan
 
-        :raises Exception: Thrown if no scan options are selected
         :return: The scan results
         """
-        if not any(
-            [
-                self._config["scan_light_cones"],
-                self._config["scan_relics"],
-                self._config["scan_characters"],
-            ]
-        ):
-            raise Exception("No scan options selected.")
-
         self._nav.bring_window_to_foreground()
 
         light_cones = []
@@ -123,7 +113,7 @@ class HSRScanner:
         time.sleep(1)
         self._nav.key_press(Key.esc)
         time.sleep(1)
-        self._nav.key_press("b")
+        self._nav.key_press(self._config["inventory_key"])
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
@@ -292,7 +282,7 @@ class HSRScanner:
         time.sleep(1)
         self._nav.key_press("1")
         time.sleep(0.2)
-        self._nav.key_press("c")
+        self._nav.key_press(self._config["characters_key"])
 
         tasks = set()
         x, y = nav_data["char_start"]

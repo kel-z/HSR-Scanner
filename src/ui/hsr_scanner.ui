@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>430</height>
+    <height>450</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,13 +22,13 @@
   <property name="minimumSize">
    <size>
     <width>700</width>
-    <height>430</height>
+    <height>450</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>700</width>
-    <height>430</height>
+    <height>450</height>
    </size>
   </property>
   <property name="mouseTracking">
@@ -50,7 +50,7 @@
       <x>10</x>
       <y>10</y>
       <width>681</width>
-      <height>411</height>
+      <height>431</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -63,18 +63,18 @@
      <number>0</number>
     </property>
     <property name="tabBarAutoHide">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
-    <widget class="QWidget" name="tab">
+    <widget class="QWidget" name="Home">
      <attribute name="title">
       <string>Scan</string>
      </attribute>
      <widget class="QGroupBox" name="formGroupBox">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>20</y>
-        <width>141</width>
+        <x>10</x>
+        <y>10</y>
+        <width>151</width>
         <height>101</height>
        </rect>
       </property>
@@ -115,7 +115,7 @@
      <widget class="QPushButton" name="pushButtonStartScan">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>10</x>
         <y>350</y>
         <width>111</width>
         <height>41</height>
@@ -129,7 +129,7 @@
       <property name="geometry">
        <rect>
         <x>270</x>
-        <y>230</y>
+        <y>210</y>
         <width>151</width>
         <height>91</height>
        </rect>
@@ -274,7 +274,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>20</y>
+        <y>10</y>
         <width>251</width>
         <height>101</height>
        </rect>
@@ -298,7 +298,7 @@
            <bool>true</bool>
           </property>
           <property name="text">
-           <string>Min Rarity</string>
+           <string>Min Rarity:</string>
           </property>
          </widget>
         </item>
@@ -324,7 +324,7 @@
            <bool>true</bool>
           </property>
           <property name="text">
-           <string>Min Level</string>
+           <string>Min Level:</string>
           </property>
          </widget>
         </item>
@@ -366,7 +366,7 @@
         <item row="1" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Min Rarity</string>
+           <string>Min Rarity:</string>
           </property>
          </widget>
         </item>
@@ -386,7 +386,7 @@
         <item row="2" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>Min Level</string>
+           <string>Min Level:</string>
           </property>
          </widget>
         </item>
@@ -416,9 +416,9 @@
      <widget class="QGroupBox" name="groupBox_3">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>140</y>
-        <width>401</width>
+        <x>10</x>
+        <y>120</y>
+        <width>411</width>
         <height>81</height>
        </rect>
       </property>
@@ -430,7 +430,7 @@
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>381</width>
+         <width>391</width>
          <height>51</height>
         </rect>
        </property>
@@ -472,9 +472,9 @@
       <property name="geometry">
        <rect>
         <x>430</x>
-        <y>20</y>
+        <y>10</y>
         <width>231</width>
-        <height>371</height>
+        <height>381</height>
        </rect>
       </property>
       <property name="title">
@@ -486,7 +486,7 @@
          <x>10</x>
          <y>20</y>
          <width>211</width>
-         <height>341</height>
+         <height>351</height>
         </rect>
        </property>
        <property name="readOnly">
@@ -534,10 +534,10 @@ p, li { white-space: pre-wrap; }
      <widget class="QGroupBox" name="groupBox_5">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>230</y>
-        <width>241</width>
-        <height>111</height>
+        <x>10</x>
+        <y>210</y>
+        <width>251</width>
+        <height>131</height>
        </rect>
       </property>
       <property name="title">
@@ -548,13 +548,86 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>221</width>
-         <height>81</height>
+         <width>231</width>
+         <height>101</height>
         </rect>
        </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="Configure">
+     <attribute name="title">
+      <string>Configure</string>
+     </attribute>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>171</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Set hotkeys</string>
+      </property>
+      <widget class="QWidget" name="formLayoutWidget_4">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>151</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <layout class="QFormLayout" name="formLayout_5">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Inventory key:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Characters key:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="lineEditCharactersKey">
+          <property name="text">
+           <string>c</string>
+          </property>
+          <property name="maxLength">
+           <number>1</number>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="lineEditInventoryKey">
+          <property name="text">
+           <string>b</string>
+          </property>
+          <property name="maxLength">
+           <number>1</number>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </widget>

@@ -110,10 +110,21 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         :return: The configuration for the scan
         """
+        # scan options
         config = {}
         config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
         config["scan_relics"] = self.checkBoxScanRelics.isChecked()
         config["scan_characters"] = self.checkBoxScanChars.isChecked()
+        if not any(
+            [
+                config["scan_light_cones"],
+                config["scan_relics"],
+                config["scan_characters"],
+            ]
+        ):
+            raise Exception("No scan options selected. Please select at least one.")
+
+        # filters
         config["filters"] = {
             "light_cone": {
                 "min_level": self.spinBoxLightConeMinLevel.value(),
@@ -124,6 +135,15 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 "min_rarity": self.spinBoxRelicMinRarity.value(),
             },
         }
+
+        # hotkeys
+        config["inventory_key"] = self.lineEditInventoryKey.text()
+        config["characters_key"] = self.lineEditCharactersKey.text()
+        if not config["inventory_key"]:
+            raise Exception("Inventory key is not set.")
+        if not config["characters_key"]:
+            raise Exception("Characters key is not set.")
+
         return config
 
     def handle_result(self, data: dict) -> None:
