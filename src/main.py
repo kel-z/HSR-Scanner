@@ -24,7 +24,6 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         super().__init__()
         self._scanner_thread = None
         self._listener = InterruptListener()
-        self.game_data = GameData()
 
     def setupUi(self, MainWindow: QtWidgets.QMainWindow) -> None:
         """Sets up the UI for the application
@@ -36,6 +35,13 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lineEditOutputLocation.setText(executable_path("StarRailData"))
         self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
+        try:
+            self.game_data = GameData()
+            self.log("Loaded database version: " + self.game_data.version)
+        except Exception as e:
+            self.log("ERROR: " + str(e))
+            self.pushButtonStartScan.setEnabled(False)
+            self.pushButtonStartScan.setText("ERROR")
 
     def change_output_location(self) -> None:
         """Opens a dialog to change the output location of the scan"""

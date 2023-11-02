@@ -40,7 +40,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
     - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from top to bottom.
-- The exact string values used can be found [here](src/utils/game_data_helpers.py).
+- The exact string values used can be found [here](src/models/game_data.py).
 
 Current output sample:
 
@@ -181,4 +181,4 @@ Check [sample_output.json](sample_output.json) for a full-sized, unfiltered exam
 
 ## Dev notes
 
-- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors, especially given the variability of relic sub-stats and lack of a model optimized for Star Rail. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible sub-stat value is known and can be checked against.
+- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible sub-stat value is known and can be checked against.

@@ -1,10 +1,12 @@
+import base64
+from io import BytesIO
 import Levenshtein
 import numpy as np
 import cv2
-import os
+import requests
 from PIL import Image
-from utils.helpers import resource_path, get_json_data
-from services.game_data import fetcher
+
+GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/master/output/game_data_with_icons.json"
 
 RELIC_MAIN_STATS = {
     "SPD",
@@ -50,24 +52,35 @@ PATHS = {
 
 
 class GameData:
-    EQUIPPED_ICONS = {}
-    CHARACTER_META_DATA = {}
-    RELIC_META_DATA = {}
-
     def __init__(self) -> None:
         """Constructor"""
-        # db_file_path = os.path.join(output_location, ".HSRScanner_Database.json")
-        # db_exists = os.path.isfile(db_file_path)
-        # if db_exists:
-        #     db = get_json_data(db_file_path)
-        #     self.CHARACTER_META_DATA = db["CHARACTER_META_DATA"]
-        #     self.RELIC_META_DATA = db["RELIC_META_DATA"]
-        #     self.LIGHT_CONE_META_DATA = db["LIGHT_CONE_META_DATA"]
-        # else:
-        data = fetcher.fetch_game_data()
+        try:
+            response = requests.get(GAME_DATA_URL)
+            data = response.json()
+        except requests.exceptions.RequestException:
+            raise Exception("Failed to fetch game data from " + GAME_DATA_URL)
+
+        self.version = data["version"]
         self.RELIC_META_DATA = data["relics"]
         self.LIGHT_CONE_META_DATA = data["light_cones"]
         self.CHARACTER_META_DATA = data["characters"]
+        self.EQUIPPED_ICONS = {}
+
+        for key in data["mini_icons"]:
+            base64_string = data["mini_icons"][key]
+            decoded_image = base64.b64decode(base64_string)
+            img = Image.open(BytesIO(decoded_image))
+            img = cv2.cvtColor(np.array(img), cv2.COLOR_BGRA2RGB)
+            dim = 42
+            img = cv2.resize(img, (dim, dim))
+
+            # Circle mask
+            mask = np.zeros(img.shape[:2], dtype="uint8")
+            (h, w) = img.shape[:2]
+            cv2.circle(mask, (int(w / 2), int(h / 2)), int(dim / 2), 255, -1)
+            img = cv2.bitwise_and(img, img, mask=mask)
+
+            self.EQUIPPED_ICONS[key] = img
 
     def get_relic_meta_data(self, name: str) -> dict:
         """Get relic meta data from name
@@ -99,7 +112,6 @@ class GameData:
         :param equipped_avatar_img: The equipped avatar image
         :return: The character name
         """
-        img_path_prefix = resource_path("assets/images/avatars")
         equipped_avatar_img = np.array(equipped_avatar_img)
 
         max_conf = 0
@@ -107,25 +119,14 @@ class GameData:
 
         # Get character with highest confidence
         for c in self._get_character_keys():
-            if c not in self.EQUIPPED_ICONS:
-                file_name = c.replace(" ", "")
-                img = cv2.imread(f"{img_path_prefix}/{file_name}.png")
-                img = cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
-
-                min_dim = int(min(equipped_avatar_img.shape[:2]))
-                img = cv2.resize(img, (min_dim, min_dim))
-
-                # Circle mask
-                mask = np.zeros(img.shape[:2], dtype="uint8")
-                (h, w) = img.shape[:2]
-                cv2.circle(mask, (int(w / 2), int(h / 2)), int(min_dim / 2), 255, -1)
-                img = cv2.bitwise_and(img, img, mask=mask)
-
-                self.EQUIPPED_ICONS[c] = img
+            # Construct key
+            key = "".join(filter(lambda char: char.isalnum() or char == "#", c))
 
             # Get confidence
             conf = cv2.matchTemplate(
-                equipped_avatar_img, self.EQUIPPED_ICONS[c], cv2.TM_CCOEFF_NORMED
+                equipped_avatar_img,
+                self.EQUIPPED_ICONS[key],
+                cv2.TM_CCOEFF_NORMED,
             ).max()
             if conf > max_conf:
                 max_conf = conf
@@ -242,8 +243,5 @@ class GameData:
             character_keys.remove("TrailblazerPreservation")
             character_keys.append("TrailblazerPreservation#M")
             character_keys.append("TrailblazerPreservation#F")
-        if "Dan Heng Imbibitor Lunae" in character_keys:
-            character_keys.remove("Dan Heng Imbibitor Lunae")
-            character_keys.append("Imbibitor Lunae#Dan Heng Imbibitor Lunae")
 
         return character_keys
