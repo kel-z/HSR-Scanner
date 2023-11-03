@@ -10,7 +10,6 @@ from utils.helpers import (
 from PIL import Image
 from pyautogui import locate
 from enums.increment_type import IncrementType
-from utils.screenshot import Screenshot
 from PyQt6.QtCore import pyqtBoundSignal
 from asyncio import Event
 
@@ -22,33 +21,25 @@ class RelicStrategy:
     NAV_DATA = RELIC_NAV_DATA
 
     def __init__(
-        self, game_data: GameData, screenshot: Screenshot, logger: pyqtBoundSignal
+        self,
+        game_data: GameData,
+        log_signal: pyqtBoundSignal,
+        update_signal: pyqtBoundSignal,
+        interrupt_event: Event,
     ) -> None:
         """Constructor
 
         :param game_data: The GameData class instance
-        :param screenshot: The Screenshot class instance
-        :param logger: The logger signal
+        :param log_signal: The log signal
+        :param update_signal: The update signal
+        :param interrupt_event: The interrupt event
         """
         self._game_data = game_data
+        self._log_signal = log_signal
+        self._update_signal = update_signal
+        self._interrupt_event = interrupt_event
         self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
-        self._screenshot = screenshot
-        self._logger = logger
         self._curr_id = 1
-
-    def screenshot_stats(self) -> Image:
-        """Takes a screenshot of the relic stats
-
-        :return: The screenshot
-        """
-        return self._screenshot.screenshot_relic_stats()
-
-    def screenshot_sort(self) -> Image:
-        """Takes a screenshot of the relic sort
-
-        :return: The screenshot
-        """
-        return self._screenshot.screenshot_relic_sort()
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -120,9 +111,9 @@ class RelicStrategy:
             case "level":
                 level = image_to_string(img, "0123456789", 7)
                 if not level:
-                    self._logger.emit(
+                    self._log_signal.emit(
                         f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
-                    ) if self._logger else None
+                    )
                     level = 0
                 return int(level)
             case "mainStatKey":
@@ -145,17 +136,13 @@ class RelicStrategy:
             case _:
                 return img
 
-    def parse(
-        self, stats_dict: dict, interrupt: Event, update_progress: pyqtBoundSignal
-    ) -> dict:
+    def parse(self, stats_dict: dict) -> dict:
         """Parses the relic data
 
         :param stats_dict: The stats dict
-        :param interrupt: The interrupt event
-        :param update_progress: The update progress signal
         :return: The parsed relic data
         """
-        if interrupt.is_set():
+        if self._interrupt_event.is_set():
             return
 
         for key in stats_dict:
@@ -185,8 +172,6 @@ class RelicStrategy:
                 True,
             )
             if not parsed_sub_stat_str:
-                # self._logger.emit(
-                #     f"Relic ID {self._curr_id}: Failed to get key. Either it doesn't exist or the OCR failed.") if self._logger else None
                 break
 
             try:
@@ -201,9 +186,9 @@ class RelicStrategy:
 
             if not val or val == ".":
                 if min_dist == 0:
-                    self._logger.emit(
+                    self._log_signal.emit(
                         f"Relic ID {self._curr_id}: Failed to get value for sub-stat: {key}. Either it doesn't exist or the OCR failed."
-                    ) if self._logger else None
+                    )
                 break
 
             try:
@@ -214,9 +199,9 @@ class RelicStrategy:
                     val = int(val)
             except ValueError:
                 if min_dist == 0:
-                    self._logger.emit(
+                    self._log_signal.emit(
                         f"Relic ID {self._curr_id}: Failed to get value for sub-stat: {key}. Error parsing sub-stat value: {val}."
-                    ) if self._logger else None
+                    )
                 break
 
             sub_stats.append({"key": key, "value": val})
@@ -248,7 +233,7 @@ class RelicStrategy:
             "_id": f"relic_{self._curr_id}",
         }
 
-        update_progress.emit(IncrementType.RELIC_SUCCESS.value)
+        self._update_signal.emit(IncrementType.RELIC_SUCCESS.value)
         self._curr_id += 1
 
         return result

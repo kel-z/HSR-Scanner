@@ -5,8 +5,9 @@ from utils.helpers import resource_path, image_to_string
 from PIL import Image
 from utils.helpers import resource_path, preprocess_trace_img
 from models.game_data import GameData
-from utils.screenshot import Screenshot
 from PyQt6.QtCore import pyqtBoundSignal
+from asyncio import Event
+from enums.increment_type import IncrementType
 
 
 class CharacterParser:
@@ -15,28 +16,25 @@ class CharacterParser:
     def __init__(
         self,
         game_data: GameData,
-        screenshot: Screenshot,
-        logger: pyqtBoundSignal,
-        interrupt: pyqtBoundSignal,
-        update_progress: pyqtBoundSignal,
+        log_signal: pyqtBoundSignal,
+        update_signal: pyqtBoundSignal,
+        interrupt_event: Event,
     ) -> None:
         """Constructor
 
         :param game_data: The GameData class instance
-        :param screenshot: The Screenshot class instance
-        :param logger: The logger signal
-        :param interrupt: The interrupt signal
-        :param update_progress: The update progress signal
+        :param log_signal: The log signal
+        :param update_signal: The update signal
+        :param interrupt_event: The interrupt event
         """
         self._game_data = game_data
-        self.interrupt = interrupt
-        self.update_progress = update_progress
+        self._log_signal = log_signal
+        self._update_signal = update_signal
+        self._interrupt_event = interrupt_event
         self._trailblazer_imgs = [
             Image.open(resource_path("assets/images/trailblazerm.png")),
             Image.open(resource_path("assets/images/trailblazerf.png")),
         ]
-        self._screenshot = screenshot
-        self._logger = logger
         self._trailblazerScanned = False
 
     def parse(self, stats_dict: dict, eidolon_images: list[Image.Image]) -> dict:
@@ -47,7 +45,7 @@ class CharacterParser:
         :raises ValueError: If the level cannot be parsed
         :return: The character dictionary
         """
-        if self.interrupt.is_set():
+        if self._interrupt_event.is_set():
             return
 
         character = {
@@ -73,10 +71,10 @@ class CharacterParser:
         try:
             character["level"] = int(level)
         except ValueError:
-            self._logger.emit(
+            self._log_signal.emit(
                 f"{character['key']}: Failed to parse level."
                 + (f' Got "{level}" instead.' if level else "")
-            ) if self._logger else None
+            )
 
         if character["eidolon"] >= 5:
             character["skills"]["basic"] -= 1
@@ -101,62 +99,37 @@ class CharacterParser:
                 if not 1 <= character["skills"][k] <= (6 if k == "basic" else 10):
                     raise ValueError
             except ValueError:
-                self._logger.emit(
+                self._log_signal.emit(
                     f"{character['key']}: Failed to parse '{k}' level. "
                     + (f"Got '{res}' instead. " if res else "")
                     + "Setting to 1."
-                ) if self._logger else None
+                )
                 character["skills"][k] = 1
 
         character["traces"] = traces_dict["unlocks"]
 
-        if self.update_progress:
-            self.update_progress.emit(102)
+        self._update_signal.emit(IncrementType.CHARACTER_SUCCESS.value)
 
         return character
 
-    def get_traces_levels_dict(self, path: str) -> dict:
-        """Get the traces levels dictionary
-
-        :param path: The path
-        :raises ValueError: If the path is invalid
-        :return: The traces levels dictionary
-        """
-        match path:
-            case "The Hunt":
-                return self._screenshot.screenshot_character_hunt_traces()
-            case "Erudition":
-                return self._screenshot.screenshot_character_erudition_traces()
-            case "Harmony":
-                return self._screenshot.screenshot_character_harmony_traces()
-            case "Preservation":
-                return self._screenshot.screenshot_character_preservation_traces()
-            case "Destruction":
-                return self._screenshot.screenshot_character_destruction_traces()
-            case "Nihility":
-                return self._screenshot.screenshot_character_nihility_traces()
-            case "Abundance":
-                return self._screenshot.screenshot_character_abundance_traces()
-            case _:
-                raise ValueError("Invalid path")
-
     def get_closest_name_and_path(
-        self, character_name: str, path: str
+        self, character_name: str, path: str, character_img: Image.Image
     ) -> tuple[str, str]:
         """Get the closest name and path
 
         :param character_name: The character name
         :param path: The path
+        :param character_img: The character image
         :raises Exception: If the character is not found in the database
         :return: The closest name and path
         """
         path, _ = self._game_data.get_closest_path_name(path)
 
-        if self._is_trailblazer():
+        if self._is_trailblazer(character_img):
             if self._trailblazerScanned:
-                self._logger.emit(
+                self._log_signal.emit(
                     "WARNING: Parsed more than one Trailblazer. Please review JSON output."
-                ) if self._logger else None
+                ) if self._log_signal else None
             else:
                 self._trailblazerScanned = True
 
@@ -173,15 +146,15 @@ class CharacterParser:
 
             return character_name, path
 
-    def _is_trailblazer(self) -> bool:
+    def _is_trailblazer(self, character_img: Image) -> bool:
         """Check if the character is Trailblazer
 
+        :param character_img: The character image
         :return: True if the character is Trailblazer, False otherwise
         """
-        char = self._screenshot.screenshot_character()
         for trailblazer in self._trailblazer_imgs:
-            trailblazer = trailblazer.resize(char.size)
-            if locate(char, trailblazer, confidence=0.8) is not None:
+            trailblazer = trailblazer.resize(character_img.size)
+            if locate(character_img, trailblazer, confidence=0.8) is not None:
                 return True
 
         return False

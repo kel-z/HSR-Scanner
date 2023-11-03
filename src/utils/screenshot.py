@@ -3,6 +3,7 @@ import numpy as np
 import win32gui
 from PIL import Image, ImageGrab
 from config.screenshot import SCREENSHOT_COORDS
+from enums.increment_type import IncrementType
 
 
 class Screenshot:
@@ -29,38 +30,41 @@ class Screenshot:
         """
         return self._take_screenshot(0, 0, 1, 1)
 
-    def screenshot_light_cone_stats(self) -> dict:
-        """Takes a screenshot of the light cone stats
+    def screenshot_stats(self, scan_type: IncrementType) -> dict:
+        """Takes a screenshot of the stats
 
+        :param scan_type: The scan type
+        :raises ValueError: Thrown if the scan type is invalid
         :return: A dict of the stats with the key being the stat name and the value being the screenshot
         """
-        return self._screenshot_stats("light_cone")
+        match IncrementType(scan_type):
+            case IncrementType.LIGHT_CONE_ADD:
+                return self._screenshot_stats("light_cone")
+            case IncrementType.RELIC_ADD:
+                return self._screenshot_stats("relic")
+            case _:
+                raise ValueError(f"Invalid scan type: {scan_type.name}")
 
-    def screenshot_relic_stats(self) -> dict:
-        """Takes a screenshot of the relic stats
+    def screenshot_sort(self, scan_type: IncrementType) -> Image:
+        """Takes a screenshot of the sort button
 
-        :return: A dict of the stats with the key being the stat name and the value being the screenshot
-        """
-        return self._screenshot_stats("relic")
-
-    def screenshot_relic_sort(self) -> Image:
-        """Takes a screenshot of the relic sort button
-
+        :param scan_type: The scan type
+        :raises ValueError: Thrown if the scan type is invalid
         :return: The screenshot
         """
+        match IncrementType(scan_type):
+            case IncrementType.LIGHT_CONE_ADD:
+                return self._take_screenshot(
+                    *SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
+                )
+            case IncrementType.RELIC_ADD:
+                # need to adjust coordinates for relic sort button because it's not in the same place as the light cone sort button
+                coords = SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
+                coords = (coords[0] + 0.035, coords[1], coords[2], coords[3])
 
-        # need to adjust coordinates for relic sort button because it's not in the same place as the light cone sort button
-        coords = SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
-        coords = (coords[0] + 0.035, coords[1], coords[2], coords[3])
-
-        return self._take_screenshot(*coords)
-
-    def screenshot_light_cone_sort(self) -> Image:
-        """Takes a screenshot of the light cone sort button
-
-        :return: The screenshot
-        """
-        return self._take_screenshot(*SCREENSHOT_COORDS[self._aspect_ratio]["sort"])
+                return self._take_screenshot(*coords)
+            case _:
+                raise ValueError(f"Invalid scan type: {scan_type.name}")
 
     def screenshot_quantity(self) -> Image:
         """Takes a screenshot of the quantity
@@ -137,54 +141,13 @@ class Screenshot:
 
         return res
 
-    def screenshot_character_hunt_traces(self) -> dict:
+    def screenshot_character_traces(self, key: str) -> dict:
         """Takes a screenshot of the character hunt trace levels
 
+        :param key: The key of the traces to screenshot
         :return: A dict of the traces with the key being the trace name and the value being the screenshot
         """
-        return self._screenshot_traces("hunt")
-
-    def screenshot_character_erudition_traces(self) -> dict:
-        """Takes a screenshot of the character erudition trace levels
-
-        :return: A dict of the traces with the key being the trace name and the value being the screenshot
-        """
-        return self._screenshot_traces("erudition")
-
-    def screenshot_character_harmony_traces(self) -> dict:
-        """Takes a screenshot of the character harmony trace levels
-
-        :return: A dict of the traces with the key being the trace name and the value being the screenshot
-        """
-        return self._screenshot_traces("harmony")
-
-    def screenshot_character_preservation_traces(self) -> dict:
-        """Takes a screenshot of the character preservation trace levels
-
-        :return: A dict of the traces with the key being the trace name and the value being the screenshot
-        """
-        return self._screenshot_traces("preservation")
-
-    def screenshot_character_destruction_traces(self) -> dict:
-        """Takes a screenshot of the character destruction trace levels
-
-        :return: A dict of the traces with the key being the trace name and the value being the screenshot
-        """
-        return self._screenshot_traces("destruction")
-
-    def screenshot_character_nihility_traces(self) -> dict:
-        """Takes a screenshot of the character nihility trace levels
-
-        :return: A dict of the traces with the key being the trace name and the value being the screenshot
-        """
-        return self._screenshot_traces("nihility")
-
-    def screenshot_character_abundance_traces(self) -> dict:
-        """Takes a screenshot of the character abundance trace levels
-
-        :return: A dict of the traces with the key being the trace name and the value being the screenshot
-        """
-        return self._screenshot_traces("abundance")
+        return self._screenshot_traces(key)
 
     def _take_screenshot(
         self, x: float, y: float, width: float, height: float

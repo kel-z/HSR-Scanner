@@ -12,17 +12,18 @@ from .character_parser import CharacterParser
 from config.character_scan import CHARACTER_NAV_DATA
 from PIL import Image
 from models.game_data import GameData
+from PyQt6 import QtCore
+from enums.increment_type import IncrementType
 
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
 
-class HSRScanner:
+class HSRScanner(QtCore.QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
-    update_progress = None
-    logger = None
-    complete = None
-    interrupt = asyncio.Event()
+    update_signal = QtCore.pyqtSignal(int)
+    log_signal = QtCore.pyqtSignal(str)
+    complete_signal = QtCore.pyqtSignal()
 
     def __init__(self, config: dict, game_data: GameData) -> None:
         """Constructor
@@ -32,30 +33,26 @@ class HSRScanner:
         :raises Exception: Thrown if the game is not found
         :raises Exception: Thrown if no scan options are selected
         """
+        super().__init__()
         self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
         if not self._hwnd:
             raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
             )
-
         self._game_data = game_data
-
         self._config = config
-
         self._nav = Navigation(self._hwnd)
 
         self._aspect_ratio = self._nav.get_aspect_ratio()
-
         if self._aspect_ratio not in SUPPORTED_ASPECT_RATIOS:
             raise Exception(
                 f"Aspect ratio {self._aspect_ratio} not supported. Supported aspect ratios: {SUPPORTED_ASPECT_RATIOS}"
             )
 
         self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
-
         self._databank_img = Image.open(resource_path("assets/images/databank.png"))
 
-        self.interrupt.clear()
+        self._interrupt_event = asyncio.Event()
 
     async def start_scan(self) -> dict:
         """Starts the scan
@@ -65,35 +62,45 @@ class HSRScanner:
         self._nav.bring_window_to_foreground()
 
         light_cones = []
-        if self._config["scan_light_cones"] and not self.interrupt.is_set():
+        if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
             light_cones = self.scan_inventory(
-                LightConeStrategy(self._game_data, self._screenshot, self.logger)
+                LightConeStrategy(
+                    self._game_data,
+                    self.log_signal,
+                    self.update_signal,
+                    self._interrupt_event,
+                )
             )
-            self.logger.emit(
+            self.log_signal.emit(
                 "Finished scanning light cones"
-            ) if self.logger and not self.interrupt.is_set() else None
+            ) if not self._interrupt_event.is_set() else None
 
         relics = []
-        if self._config["scan_relics"] and not self.interrupt.is_set():
+        if self._config["scan_relics"] and not self._interrupt_event.is_set():
             relics = self.scan_inventory(
-                RelicStrategy(self._game_data, self._screenshot, self.logger)
+                RelicStrategy(
+                    self._game_data,
+                    self.log_signal,
+                    self.update_signal,
+                    self._interrupt_event,
+                )
             )
-            self.logger.emit(
+            self.log_signal.emit(
                 "Finished scanning relics"
-            ) if self.logger and not self.interrupt.is_set() else None
+            ) if not self._interrupt_event.is_set() else None
 
         characters = []
-        if self._config["scan_characters"] and not self.interrupt.is_set():
+        if self._config["scan_characters"] and not self._interrupt_event.is_set():
             characters = self.scan_characters()
-            self.logger.emit(
+            self.log_signal.emit(
                 "Finished scanning characters"
-            ) if self.logger and not self.interrupt.is_set() else None
+            ) if not self._interrupt_event.is_set() else None
 
-        self.complete.emit() if self.complete else None
-
-        if self.interrupt.is_set():
+        if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
             return
+
+        self.complete_signal.emit()
 
         return {
             "source": "HSR_Scanner",
@@ -105,7 +112,7 @@ class HSRScanner:
 
     def stop_scan(self) -> None:
         """Stops the scan"""
-        self.interrupt.set()
+        self._interrupt_event.set()
 
     def scan_inventory(
         self, strategy: LightConeStrategy | RelicStrategy
@@ -145,7 +152,7 @@ class HSRScanner:
                 + " Did you start the scan from the ESC menu?"
             )
 
-        current_sort_method = strategy.screenshot_sort()
+        current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
         current_sort_method = image_to_string(current_sort_method, "RarityLv", 7)
         optimal_sort_method = strategy.get_optimal_sort_method(self._config["filters"])
 
@@ -176,7 +183,7 @@ class HSRScanner:
                     if quantity_remaining <= 0:
                         break
 
-                    if self.interrupt.is_set():
+                    if self._interrupt_event.is_set():
                         return tasks
 
                     # Next item
@@ -187,7 +194,7 @@ class HSRScanner:
                     quantity_remaining -= 1
 
                     # Get stats
-                    stats_dict = strategy.screenshot_stats()
+                    stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
                     x += nav_data["offset_x"]
 
                     # Check if item satisfies filters
@@ -208,12 +215,9 @@ class HSRScanner:
                             continue
 
                     # Update UI count
-                    if self.update_progress:
-                        self.update_progress.emit(strategy.SCAN_TYPE.value)
+                    self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-                    task = asyncio.to_thread(
-                        strategy.parse, stats_dict, self.interrupt, self.update_progress
-                    )
+                    task = asyncio.to_thread(strategy.parse, stats_dict)
                     tasks.add(task)
 
                 # Next row
@@ -240,11 +244,7 @@ class HSRScanner:
         :return: The tasks to await
         """
         char_parser = CharacterParser(
-            self._game_data,
-            self._screenshot,
-            self.logger,
-            self.interrupt,
-            self.update_progress,
+            self._game_data, self.log_signal, self.update_signal, self._interrupt_event
         )
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
@@ -280,9 +280,8 @@ class HSRScanner:
             )
 
         # Update UI count
-        if self.update_progress:
-            for _ in range(character_count):
-                self.update_progress.emit(2)
+        for _ in range(character_count):
+            self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
 
         # Navigate to characters menu
         self._nav.key_press(Key.esc)
@@ -297,7 +296,7 @@ class HSRScanner:
         x, y = nav_data["char_start"]
         i = 0
         while character_count > 0:
-            if self.interrupt.is_set():
+            if self._interrupt_event.is_set():
                 return tasks
 
             # Next character
@@ -322,8 +321,9 @@ class HSRScanner:
             )
             try:
                 path, character_name = map(str.strip, character_name.split("/")[:2])
+                character_img = self._screenshot.screenshot_character()
                 character_name, path = char_parser.get_closest_name_and_path(
-                    character_name, path
+                    character_name, path, character_img
                 )
                 stats_dict["name"] = character_name
 
@@ -353,8 +353,13 @@ class HSRScanner:
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(1)
+
+                traces_dict = self._screenshot.screenshot_character_traces(
+                    path.lower().split(" ")[-1]
+                )
+
                 stats_dict["traces"] = {
-                    "levels": char_parser.get_traces_levels_dict(path),
+                    "levels": traces_dict,
                     "unlocks": {},
                 }
                 path_key = path.split(" ")[-1].lower()
@@ -371,14 +376,14 @@ class HSRScanner:
                 time.sleep(0.1)
                 self._nav.click()
                 time.sleep(1.5)
-                eidlon_images = self._screenshot.screenshot_character_eidolons()
+                eidolon_images = self._screenshot.screenshot_character_eidolons()
 
-                task = asyncio.to_thread(char_parser.parse, stats_dict, eidlon_images)
+                task = asyncio.to_thread(char_parser.parse, stats_dict, eidolon_images)
                 tasks.add(task)
             except Exception as e:
-                self.logger.emit(
+                self.log_signal.emit(
                     f'Failed to parse character {character_name}. Got "{e}" error. Skipping...'
-                ) if self.logger else None
+                )
 
             if (
                 character_count - 1 == nav_data["chars_per_scan"]

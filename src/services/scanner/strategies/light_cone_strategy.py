@@ -4,7 +4,6 @@ from PIL import Image
 from utils.helpers import resource_path, image_to_string, preprocess_equipped_img
 from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
-from utils.screenshot import Screenshot
 from PyQt6.QtCore import pyqtBoundSignal
 from asyncio import Event
 
@@ -16,33 +15,25 @@ class LightConeStrategy:
     NAV_DATA = LIGHT_CONE_NAV_DATA
 
     def __init__(
-        self, game_data: GameData, screenshot: Screenshot, logger: pyqtBoundSignal
+        self,
+        game_data: GameData,
+        log_signal: pyqtBoundSignal,
+        update_signal: pyqtBoundSignal,
+        interrupt_event: Event,
     ) -> None:
         """Constructor
 
         :param game_data: The GameData class instance
-        :param screenshot: The Screenshot class instance
-        :param logger: The logger signal
+        :param log_signal: The log signal
+        :param update_signal: The update signal
+        :param interrupt_event: The interrupt event
         """
         self._game_data = game_data
+        self._log_signal = log_signal
+        self._update_signal = update_signal
+        self._interrupt_event = interrupt_event
         self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
-        self._screenshot = screenshot
-        self._logger = logger
         self._curr_id = 1
-
-    def screenshot_stats(self) -> Image:
-        """Takes a screenshot of the light cone stats
-
-        :return: The screenshot
-        """
-        return self._screenshot.screenshot_light_cone_stats()
-
-    def screenshot_sort(self) -> Image:
-        """Takes a screenshot of the light cone sort
-
-        :return: The screenshot
-        """
-        return self._screenshot.screenshot_light_cone_sort()
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -140,17 +131,13 @@ class LightConeStrategy:
     def parse(
         self,
         stats_dict: dict,
-        interrupt: Event,
-        update_progress: pyqtBoundSignal,
     ) -> dict:
         """Parses the stats dictionary
 
         :param stats_dict: The stats dictionary
-        :param interrupt: The interrupt event
-        :param update_progress: The update progress signal
         :return: The parsed stats dictionary
         """
-        if interrupt.is_set():
+        if self._interrupt_event.is_set():
             return
 
         for key in stats_dict:
@@ -169,9 +156,9 @@ class LightConeStrategy:
             level = int(level)
             max_level = int(max_level)
         except ValueError:
-            self._logger.emit(
+            self._log_signal.emit(
                 f"Light Cone ID {self._curr_id}: Error parsing level, setting to 1"
-            ) if self._logger else None
+            )
             level = 1
             max_level = 20
 
@@ -180,9 +167,9 @@ class LightConeStrategy:
         try:
             superimposition = int(superimposition)
         except ValueError:
-            self._logger.emit(
+            self._log_signal.emit(
                 f"Light Cone ID {self._curr_id}: Error parsing superimposition, setting to 1"
-            ) if self._logger else None
+            )
             superimposition = 1
 
         min_dim = min(lock.size)
@@ -207,7 +194,7 @@ class LightConeStrategy:
             "_id": f"light_cone_{self._curr_id}",
         }
 
-        update_progress.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
+        self._update_signal.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
         self._curr_id += 1
 
         return result

@@ -23,11 +23,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Constructor"""
         super().__init__()
         self._scanner_thread = None
-        self._fetch_game_data_thread = FetchGameDataThread()
         self._listener = InterruptListener()
 
-        self._fetch_game_data_thread.result.connect(self.handle_game_data)
-        self._fetch_game_data_thread.error.connect(self.handle_game_data_error)
+        # fetch game data
+        self._fetch_game_data_thread = FetchGameDataThread()
+        self._fetch_game_data_thread.result_signal.connect(self.handle_game_data)
+        self._fetch_game_data_thread.error_signal.connect(self.handle_game_data_error)
         self._fetch_game_data_thread.start()
 
     def handle_game_data(self, game_data: GameData) -> None:
@@ -52,7 +53,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonStartScan.setEnabled(True)
         self.pushButtonStartScan.setText("Retry")
 
-    def setupUi(self, MainWindow: QtWidgets.QMainWindow) -> None:
+    def setup_ui(self, MainWindow: QtWidgets.QMainWindow) -> None:
         """Sets up the UI for the application
 
         :param MainWindow: The main window of the application
@@ -83,7 +84,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def start_scan(self) -> None:
         """Starts the scan"""
+
         self.disable_start_scan_button()
+
+        # reset fields
         for label in [
             self.labelLightConeCount,
             self.labelRelicCount,
@@ -95,34 +99,35 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             label.setText("0")
         self.textEditLog.clear()
 
+        # initialize scanner
         try:
             scanner = HSRScanner(self.get_config(), self.game_data)
+            scanner.log_signal.connect(self.log)
+            scanner.update_signal.connect(self.increment_progress)
+            scanner.complete_signal.connect(self._listener.stop)
         except Exception as e:
             self.log(e)
             self.enable_start_scan_button()
             return
 
+        # initialize thread
         self._scanner_thread = ScannerThread(scanner)
+        self._scanner_thread.log_signal.connect(self.log)
 
-        self._scanner_thread.log.connect(self.log)
+        self._scanner_thread.result_signal.connect(self.handle_result)
+        self._scanner_thread.result_signal.connect(self._scanner_thread.deleteLater)
+        self._scanner_thread.result_signal.connect(self.enable_start_scan_button)
 
-        self._scanner_thread.update_progress.connect(self.increment_progress)
+        self._scanner_thread.error_signal.connect(self.log)
+        self._scanner_thread.error_signal.connect(self._scanner_thread.deleteLater)
+        self._scanner_thread.error_signal.connect(self.enable_start_scan_button)
+        self._scanner_thread.error_signal.connect(self._listener.stop)
 
-        self._scanner_thread.complete.connect(self._listener.stop)
+        self._listener.interrupt_signal.connect(self._scanner_thread.interrupt_scan)
 
-        # self._scanner_thread.result.connect(self.log)
-        self._scanner_thread.result.connect(self.handle_result)
-        self._scanner_thread.result.connect(self._scanner_thread.deleteLater)
-        self._scanner_thread.result.connect(self.enable_start_scan_button)
-
-        self._scanner_thread.error.connect(self.log)
-        self._scanner_thread.error.connect(self._scanner_thread.deleteLater)
-        self._scanner_thread.error.connect(self.enable_start_scan_button)
-        self._scanner_thread.error.connect(self._listener.stop)
-
-        self._listener.interrupt.connect(self._scanner_thread.interrupt_scan)
+        # start thread
+        self._scanner_thread.started.connect(self._listener.start)
         self._scanner_thread.start()
-        self._listener.start()
 
     def get_config(self) -> dict:
         """Gets the configuration for the scan
@@ -231,8 +236,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 class FetchGameDataThread(QtCore.QThread):
     """FetchGameDataThread class handles fetching the game data in a separate thread"""
 
-    result = QtCore.pyqtSignal(object)
-    error = QtCore.pyqtSignal(object)
+    result_signal = QtCore.pyqtSignal(object)
+    error_signal = QtCore.pyqtSignal(object)
 
     def __init__(self) -> None:
         """Constructor"""
@@ -241,27 +246,16 @@ class FetchGameDataThread(QtCore.QThread):
     def run(self) -> None:
         """Runs the fetch game data"""
         try:
-            self.game_data = GameData()
-            self.result.emit(self.game_data)
+            self.result_signal.emit(GameData())
+            self.quit()
         except Exception as e:
-            self.error.emit(e)
-
-    def load_game_data(self) -> None:
-        """Loads the game data"""
-        try:
-            self.game_data = GameData()
-            self.log("Loaded database version: " + self.game_data.version)
-            self.pushButtonStartScan.setEnabled(True)
-        except Exception as e:
-            self.log("ERROR: " + str(e))
-            self.pushButtonStartScan.setEnabled(False)
-            self.pushButtonStartScan.setText("ERROR")
+            self.error_signal.emit(e)
 
 
 class InterruptListener(QtCore.QThread):
     """InterruptListener class listens for the enter key to interrupt the scan"""
 
-    interrupt = QtCore.pyqtSignal()
+    interrupt_signal = QtCore.pyqtSignal()
 
     def __init__(self):
         """Constructor"""
@@ -286,17 +280,15 @@ class InterruptListener(QtCore.QThread):
         """
 
         if key == Key.enter:
-            self.interrupt.emit()
+            self.interrupt_signal.emit()
 
 
 class ScannerThread(QtCore.QThread):
     """ScannerThread class handles the scanning in a separate thread"""
 
-    update_progress = QtCore.pyqtSignal(int)
-    result = QtCore.pyqtSignal(object)
-    error = QtCore.pyqtSignal(object)
-    log = QtCore.pyqtSignal(str)
-    complete = QtCore.pyqtSignal()
+    result_signal = QtCore.pyqtSignal(object)
+    error_signal = QtCore.pyqtSignal(object)
+    log_signal = QtCore.pyqtSignal(str)
 
     def __init__(self, scanner: HSRScanner) -> None:
         """Constructor
@@ -305,24 +297,19 @@ class ScannerThread(QtCore.QThread):
         """
         super().__init__()
         self._scanner = scanner
-        self._scanner.update_progress = self.update_progress
-        self._scanner.logger = self.log
-        self._scanner.complete = self.complete
-
         self._interrupt_requested = False
 
     def run(self) -> None:
         """Runs the scan"""
         try:
-            self.log.emit("Starting scan...")
+            self.log_signal.emit("Starting scan...")
             res = asyncio.run(self._scanner.start_scan())
-            # print(res)
             if self._interrupt_requested:
-                self.error.emit("Scan interrupted")
+                self.error_signal.emit("Scan interrupted")
             else:
-                self.result.emit(res)
+                self.result_signal.emit(res)
         except Exception as e:
-            self.error.emit("Scan aborted with error: " + str(e))
+            self.error_signal.emit("Scan aborted with error: " + str(e))
 
     def interrupt_scan(self) -> None:
         """Interrupts the scan"""
@@ -337,6 +324,6 @@ if __name__ == "__main__":
     app.setWindowIcon(QtGui.QIcon(resource_path("assets/images/app.ico")))
     MainWindow = QtWidgets.QMainWindow()
     ui = HSRScannerUI()
-    ui.setupUi(MainWindow)
+    ui.setup_ui(MainWindow)
     MainWindow.show()
     sys.exit(app.exec())
