@@ -78,9 +78,7 @@ def image_to_string(
     if not res:
         preprocess_func = preprocess_func or preprocess_img
         res = (
-            pytesseract.image_to_string(
-                preprocess_func(img), config=config + " -l DIN-Alternate"
-            )
+            pytesseract.image_to_string(preprocess_func(img), config=config)
             .replace("\n", " ")
             .strip()
         )

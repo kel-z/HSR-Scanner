@@ -23,7 +23,34 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Constructor"""
         super().__init__()
         self._scanner_thread = None
+        self._fetch_game_data_thread = FetchGameDataThread()
         self._listener = InterruptListener()
+
+        self._fetch_game_data_thread.result.connect(self.handle_game_data)
+        self._fetch_game_data_thread.error.connect(self.handle_game_data_error)
+        self._fetch_game_data_thread.start()
+
+    def handle_game_data(self, game_data: GameData) -> None:
+        """Handle on game data loaded
+
+        :param game_data: The game data
+        """
+        self.game_data = game_data
+        self.log("Loaded database version: " + self.game_data.version)
+        self.pushButtonStartScan.clicked.connect(self.start_scan)
+        self.pushButtonStartScan.setEnabled(True)
+        self.pushButtonStartScan.setText("Start Scan")
+        self._fetch_game_data_thread.deleteLater()
+
+    def handle_game_data_error(self, e: Exception) -> None:
+        """Handle on game data error
+
+        :param e: The error
+        """
+        self.log(str(e))
+        self.pushButtonStartScan.clicked.connect(self._fetch_game_data_thread.start)
+        self.pushButtonStartScan.setEnabled(True)
+        self.pushButtonStartScan.setText("Retry")
 
     def setupUi(self, MainWindow: QtWidgets.QMainWindow) -> None:
         """Sets up the UI for the application
@@ -31,17 +58,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param MainWindow: The main window of the application
         """
         super().setupUi(MainWindow)
-        self.pushButtonStartScan.clicked.connect(self.start_scan)
         self.lineEditOutputLocation.setText(executable_path("StarRailData"))
         self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
-        try:
-            self.game_data = GameData()
-            self.log("Loaded database version: " + self.game_data.version)
-        except Exception as e:
-            self.log("ERROR: " + str(e))
-            self.pushButtonStartScan.setEnabled(False)
-            self.pushButtonStartScan.setText("ERROR")
 
     def change_output_location(self) -> None:
         """Opens a dialog to change the output location of the scan"""
@@ -204,7 +223,39 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         :param message: The message to log
         """
-        self.textEditLog.appendPlainText(str(message))
+        self.textEditLog.appendPlainText(
+            f"[{datetime.datetime.now().strftime('%H:%M:%S')}] > {str(message)}"
+        )
+
+
+class FetchGameDataThread(QtCore.QThread):
+    """FetchGameDataThread class handles fetching the game data in a separate thread"""
+
+    result = QtCore.pyqtSignal(object)
+    error = QtCore.pyqtSignal(object)
+
+    def __init__(self) -> None:
+        """Constructor"""
+        super().__init__()
+
+    def run(self) -> None:
+        """Runs the fetch game data"""
+        try:
+            self.game_data = GameData()
+            self.result.emit(self.game_data)
+        except Exception as e:
+            self.error.emit(e)
+
+    def load_game_data(self) -> None:
+        """Loads the game data"""
+        try:
+            self.game_data = GameData()
+            self.log("Loaded database version: " + self.game_data.version)
+            self.pushButtonStartScan.setEnabled(True)
+        except Exception as e:
+            self.log("ERROR: " + str(e))
+            self.pushButtonStartScan.setEnabled(False)
+            self.pushButtonStartScan.setText("ERROR")
 
 
 class InterruptListener(QtCore.QThread):
@@ -263,6 +314,7 @@ class ScannerThread(QtCore.QThread):
     def run(self) -> None:
         """Runs the scan"""
         try:
+            self.log.emit("Starting scan...")
             res = asyncio.run(self._scanner.start_scan())
             # print(res)
             if self._interrupt_requested:

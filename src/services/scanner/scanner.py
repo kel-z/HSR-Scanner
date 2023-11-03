@@ -69,16 +69,25 @@ class HSRScanner:
             light_cones = self.scan_inventory(
                 LightConeStrategy(self._game_data, self._screenshot, self.logger)
             )
+            self.logger.emit(
+                "Finished scanning light cones"
+            ) if self.logger and not self.interrupt.is_set() else None
 
         relics = []
         if self._config["scan_relics"] and not self.interrupt.is_set():
             relics = self.scan_inventory(
                 RelicStrategy(self._game_data, self._screenshot, self.logger)
             )
+            self.logger.emit(
+                "Finished scanning relics"
+            ) if self.logger and not self.interrupt.is_set() else None
 
         characters = []
         if self._config["scan_characters"] and not self.interrupt.is_set():
             characters = self.scan_characters()
+            self.logger.emit(
+                "Finished scanning characters"
+            ) if self.logger and not self.interrupt.is_set() else None
 
         self.complete.emit() if self.complete else None
 

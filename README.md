@@ -20,6 +20,8 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 6. Do not move your mouse during the scan process.
 7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
+As of `v0.3.0`, the app's database is [updated separately](https://github.com/kel-z/HSR-Data) from this repo. If the database version doesn't match the latest game version, then the database hasn't been updated yet.
+
 ## Scanner settings and configurations
 
 HSR Scanner has the following scan options:
@@ -27,6 +29,8 @@ HSR Scanner has the following scan options:
 - Select whether to scan light cones, relics, and/or characters.
 - Set output location for the JSON file.
 - Filter light cones and relics based on a minimum rarity or level threshhold.
+
+The scanner uses `b` and `c` by default to navigate to the inventory and character screen, respectively. If you changed these hotkeys, you will need to update the corresponding key in the configure tab.
 
 ## Output
 
