@@ -20,6 +20,8 @@ If you haven't already, download and install [Microsoft Visual C++ Redistributab
 6. Do not move your mouse during the scan process.
 7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
+As of `v0.3.0`, the app's database is [updated separately](https://github.com/kel-z/HSR-Data) from this repo. If the database version doesn't match the latest game version, then the database hasn't been updated yet.
+
 ## Scanner settings and configurations
 
 HSR Scanner has the following scan options:
@@ -27,6 +29,8 @@ HSR Scanner has the following scan options:
 - Select whether to scan light cones, relics, and/or characters.
 - Set output location for the JSON file.
 - Filter light cones and relics based on a minimum rarity or level threshhold.
+
+The scanner uses `b` and `c` by default to navigate to the inventory and character screen, respectively. If you changed these hotkeys, you will need to update the corresponding key in the configure tab.
 
 ## Output
 
@@ -40,14 +44,14 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
     - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from top to bottom.
-- The exact string values used can be found [here](src/utils/game_data_helpers.py).
+- The exact string values used can be found [here](src/models/game_data.py).
 
 Current output sample:
 
 ```
 {
     "source": "HSR_Scanner",
-    "version": 1,
+    "version": 2,
     "light_cones": [
         {
             "key": "Cruising in the Stellar Sea",
@@ -70,12 +74,12 @@ Current output sample:
     ],
     "relics": [
         {
-            "setKey": "Celestial Differentiator",
-            "slotKey": "Planar Sphere",
+            "set": "Celestial Differentiator",
+            "slot": "Planar Sphere",
             "rarity": 5,
             "level": 15,
-            "mainStatKey": "Wind DMG Boost",
-            "subStats": [
+            "mainstat": "Wind DMG Boost",
+            "substats": [
                 {
                     "key": "HP",
                     "value": 105
@@ -98,12 +102,12 @@ Current output sample:
             "_id": "relic_1"
         },
         {
-            "setKey": "Thief of Shooting Meteor",
-            "slotKey": "Body",
+            "set": "Thief of Shooting Meteor",
+            "slot": "Body",
             "rarity": 4,
             "level": 0,
-            "mainStatKey": "Outgoing Healing Boost",
-            "subStats": [
+            "mainstat": "Outgoing Healing Boost",
+            "substats": [
                 {
                     "key": "HP",
                     "value": 30
@@ -181,4 +185,4 @@ Check [sample_output.json](sample_output.json) for a full-sized, unfiltered exam
 
 ## Dev notes
 
-- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors, especially given the variability of relic sub-stats and lack of a model optimized for Star Rail. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible sub-stat value is known and can be checked against.
+- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible sub-stat value is known and can be checked against.
