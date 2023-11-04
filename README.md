@@ -51,7 +51,7 @@ Current output sample:
 ```
 {
     "source": "HSR_Scanner",
-    "version": 1,
+    "version": 2,
     "light_cones": [
         {
             "key": "Cruising in the Stellar Sea",
@@ -74,12 +74,12 @@ Current output sample:
     ],
     "relics": [
         {
-            "setKey": "Celestial Differentiator",
-            "slotKey": "Planar Sphere",
+            "set": "Celestial Differentiator",
+            "slot": "Planar Sphere",
             "rarity": 5,
             "level": 15,
-            "mainStatKey": "Wind DMG Boost",
-            "subStats": [
+            "mainstat": "Wind DMG Boost",
+            "substats": [
                 {
                     "key": "HP",
                     "value": 105
@@ -102,12 +102,12 @@ Current output sample:
             "_id": "relic_1"
         },
         {
-            "setKey": "Thief of Shooting Meteor",
-            "slotKey": "Body",
+            "set": "Thief of Shooting Meteor",
+            "slot": "Body",
             "rarity": 4,
             "level": 0,
-            "mainStatKey": "Outgoing Healing Boost",
-            "subStats": [
+            "mainstat": "Outgoing Healing Boost",
+            "substats": [
                 {
                     "key": "HP",
                     "value": 30

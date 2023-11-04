@@ -104,7 +104,7 @@ class HSRScanner(QtCore.QObject):
 
         return {
             "source": "HSR_Scanner",
-            "version": 1,
+            "version": 2,
             "light_cones": await asyncio.gather(*light_cones),
             "relics": await asyncio.gather(*relics),
             "characters": await asyncio.gather(*characters),

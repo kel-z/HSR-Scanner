@@ -207,8 +207,8 @@ class RelicStrategy:
             sub_stats.append({"key": key, "value": val})
 
         metadata = self._game_data.get_relic_meta_data(name)
-        set_key = metadata["setKey"]
-        slot_key = metadata["slotKey"]
+        set_key = metadata["set"]
+        slot_key = metadata["slot"]
 
         # Check if locked by image matching
         min_dim = min(lock.size)
@@ -222,12 +222,12 @@ class RelicStrategy:
             location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
-            "setKey": set_key,
-            "slotKey": slot_key,
+            "set": set_key,
+            "slot": slot_key,
             "rarity": rarity,
             "level": level,
-            "mainStatKey": main_stat_key,
-            "subStats": sub_stats,
+            "mainstat": main_stat_key,
+            "substats": sub_stats,
             "location": location,
             "lock": lock,
             "_id": f"relic_{self._curr_id}",
