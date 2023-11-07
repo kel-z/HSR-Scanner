@@ -5,6 +5,7 @@ from utils.helpers import (
     resource_path,
     image_to_string,
     preprocess_main_stat_img,
+    preprocess_sub_stat_img,
     preprocess_equipped_img,
 )
 from PIL import Image
@@ -109,7 +110,7 @@ class RelicStrategy:
                     img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
                 )
             case "level":
-                level = image_to_string(img, "0123456789", 7)
+                level = image_to_string(img, "0123456789", 7, True)
                 if not level:
                     self._log_signal.emit(
                         f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
@@ -170,6 +171,7 @@ class RelicStrategy:
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz 0123456789.%",
                 7,
                 True,
+                preprocess_sub_stat_img,
             )
             if not parsed_sub_stat_str:
                 break
@@ -196,6 +198,10 @@ class RelicStrategy:
                     val = float(val[:-1])
                     key += "_"
                 else:
+                    # rarely, the OCR will read "S" as "5"
+                    if val == "S":
+                        val = "5"
+
                     val = int(val)
             except ValueError:
                 if min_dist == 0:

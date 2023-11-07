@@ -1,7 +1,13 @@
 from models.game_data import GameData
 from pyautogui import locate
 from PIL import Image
-from utils.helpers import resource_path, image_to_string, preprocess_equipped_img
+from utils.helpers import (
+    resource_path,
+    image_to_string,
+    preprocess_equipped_img,
+    preprocess_superimposition_img,
+    preprocess_lc_level_img,
+)
 from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
 from PyQt6.QtCore import pyqtBoundSignal
@@ -118,9 +124,13 @@ class LightConeStrategy:
                 )
                 return name
             case "level":
-                return image_to_string(img, "0123456789/", 7)
+                return image_to_string(
+                    img, "0123456789/", 7, True, preprocess_lc_level_img
+                )
             case "superimposition":
-                return image_to_string(img, "12345", 10)
+                return image_to_string(
+                    img, "12345", 10, True, preprocess_superimposition_img
+                )
             case "equipped":
                 return image_to_string(
                     img, "Equipped", 7, True, preprocess_equipped_img

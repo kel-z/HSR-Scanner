@@ -57,8 +57,22 @@ def get_json_data(file_path: str) -> dict:
         return json.load(json_file)
 
 
+def preprocess_img(img: Image) -> Image:
+    """Preprocess image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+
+    return _preprocess_img_by_colour_filter(img, (255, 255, 255), 80)
+
+
 def image_to_string(
-    img: Image, whitelist: str, psm: int, force_preprocess=False, preprocess_func=None
+    img: Image,
+    whitelist: str,
+    psm: int,
+    force_preprocess=False,
+    preprocess_func=preprocess_img,
 ) -> str:
     """Convert image to string
 
@@ -76,7 +90,6 @@ def image_to_string(
         res = pytesseract.image_to_string(img, config=config).replace("\n", " ").strip()
 
     if not res:
-        preprocess_func = preprocess_func or preprocess_img
         res = (
             pytesseract.image_to_string(preprocess_func(img), config=config)
             .replace("\n", " ")
@@ -86,26 +99,22 @@ def image_to_string(
     return res
 
 
-def preprocess_img(img: Image) -> Image:
-    """Preprocess image
+def preprocess_char_count_img(img: Image) -> Image:
+    """Preprocess character count image in the Databank screen
 
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    for x in range(img.width):
-        for y in range(img.height):
-            pixel = img.getpixel((x, y))
-            if (pixel[0] > 170 and pixel[1] > 170 and pixel[2] > 170) or (
-                210 < pixel[0] < 230 and 190 < pixel[1] < 200 and 140 < pixel[2] < 150
-            ):
-                # img.putpixel((x, y), (255, 255, 255))
-                pass
-            else:
-                img.putpixel((x, y), (0, 0, 0))
+    return _preprocess_img_by_colour_filter(img, (218, 194, 145), 30)
 
-    img = cv2.dilate(np.array(img), (2, 2), iterations=1)
-    img = Image.fromarray(img)
-    return img
+
+def preprocess_lc_level_img(img: Image) -> Image:
+    """Preprocess light cone level image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    return _preprocess_img_by_colour_filter(img, [(255, 255, 255), (239, 160, 61)], 80)
 
 
 def preprocess_trace_img(img: Image) -> Image:
@@ -114,23 +123,20 @@ def preprocess_trace_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    for x in range(img.width):
-        for y in range(img.height):
-            pixel = img.getpixel((x, y))
-            dist = min(
-                sum([(a - b) ** 2 for a, b in zip(pixel, (45, 251, 249))]),
-                sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
-            )
-            if dist < 2000:
-                img.putpixel((x, y), (255, 255, 255))
-            else:
-                img.putpixel((x, y), (pixel[0] // 4, pixel[1] // 4, pixel[2] // 4))
-
-    img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2GRAY)
-    img = cv2.GaussianBlur(img, (3, 3), 0)
-    img = cv2.dilate(img, np.ones((3, 2), np.uint8), iterations=1)
-
-    img = Image.fromarray(img)
+    img = _preprocess_img_by_colour_filter(
+        img,
+        [
+            (255, 255, 255),
+            (212, 214, 214),
+            (160, 166, 175),
+            (45, 240, 240),
+            (26, 145, 150),
+            (33, 180, 182),
+            (38, 212, 206),
+            (14, 77, 82),
+        ],
+        [50, 50, 20, 20, 30, 30, 15, 10],
+    )
     return img
 
 
@@ -140,7 +146,7 @@ def preprocess_equipped_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    return _preprocess_img_by_colour_filter(img, (219, 191, 145), 50)
+    return _preprocess_img_by_colour_filter(img, (202, 177, 134), 75)
 
 
 def preprocess_main_stat_img(img: Image) -> Image:
@@ -149,7 +155,17 @@ def preprocess_main_stat_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    return _preprocess_img_by_colour_filter(img, (248, 166, 59), 50)
+    return _preprocess_img_by_colour_filter(img, (226, 155, 61), 50)
+
+
+def preprocess_sub_stat_img(img: Image) -> Image:
+    """Preprocess sub stat image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    img = _preprocess_img_by_colour_filter(img, (255, 255, 255), 90)
+    return img
 
 
 def preprocess_superimposition_img(img: Image) -> Image:
@@ -162,24 +178,44 @@ def preprocess_superimposition_img(img: Image) -> Image:
     return img
 
 
-def _preprocess_img_by_colour_filter(img: Image, colour: tuple, variance: int) -> Image:
+def _preprocess_img_by_colour_filter(
+    img: Image, colour: tuple | list[tuple], variance: int | list[int]
+) -> Image:
     """Preprocess image by filtering out colours that are not within the variance of the colour
 
     :param img: The image to preprocess
-    :param colour: The colour to filter
-    :param variance: The variance of the colour
+    :param colour: The colour or list of colours to filter
+    :param variance: The variance or list of variances to use for each colour
     :return: The preprocessed image
     """
+    if isinstance(colour, tuple):
+        colour = [colour]
+    if isinstance(variance, int):
+        variance = [variance] * len(colour)
 
-    lower = np.array([max(0, c - variance) for c in colour], dtype="uint8")
-    upper = np.array([min(255, c + variance) for c in colour], dtype="uint8")
+    if len(colour) != len(variance):
+        raise ValueError(
+            f"Length of colour ({len(colour)}) and variance ({len(variance)}) must be the same"
+        )
 
-    mask = cv2.inRange(np.array(img), lower, upper)
-    img = cv2.bitwise_and(np.array(img), np.array(img), mask=mask)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    img_arr = np.array(img)
 
-    img = cv2.GaussianBlur(img, (3, 3), 0)
-    img[img > 0] = 255
+    mask = np.zeros(img_arr.shape[:2], dtype="uint8")
+    for c, v in zip(colour, variance):
+        lower = np.array([max(0, c - v) for c in c], dtype="uint8")
+        upper = np.array([min(255, c + v) for c in c], dtype="uint8")
+        mask = cv2.bitwise_or(mask, cv2.inRange(img_arr, lower, upper))
 
-    img = Image.fromarray(img)
-    return img
+    img_arr = cv2.bitwise_and(img_arr, img_arr, mask=mask)
+    img_arr = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)
+
+    # blur
+    img_arr = cv2.GaussianBlur(img_arr, (3, 3), 1)
+
+    # brighten image
+    img_arr = cv2.convertScaleAbs(img_arr, alpha=2, beta=0)
+
+    # invert
+    img_arr = 255 - img_arr
+
+    return Image.fromarray(img_arr)
