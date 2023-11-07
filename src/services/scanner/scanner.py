@@ -276,8 +276,8 @@ class HSRScanner(QtCore.QObject):
             character_count = character_total = int(character_total)
         except ValueError:
             raise ValueError(
-                "Failed to parse character count."
-                + (f' Got "{character_count}" instead.' if character_count else "")
+                "Failed to parse character count from Data Bank screen."
+                + (f' Got "{character_total}" instead.' if character_total else "")
                 + " Did you start the scan from the ESC menu?"
             )
 

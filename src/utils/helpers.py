@@ -100,7 +100,7 @@ def image_to_string(
 
 
 def preprocess_char_count_img(img: Image) -> Image:
-    """Preprocess character count image in the Databank screen
+    """Preprocess character count image in the Data Bank screen
 
     :param img: The image to preprocess
     :return: The preprocessed image
