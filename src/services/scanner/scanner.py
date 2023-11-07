@@ -6,7 +6,7 @@ import asyncio
 from .strategies.light_cone_strategy import LightConeStrategy
 from .strategies.relic_strategy import RelicStrategy
 from pynput.keyboard import Key
-from utils.helpers import image_to_string, resource_path
+from utils.helpers import image_to_string, resource_path, preprocess_char_count_img
 import pyautogui
 from .character_parser import CharacterParser
 from config.character_scan import CHARACTER_NAV_DATA
@@ -188,9 +188,9 @@ class HSRScanner(QtCore.QObject):
 
                     # Next item
                     self._nav.move_cursor_to(x, y)
-                    time.sleep(0.1)
+                    time.sleep(0.05)
                     self._nav.click()
-                    time.sleep(0.2)
+                    time.sleep(0.1)
                     quantity_remaining -= 1
 
                     # Get stats
@@ -267,11 +267,13 @@ class HSRScanner(QtCore.QObject):
         time.sleep(1)
 
         # Get character count
-        character_count = self._screenshot.screenshot_character_count()
-        character_count = image_to_string(character_count, "0123456789/", 7)
+        character_total = self._screenshot.screenshot_character_count()
+        character_total = image_to_string(
+            character_total, "0123456789/", 7, True, preprocess_char_count_img
+        )
         try:
-            character_count, _ = character_count.split("/")
-            character_count = int(character_count)
+            character_total, _ = character_total.split("/")
+            character_count = character_total = int(character_total)
         except ValueError:
             raise ValueError(
                 "Failed to parse character count."
@@ -291,6 +293,7 @@ class HSRScanner(QtCore.QObject):
         self._nav.key_press("1")
         time.sleep(0.2)
         self._nav.key_press(self._config["characters_key"])
+        time.sleep(1)
 
         tasks = set()
         x, y = nav_data["char_start"]
@@ -309,7 +312,7 @@ class HSRScanner(QtCore.QObject):
             self._nav.move_cursor_to(*nav_data["details_button"])
             time.sleep(0.2)
             self._nav.click()
-            time.sleep(1)
+            time.sleep(0.2)
 
             # Get character name and path
             stats_dict = {}
@@ -350,9 +353,9 @@ class HSRScanner(QtCore.QObject):
 
                 # Get traces
                 self._nav.move_cursor_to(*nav_data["traces_button"])
-                time.sleep(0.1)
+                time.sleep(0.05)
                 self._nav.click()
-                time.sleep(1)
+                time.sleep(0.5)
 
                 traces_dict = self._screenshot.screenshot_character_traces(
                     path.lower().split(" ")[-1]
@@ -375,7 +378,8 @@ class HSRScanner(QtCore.QObject):
                 self._nav.move_cursor_to(*nav_data["eidolons_button"])
                 time.sleep(0.1)
                 self._nav.click()
-                time.sleep(1.5)
+                # First character's eidolons take longer to load
+                time.sleep(1.5 if character_total == character_count else 0.9)
                 eidolon_images = self._screenshot.screenshot_character_eidolons()
 
                 task = asyncio.to_thread(char_parser.parse, stats_dict, eidolon_images)
@@ -393,9 +397,9 @@ class HSRScanner(QtCore.QObject):
                 i += 1
                 x = x + nav_data["offset_x"] * i
                 self._nav.move_cursor_to(x, y)
-                time.sleep(0.1)
+                time.sleep(0.05)
                 self._nav.click()
-                time.sleep(0.1)
+                time.sleep(0.05)
                 self._nav.drag_scroll(x, y, nav_data["char_start"][0] - 0.031, y)
 
                 # Move mouse to avoid clicking anything on next iteration since

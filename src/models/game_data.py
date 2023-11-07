@@ -6,7 +6,7 @@ import cv2
 import requests
 from PIL import Image
 
-GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/master/output/game_data_with_icons.json"
+GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/game_data_with_icons.json"
 
 RELIC_MAIN_STATS = {
     "SPD",
@@ -65,6 +65,17 @@ class GameData:
         self.LIGHT_CONE_META_DATA = data["light_cones"]
         self.CHARACTER_META_DATA = data["characters"]
         self.EQUIPPED_ICONS = {}
+
+        # where i + 1 is the rarity
+        self.COLOURS = np.array(
+            [
+                [94, 97, 111],  # gray
+                [74, 100, 121],  # green
+                [61, 90, 145],  # blue
+                [101, 92, 142],  # purple
+                [158, 109, 95],  # gold
+            ]
+        )
 
         for key in data["mini_icons"]:
             base64_string = data["mini_icons"][key]
@@ -188,17 +199,7 @@ class GameData:
         :param pixel: The pixel to get the rarity from
         :return: The closest rarity
         """
-        # where i + 1 is the rarity
-        colors = [
-            [94, 97, 111],  # gray
-            [74, 100, 121],  # green
-            [61, 90, 145],  # blue
-            [101, 92, 142],  # purple
-            [158, 109, 95],  # gold
-        ]
-
-        colors = np.array(colors)
-        distances = np.sqrt(np.sum((colors - pixel) ** 2, axis=1))
+        distances = np.linalg.norm(self.COLOURS - pixel, axis=1)
 
         return int(np.argmin(distances)) + 1
 

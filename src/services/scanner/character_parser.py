@@ -76,16 +76,14 @@ class CharacterParser:
                 + (f' Got "{level}" instead.' if level else "")
             )
 
-        if character["eidolon"] >= 5:
-            character["skills"]["basic"] -= 1
-            character["skills"]["skill"] -= 2
-            character["skills"]["ult"] -= 2
-            character["skills"]["talent"] -= 2
-        elif character["eidolon"] >= 3:
-            for k, v in self._game_data.get_character_meta_data(character["key"])[
-                "e3"
-            ].items():
-                character["skills"][k] -= v
+        for eidolon in (5, 3):
+            if character["eidolon"] >= eidolon:
+                e_token = f"e{eidolon}"
+                metadata = self._game_data.get_character_meta_data(character["key"])[
+                    e_token
+                ]
+                for k, v in metadata.items():
+                    character["skills"][k] -= v
 
         traces_dict = stats_dict["traces"]
         for k, v in traces_dict["levels"].items():
