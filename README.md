@@ -48,7 +48,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 
 Current output sample:
 
-```
+```JSON
 {
     "source": "HSR_Scanner",
     "version": 2,
