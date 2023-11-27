@@ -126,6 +126,20 @@ class Navigation:
         time.sleep(0.5)
         pyautogui.mouseUp()
 
+    def scroll_page_down(self, times_scrolled) -> None:
+        """Scroll down one inventory page
+
+        For every 4 times scrolled, scroll up once to compensate for imprecision
+
+        :param times_scrolled: The number of times scrolled
+        """
+        for _ in range(25):
+            self._mouse.scroll(0, -1)
+            time.sleep(0.01)
+
+        if times_scrolled != 0 and times_scrolled % 4 == 0:
+            self._mouse.scroll(0, 1)
+
     def print_mouse_position(self) -> None:
         """Print the current mouse position"""
         x_percent, y_percent = self.get_mouse_position()

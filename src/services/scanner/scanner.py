@@ -34,7 +34,11 @@ class HSRScanner(QtCore.QObject):
         :raises Exception: Thrown if no scan options are selected
         """
         super().__init__()
-        self._hwnd = win32gui.FindWindow("UnityWndClass", "Honkai: Star Rail")
+        for i, game_name in enumerate(["Honkai: Star Rail", "崩坏：星穹铁道", "崩壞：星穹鐵道"]):
+            self._hwnd = win32gui.FindWindow("UnityWndClass", game_name)
+            if self._hwnd:
+                self._is_en = i == 0
+                break
         if not self._hwnd:
             raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
@@ -59,6 +63,10 @@ class HSRScanner(QtCore.QObject):
 
         :return: The scan results
         """
+        if not self._is_en:
+            self.log_signal.emit(
+                "WARNING: Non-English game name detected. The scanner only works with English text."
+            )
         self._nav.bring_window_to_foreground()
 
         light_cones = []
@@ -133,7 +141,7 @@ class HSRScanner(QtCore.QObject):
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         # TODO: using quantity to know when to scan the bottom row is not ideal
         #       because it will not work for tabs that do not have a quantity
@@ -167,6 +175,7 @@ class HSRScanner(QtCore.QObject):
 
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
+        num_times_scrolled = 0
         while quantity_remaining > 0:
             if (
                 quantity_remaining <= scanned_per_scroll
@@ -227,9 +236,9 @@ class HSRScanner(QtCore.QObject):
             if quantity_remaining <= 0:
                 break
 
-            self._nav.drag_scroll(
-                x, nav_data["scroll_start_y"], x, nav_data["scroll_end_y"]
-            )
+            self._nav.scroll_page_down(num_times_scrolled)
+            num_times_scrolled += 1
+
             time.sleep(0.5)
 
         self._nav.key_press(Key.esc)
