@@ -141,7 +141,7 @@ class HSRScanner(QtCore.QObject):
         time.sleep(1)
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         # TODO: using quantity to know when to scan the bottom row is not ideal
         #       because it will not work for tabs that do not have a quantity
@@ -175,6 +175,7 @@ class HSRScanner(QtCore.QObject):
 
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
+        num_times_scrolled = 0
         while quantity_remaining > 0:
             if (
                 quantity_remaining <= scanned_per_scroll
@@ -235,9 +236,9 @@ class HSRScanner(QtCore.QObject):
             if quantity_remaining <= 0:
                 break
 
-            self._nav.drag_scroll(
-                x, nav_data["scroll_start_y"], x, nav_data["scroll_end_y"]
-            )
+            self._nav.scroll_page_down(num_times_scrolled)
+            num_times_scrolled += 1
+
             time.sleep(0.5)
 
         self._nav.key_press(Key.esc)
