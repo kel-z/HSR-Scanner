@@ -1,8 +1,8 @@
 # each tuple is (x, y, w, h) in % of the image
-# w and h are hardcoded if missing
+# w and h are hardcoded if not included in the tuple
 SCREENSHOT_COORDS = {
     "16:9": {
-        "quantity": (0.475, 0.89, 0.13, 0.06),
+        "quantity": (0.465, 0.89, 0.14, 0.06),
         "sort": (0.079, 0.9, 0.07, 0.033),
         "character": {
             "count": (0.56, 0.555, 0.05, 0.035),
@@ -70,7 +70,7 @@ SCREENSHOT_COORDS = {
             "level": (0.13, 0.32, 0.35, 0.37),
             "superimposition": (0.53, 0.495, 0.6, 0.55),
             "equipped": (0.45, 0.95, 0.68, 1),
-            "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
+            "equipped_avatar": (0.3525, 0.9425, 0.4375, 0.99),
             "lock": (0.896, 0.321, 0.97, 0.365),
         },
         "relic": {
@@ -79,7 +79,7 @@ SCREENSHOT_COORDS = {
             "lock": (0.865, 0.253, 0.935, 0.293),
             "rarity": (0.07, 0.15, 0.2, 0.22),
             "equipped": (0.45, 0.96, 0.67, 0.99),
-            "equipped_avatar": (0.35, 0.94, 0.44, 0.99),
+            "equipped_avatar": (0.3525, 0.9425, 0.4375, 0.99),
             "mainStatKey": (0.115, 0.358, 0.7, 0.4),
             "subStat_1": (0.115, 0.41, 1, 0.45),
             "subStat_2": (0.115, 0.45, 1, 0.5),
