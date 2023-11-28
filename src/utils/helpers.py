@@ -9,6 +9,7 @@ from PIL import Image
 
 def resource_path(relative_path: str) -> str:
     """Get resource path for PyInstaller
+
     https://stackoverflow.com/questions/7674790/bundling-data-files-with-pyinstaller-onefile
 
     :param relative_path: The relative path to the resource

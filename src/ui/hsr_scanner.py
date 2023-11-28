@@ -248,6 +248,12 @@ class Ui_MainWindow(object):
         self.lineEditInventoryKey.setClearButtonEnabled(False)
         self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
+        self.groupBox_7 = QtWidgets.QGroupBox(parent=self.Configure)
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 100, 141, 71))
+        self.groupBox_7.setObjectName("groupBox_7")
+        self.pushButtonRestoreDefaults = QtWidgets.QPushButton(parent=self.groupBox_7)
+        self.pushButtonRestoreDefaults.setGeometry(QtCore.QRect(10, 20, 121, 41))
+        self.pushButtonRestoreDefaults.setObjectName("pushButtonRestoreDefaults")
         self.tabWidget.addTab(self.Configure, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -257,7 +263,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.3.2"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.3.3"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -291,7 +297,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.3.2</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.3.3</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">- BETA -</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
@@ -312,4 +318,6 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "Characters key:"))
         self.lineEditCharactersKey.setText(_translate("MainWindow", "c"))
         self.lineEditInventoryKey.setText(_translate("MainWindow", "b"))
+        self.groupBox_7.setTitle(_translate("MainWindow", "Scanner"))
+        self.pushButtonRestoreDefaults.setText(_translate("MainWindow", "Restore Defaults"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Configure), _translate("MainWindow", "Configure"))
