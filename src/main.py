@@ -143,7 +143,6 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_relics", False)
         self.settings.setValue("scan_characters", False)
         self.load_settings()
-        self.save_settings()
 
     def start_scan(self) -> None:
         """Starts the scan"""
