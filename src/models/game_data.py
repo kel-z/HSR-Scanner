@@ -82,13 +82,11 @@ class GameData:
             decoded_image = base64.b64decode(base64_string)
             img = Image.open(BytesIO(decoded_image))
             img = cv2.cvtColor(np.array(img), cv2.COLOR_BGRA2RGB)
-            dim = 42
-            img = cv2.resize(img, (dim, dim))
 
             # Circle mask
             mask = np.zeros(img.shape[:2], dtype="uint8")
             (h, w) = img.shape[:2]
-            cv2.circle(mask, (int(w / 2), int(h / 2)), int(dim / 2), 255, -1)
+            cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
             img = cv2.bitwise_and(img, img, mask=mask)
 
             self.EQUIPPED_ICONS[key] = img
@@ -124,6 +122,7 @@ class GameData:
         :return: The character name
         """
         equipped_avatar_img = np.array(equipped_avatar_img)
+        equipped_avatar_img = cv2.resize(equipped_avatar_img, (100, 100))
 
         max_conf = 0
         character = ""
