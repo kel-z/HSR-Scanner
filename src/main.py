@@ -24,6 +24,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         super().__init__()
         self._scanner_thread = None
         self._listener = InterruptListener()
+        self.settings = QtCore.QSettings("kel-z", "HSRScanner")
 
         # fetch game data
         self._fetch_game_data_thread = FetchGameDataThread()
@@ -59,9 +60,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param MainWindow: The main window of the application
         """
         super().setupUi(MainWindow)
-        self.lineEditOutputLocation.setText(executable_path("StarRailData"))
+
         self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
+        self.pushButtonRestoreDefaults.clicked.connect(self.reset_settings)
+
+        self.load_settings()
 
     def change_output_location(self) -> None:
         """Opens a dialog to change the output location of the scan"""
@@ -82,10 +86,69 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             except Exception as e:
                 self.log(f"Error opening output location: {e}")
 
+    def load_settings(self) -> None:
+        """Loads the settings for the scan"""
+        self.lineEditOutputLocation.setText(
+            self.settings.value("output_location", executable_path("StarRailData"))
+        )
+        self.lineEditInventoryKey.setText(self.settings.value("inventory_key", "b"))
+        self.lineEditCharactersKey.setText(self.settings.value("characters_key", "c"))
+        self.spinBoxLightConeMinLevel.setValue(
+            self.settings.value("min_light_cone_level", 1)
+        )
+        self.spinBoxLightConeMinRarity.setValue(
+            self.settings.value("min_light_cone_rarity", 3)
+        )
+        self.spinBoxRelicMinLevel.setValue(self.settings.value("min_relic_level", 1))
+        self.spinBoxRelicMinRarity.setValue(self.settings.value("min_relic_rarity", 2))
+        self.checkBoxScanLightCones.setChecked(
+            self.settings.value("scan_light_cones", False) == "true"
+        )
+        self.checkBoxScanRelics.setChecked(
+            self.settings.value("scan_relics", False) == "true"
+        )
+        self.checkBoxScanChars.setChecked(
+            self.settings.value("scan_characters", False) == "true"
+        )
+
+    def save_settings(self) -> None:
+        """Saves the settings for the scan"""
+        self.settings.setValue("output_location", self.lineEditOutputLocation.text())
+        self.settings.setValue("inventory_key", self.lineEditInventoryKey.text())
+        self.settings.setValue("characters_key", self.lineEditCharactersKey.text())
+        self.settings.setValue(
+            "min_light_cone_level", self.spinBoxLightConeMinLevel.value()
+        )
+        self.settings.setValue(
+            "min_light_cone_rarity", self.spinBoxLightConeMinRarity.value()
+        )
+        self.settings.setValue("min_relic_level", self.spinBoxRelicMinLevel.value())
+        self.settings.setValue("min_relic_rarity", self.spinBoxRelicMinRarity.value())
+        self.settings.setValue(
+            "scan_light_cones", self.checkBoxScanLightCones.isChecked()
+        )
+        self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
+        self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
+
+    def reset_settings(self) -> None:
+        """Resets the settings for the scan"""
+        self.settings.setValue("output_location", executable_path("StarRailData"))
+        self.settings.setValue("inventory_key", "b")
+        self.settings.setValue("characters_key", "c")
+        self.settings.setValue("min_light_cone_level", 1)
+        self.settings.setValue("min_light_cone_rarity", 3)
+        self.settings.setValue("min_relic_level", 1)
+        self.settings.setValue("min_relic_rarity", 2)
+        self.settings.setValue("scan_light_cones", False)
+        self.settings.setValue("scan_relics", False)
+        self.settings.setValue("scan_characters", False)
+        self.load_settings()
+        self.save_settings()
+
     def start_scan(self) -> None:
         """Starts the scan"""
-
         self.disable_start_scan_button()
+        self.save_settings()
 
         # reset fields
         for label in [
