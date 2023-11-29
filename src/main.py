@@ -137,7 +137,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("characters_key", "c")
         self.settings.setValue("min_light_cone_level", 1)
         self.settings.setValue("min_light_cone_rarity", 3)
-        self.settings.setValue("min_relic_level", 1)
+        self.settings.setValue("min_relic_level", 0)
         self.settings.setValue("min_relic_rarity", 2)
         self.settings.setValue("scan_light_cones", False)
         self.settings.setValue("scan_relics", False)
