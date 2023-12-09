@@ -194,8 +194,8 @@ class RelicStrategy:
                 break
 
             try:
-                if val[-1] == "%":
-                    val = float(val[:-1])
+                if "%" in val:
+                    val = float(val[: val.index("%")])
                     key += "_"
                 else:
                     # rarely, the OCR will read "S" as "5"
