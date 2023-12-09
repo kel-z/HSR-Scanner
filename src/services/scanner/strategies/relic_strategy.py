@@ -1,7 +1,7 @@
 from models.game_data import GameData
 import numpy as np
 from config.relic_scan import RELIC_NAV_DATA
-from utils.helpers import (
+from utils import (
     resource_path,
     image_to_string,
     preprocess_main_stat_img,

@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 from pyautogui import locate
-from utils.helpers import resource_path, image_to_string
+from utils import resource_path, image_to_string
 from PIL import Image
-from utils.helpers import resource_path, preprocess_trace_img
+from utils import resource_path, preprocess_trace_img
 from models.game_data import GameData
 from PyQt6.QtCore import pyqtBoundSignal
 from asyncio import Event

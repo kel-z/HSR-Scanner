@@ -1,7 +1,7 @@
 from models.game_data import GameData
 from pyautogui import locate
 from PIL import Image
-from utils.helpers import (
+from utils import (
     resource_path,
     image_to_string,
     preprocess_equipped_img,

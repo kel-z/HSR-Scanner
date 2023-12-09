@@ -5,7 +5,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from services.scanner.scanner import HSRScanner
 from enums.increment_type import IncrementType
 from pynput.keyboard import Key, Listener
-from utils.helpers import resource_path, save_to_json, executable_path
+from utils import resource_path, save_to_json, executable_path
 from models.game_data import GameData
 import pytesseract
 import sys
