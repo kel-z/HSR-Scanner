@@ -36,7 +36,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='HSRScanner',
+    name='HSR-Scanner',
     exclude_binaries=False,
     debug=False,
     bootloader_ignore_signals=False,
