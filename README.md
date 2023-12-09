@@ -43,15 +43,15 @@ The output is loosely based off of Genshin's `.GOOD` export format. **Please not
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
-    - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from top to bottom.
+    - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from bottom to top.
 - The exact string values used can be found [here](src/models/game_data.py).
 
 Current output sample:
 
 ```JSON
 {
-    "source": "HSR_Scanner",
-    "version": 2,
+    "source": "HSR-Scanner",
+    "version": 3,
     "light_cones": [
         {
             "key": "Cruising in the Stellar Sea",
