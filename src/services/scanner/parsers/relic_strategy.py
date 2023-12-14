@@ -1,8 +1,8 @@
 from models.game_data import GameData
 import numpy as np
 from config.relic_scan import RELIC_NAV_DATA
-from utils import (
-    resource_path,
+from utils.data import resource_path
+from utils.ocr import (
     image_to_string,
     preprocess_main_stat_img,
     preprocess_sub_stat_img,
@@ -110,7 +110,7 @@ class RelicStrategy:
                     img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
                 )
             case "level":
-                level = image_to_string(img, "0123456789", 7, True)
+                level = image_to_string(img, "0123456789", 7)
                 if not level:
                     self._log_signal.emit(
                         f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
@@ -134,6 +134,19 @@ class RelicStrategy:
                     int(rarity_sample.shape[1] / 2)
                 ]
                 return self._game_data.get_closest_rarity(rarity_sample)
+            case "substat_names":
+                return image_to_string(
+                    img,
+                    " ABCDEFGHIKMPRSTacefikrt",
+                    6,
+                    True,
+                    preprocess_sub_stat_img,
+                    False,
+                )
+            case "substat_vals":
+                return image_to_string(
+                    img, "0123456789.%", 6, True, preprocess_sub_stat_img, False
+                )
             case _:
                 return img
 
@@ -156,61 +169,44 @@ class RelicStrategy:
         lock = stats_dict["lock"]
         rarity = stats_dict["rarity"]
         equipped = stats_dict["equipped"]
+        substat_names = stats_dict["substat_names"]
+        substat_vals = stats_dict["substat_vals"]
 
         # Fix OCR errors
         name, _ = self._game_data.get_closest_relic_name(name)
         main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)
 
-        # Parse sub-stats
-        sub_stats = []
-        for i in range(1, 5):
-            sub_stat_img = stats_dict["subStat_" + str(i)]
+        # Parse substats
+        while "\n\n" in substat_names:
+            substat_names = substat_names.replace("\n\n", "\n")
+        while "\n\n" in substat_vals:
+            substat_vals = substat_vals.replace("\n\n", "\n")
+        substat_names = substat_names.split("\n")
+        substat_vals = substat_vals.split("\n")
 
-            parsed_sub_stat_str = image_to_string(
-                sub_stat_img,
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz 0123456789.%",
-                7,
-                True,
-                preprocess_sub_stat_img,
+        substats_res = []
+        for i in range(len(substat_names)):
+            substat_name, dist = self._game_data.get_closest_relic_sub_stat(
+                substat_names[i]
             )
-            if not parsed_sub_stat_str:
+            if i >= len(substat_vals) or dist > 3:
                 break
 
             try:
-                key, val = parsed_sub_stat_str.rsplit(" ", 1)
-                val = val.strip()
-            except ValueError:
-                break
-
-            key, min_dist = self._game_data.get_closest_relic_sub_stat(key.strip())
-            if min_dist > 5:
-                break
-
-            if not val or val == ".":
-                if min_dist == 0:
-                    self._log_signal.emit(
-                        f"Relic ID {self._curr_id}: Failed to get value for sub-stat: {key}. Either it doesn't exist or the OCR failed."
-                    )
-                break
-
-            try:
+                val = substat_vals[i]
                 if "%" in val:
                     val = float(val[: val.index("%")])
-                    key += "_"
+                    substat_name += "_"
                 else:
-                    # rarely, the OCR will read "S" as "5"
-                    if val == "S":
-                        val = "5"
-
                     val = int(val)
             except ValueError:
-                if min_dist == 0:
+                if dist == 0:
                     self._log_signal.emit(
-                        f"Relic ID {self._curr_id}: Failed to get value for sub-stat: {key}. Error parsing sub-stat value: {val}."
+                        f"Relic ID {self._curr_id}: Failed to get value for substat: {substat_name}. Error parsing substat value: {val}."
                     )
                 break
 
-            sub_stats.append({"key": key, "value": val})
+            substats_res.append({"key": substat_name, "value": val})
 
         metadata = self._game_data.get_relic_meta_data(name)
         set_key = metadata["set"]
@@ -233,7 +229,7 @@ class RelicStrategy:
             "rarity": rarity,
             "level": level,
             "mainstat": main_stat_key,
-            "substats": sub_stats,
+            "substats": substats_res,
             "location": location,
             "lock": lock,
             "_id": f"relic_{self._curr_id}",

@@ -6,7 +6,7 @@ import cv2
 import requests
 from PIL import Image
 
-GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/game_data_with_icons.json"
+GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/game_data_with_icons.json"
 
 RELIC_MAIN_STATS = {
     "SPD",
