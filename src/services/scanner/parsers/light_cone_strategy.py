@@ -39,7 +39,6 @@ class LightConeStrategy:
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
         self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
-        self._curr_id = 1
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -52,11 +51,14 @@ class LightConeStrategy:
         else:
             return "Rarity"
 
-    def check_filters(self, stats_dict: dict, filters: dict) -> tuple[dict, dict]:
+    def check_filters(
+        self, stats_dict: dict, filters: dict, lc_id: int
+    ) -> tuple[dict, dict]:
         """Check if the stats dictionary passes the filters
 
         :param stats_dict: The stats dictionary
         :param filters: The filters
+        :param lc_id: The ID of the light cone
         :raises ValueError: Thrown if the filter key does not have an int value
         :raises KeyError: Thrown if the filter key is not valid
         :return: The filter results and the stats dictionary
@@ -92,6 +94,11 @@ class LightConeStrategy:
                     stats_dict["level"] = self.extract_stats_data(
                         "level", stats_dict["level"]
                     )
+                    if not level:
+                        self._log_signal.emit(
+                            f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1."
+                        )
+                        level = "1/20"
                     val = int(stats_dict["level"].split("/")[0])
 
             if not isinstance(val, int):
@@ -125,12 +132,12 @@ class LightConeStrategy:
                 return name
             case "level":
                 return image_to_string(
-                    img, "0123456789/", 7, True, preprocess_lc_level_img
-                )
+                    img, "0123456789S/", 7, True, preprocess_lc_level_img
+                ).replace("S", "5")
             case "superimposition":
                 return image_to_string(
-                    img, "12345", 10, True, preprocess_superimposition_img
-                )
+                    img, "12345S", 10, True, preprocess_superimposition_img
+                ).replace("S", "5")
             case "equipped":
                 return image_to_string(
                     img, "Equipped", 7, True, preprocess_equipped_img
@@ -138,13 +145,11 @@ class LightConeStrategy:
             case _:
                 return img
 
-    def parse(
-        self,
-        stats_dict: dict,
-    ) -> dict:
+    def parse(self, stats_dict: dict, lc_id: int) -> dict:
         """Parses the stats dictionary
 
         :param stats_dict: The stats dictionary
+        :param lc_id: The ID of the light cone
         :return: The parsed stats dictionary
         """
         if self._interrupt_event.is_set():
@@ -167,7 +172,7 @@ class LightConeStrategy:
             max_level = int(max_level)
         except ValueError:
             self._log_signal.emit(
-                f"Light Cone ID {self._curr_id}: Error parsing level, setting to 1"
+                f"Light Cone ID {lc_id}: Error parsing level, setting to 1"
             )
             level = 1
             max_level = 20
@@ -178,7 +183,7 @@ class LightConeStrategy:
             superimposition = int(superimposition)
         except ValueError:
             self._log_signal.emit(
-                f"Light Cone ID {self._curr_id}: Error parsing superimposition, setting to 1"
+                f"Light Cone ID {lc_id}: Error parsing superimposition, setting to 1"
             )
             superimposition = 1
 
@@ -201,10 +206,9 @@ class LightConeStrategy:
             "superimposition": int(superimposition),
             "location": location,
             "lock": lock,
-            "_id": f"light_cone_{self._curr_id}",
+            "_id": f"light_cone_{lc_id}",
         }
 
         self._update_signal.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
-        self._curr_id += 1
 
         return result

@@ -209,6 +209,8 @@ class GameData:
         :param targets: The targets to compare against
         :return: The closest match
         """
+        name = name.strip()
+
         if not name:
             return name, 100
 

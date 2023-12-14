@@ -13,6 +13,7 @@ from pyautogui import locate
 from enums.increment_type import IncrementType
 from PyQt6.QtCore import pyqtBoundSignal
 from asyncio import Event
+from models.substat_vals import SUBSTAT_ROLL_VALS
 
 
 class RelicStrategy:
@@ -40,7 +41,6 @@ class RelicStrategy:
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
         self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
-        self._curr_id = 1
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -53,11 +53,14 @@ class RelicStrategy:
         else:
             return "Rarity"
 
-    def check_filters(self, stats_dict: dict, filters: dict) -> tuple[dict, dict]:
+    def check_filters(
+        self, stats_dict: dict, filters: dict, relic_id: int
+    ) -> tuple[dict, dict]:
         """Checks if the relic passes the filters
 
         :param stats_dict: The stats dict
         :param filters: The filters
+        :param relic_id: The relic ID
         :raises ValueError: Thrown if the filter key does not have an int value
         :return: A tuple of the filter results and the stats dict
         """
@@ -83,9 +86,13 @@ class RelicStrategy:
                     if filters[key] <= 0:
                         filter_results[key] = True
                         continue
-                    val = stats_dict["level"] = self.extract_stats_data(
-                        "level", stats_dict["level"]
-                    )
+                    level = self.extract_stats_data("level", stats_dict["level"])
+                    if not level:
+                        self._log_signal.emit(
+                            f"Relic ID {relic_id}: Failed to parse level. Setting to 0."
+                        )
+                        level = 0
+                    val = stats_dict["level"] = int(level)
 
             if not isinstance(val, int):
                 raise ValueError(f"Filter key {key} does not have an int value.")
@@ -102,7 +109,7 @@ class RelicStrategy:
 
         :param key: The key
         :param img: The image
-        :return: The extracted data, or the image if the key is not recognized
+        :return: The extracted data, or the image if the key is not relevant
         """
         match key:
             case "name":
@@ -110,13 +117,7 @@ class RelicStrategy:
                     img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
                 )
             case "level":
-                level = image_to_string(img, "0123456789", 7)
-                if not level:
-                    self._log_signal.emit(
-                        f"Relic ID {self._curr_id}: Failed to extract level. Setting to 0."
-                    )
-                    level = 0
-                return int(level)
+                return image_to_string(img, "0123456789S", 7).replace("S", "5")
             case "mainStatKey":
                 return image_to_string(
                     img,
@@ -145,15 +146,16 @@ class RelicStrategy:
                 )
             case "substat_vals":
                 return image_to_string(
-                    img, "0123456789.%", 6, True, preprocess_sub_stat_img, False
-                )
+                    img, "0123456789S.%", 6, True, preprocess_sub_stat_img, False
+                ).replace("S", "5")
             case _:
                 return img
 
-    def parse(self, stats_dict: dict) -> dict:
+    def parse(self, stats_dict: dict, relic_id: int) -> dict:
         """Parses the relic data
 
         :param stats_dict: The stats dict
+        :param relic_id: The relic ID
         :return: The parsed relic data
         """
         if self._interrupt_event.is_set():
@@ -175,8 +177,14 @@ class RelicStrategy:
         # Fix OCR errors
         name, _ = self._game_data.get_closest_relic_name(name)
         main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)
+        if not level:
+            self._log_signal.emit(
+                f"Relic ID {relic_id}: Failed to extract level. Setting to 0."
+            )
+            level = 0
+        level = int(level)
 
-        # Parse substats
+        # Substats
         while "\n\n" in substat_names:
             substat_names = substat_names.replace("\n\n", "\n")
         while "\n\n" in substat_vals:
@@ -184,30 +192,12 @@ class RelicStrategy:
         substat_names = substat_names.split("\n")
         substat_vals = substat_vals.split("\n")
 
-        substats_res = []
-        for i in range(len(substat_names)):
-            substat_name, dist = self._game_data.get_closest_relic_sub_stat(
-                substat_names[i]
-            )
-            if i >= len(substat_vals) or dist > 3:
-                break
+        substats_res = self._parse_substats(
+            substat_names, substat_vals, rarity, relic_id
+        )
+        self._validate_substats(substats_res, rarity, level, relic_id)
 
-            try:
-                val = substat_vals[i]
-                if "%" in val:
-                    val = float(val[: val.index("%")])
-                    substat_name += "_"
-                else:
-                    val = int(val)
-            except ValueError:
-                if dist == 0:
-                    self._log_signal.emit(
-                        f"Relic ID {self._curr_id}: Failed to get value for substat: {substat_name}. Error parsing substat value: {val}."
-                    )
-                break
-
-            substats_res.append({"key": substat_name, "value": val})
-
+        # Set and slot
         metadata = self._game_data.get_relic_meta_data(name)
         set_key = metadata["set"]
         slot_key = metadata["slot"]
@@ -232,10 +222,97 @@ class RelicStrategy:
             "substats": substats_res,
             "location": location,
             "lock": lock,
-            "_id": f"relic_{self._curr_id}",
+            "_id": f"relic_{relic_id}",
         }
 
         self._update_signal.emit(IncrementType.RELIC_SUCCESS.value)
-        self._curr_id += 1
 
         return result
+
+    def _parse_substats(
+        self, names: list[str], vals: list[str], rarity: int, relic_id: int
+    ) -> list[dict[str, int | float]]:
+        """Parses the substats
+
+        :param names: The substat names
+        :param vals: The substat values
+        :param rarity: The rarity of the relic
+        :param relic_id: The relic ID
+        :return: The parsed substats
+        """
+        substats = []
+        for i in range(len(names)):
+            name = names[i]
+            if not name:
+                continue
+
+            name, dist = self._game_data.get_closest_relic_sub_stat(name)
+            if dist > 3:
+                continue
+
+            if i >= len(vals):
+                self._log_signal.emit(
+                    f"Relic ID {relic_id}: Failed to get value for substat: {name}."
+                )
+                continue
+            val = vals[i]
+
+            try:
+                if "%" in val:
+                    val = float(val[: val.index("%")])
+                    name += "_"
+                else:
+                    val = int(val)
+            except ValueError:
+                if dist == 0:
+                    self._log_signal.emit(
+                        f"Relic ID {relic_id}: Failed to get value for substat: {name}. Error parsing substat value: {val}."
+                    )
+                continue
+
+            if not self._validate_substat(name, val, rarity):
+                self._log_signal.emit(
+                    f"WARNING: Relic ID {relic_id}: Substat {name} has illegal value {val}."
+                )
+
+            substats.append({"key": name, "value": val})
+
+        return substats
+
+    def _validate_substat(self, name: str, val: int | float, rarity: int) -> bool:
+        """Validates the substat
+
+        :param name: The name of the substat
+        :param val: The value of the substat
+        :param rarity: The rarity of the relic
+        :return: True if the substat is valid, False otherwise
+        """
+        try:
+            if str(val) not in SUBSTAT_ROLL_VALS[str(rarity)][name]:
+                return False
+        except KeyError:
+            return False
+
+        return True
+
+    def _validate_substats(
+        self,
+        substats: list[dict[str, int | float]],
+        rarity: int,
+        level: int,
+        relic_id: int,
+    ) -> None:
+        """Rudimentary substat validation on number of substats based on rarity and level
+
+        :param substats: The substats
+        :param rarity: The rarity of the relic
+        :param level: The level of the relic
+        :param relic_id: The relic ID
+        """
+        substats_len = len(substats)
+        min_substats = min(rarity - 2 + int(level / 3), 4)
+
+        if substats_len < min_substats:
+            self._log_signal.emit(
+                f"WARNING: Relic ID {relic_id} has {substats_len} substats, but the minimum for rarity {rarity} and level {level} is {min_substats}."
+            )

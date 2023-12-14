@@ -205,12 +205,15 @@ class HSRScanner(QtCore.QObject):
 
                     # Get stats
                     stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
+                    item_id = quantity - quantity_remaining
                     x += nav_data["offset_x"]
 
                     # Check if item satisfies filters
                     if self._config["filters"]:
                         filter_results, stats_dict = strategy.check_filters(
-                            stats_dict, self._config["filters"]
+                            stats_dict,
+                            self._config["filters"],
+                            item_id,
                         )
                         if (
                             current_sort_method == "Lv"
@@ -227,7 +230,7 @@ class HSRScanner(QtCore.QObject):
                     # Update UI count
                     self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-                    task = asyncio.to_thread(strategy.parse, stats_dict)
+                    task = asyncio.to_thread(strategy.parse, stats_dict, item_id)
                     tasks.add(task)
 
                 # Next row
