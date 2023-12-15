@@ -94,11 +94,11 @@ class LightConeStrategy:
                     stats_dict["level"] = self.extract_stats_data(
                         "level", stats_dict["level"]
                     )
-                    if not level:
+                    if not stats_dict["level"]:
                         self._log_signal.emit(
                             f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1."
                         )
-                        level = "1/20"
+                        stats_dict["level"] = "1/20"
                     val = int(stats_dict["level"].split("/")[0])
 
             if not isinstance(val, int):

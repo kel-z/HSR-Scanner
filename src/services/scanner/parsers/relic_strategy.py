@@ -272,7 +272,7 @@ class RelicStrategy:
 
             if not self._validate_substat(name, val, rarity):
                 self._log_signal.emit(
-                    f"WARNING: Relic ID {relic_id}: Substat {name} has illegal value {val}."
+                    f'WARNING: Relic ID {relic_id}: Substat {name} has illegal value "{val}".'
                 )
 
             substats.append({"key": name, "value": val})
@@ -288,6 +288,8 @@ class RelicStrategy:
         :return: True if the substat is valid, False otherwise
         """
         try:
+            if name not in SUBSTAT_ROLL_VALS[str(rarity)]:
+                return False
             if str(val) not in SUBSTAT_ROLL_VALS[str(rarity)][name]:
                 return False
         except KeyError:
