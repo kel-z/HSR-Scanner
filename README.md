@@ -3,8 +3,9 @@
 Easily export light cones, relics, and character data from Honkai: Star Rail to JSON format using OCR.
 
 The resulting output can be used in various community-made optimization tools including:
-- [Relic Harmonizer](https://relicharmonizer.com/)
+
 - [Fribbel's HSR Optimizer](https://fribbels.github.io/hsr-optimizer/)
+- [Relic Harmonizer](https://relicharmonizer.com/)
 
 ## Installation
 
@@ -42,7 +43,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. I don't expe
 
 ### Notes
 
-- Flat sub-stats and percentage sub-stats are differentiated by an underscore suffix in the key.
+- Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
@@ -188,4 +189,5 @@ Current output sample:
 Check [sample_output.json](sample_output.json) for a full-sized, unfiltered example.
 
 ---
-HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by  HoYoverse.
+
+HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.
