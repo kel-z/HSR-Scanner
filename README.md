@@ -4,7 +4,7 @@ Easily export light cones, relics, and character data from Honkai: Star Rail to 
 
 The resulting output can be used in various community-made optimization tools including:
 
-- [Fribbel's HSR Optimizer](https://fribbels.github.io/hsr-optimizer/)
+- [Fribbels HSR Optimizer](https://fribbels.github.io/hsr-optimizer/)
 - [Relic Harmonizer](https://relicharmonizer.com/)
 
 ## Installation
