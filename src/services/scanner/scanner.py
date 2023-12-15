@@ -3,12 +3,13 @@ import win32gui
 import time
 from utils.screenshot import Screenshot
 import asyncio
-from .strategies.light_cone_strategy import LightConeStrategy
-from .strategies.relic_strategy import RelicStrategy
+from .parsers.light_cone_strategy import LightConeStrategy
+from .parsers.relic_strategy import RelicStrategy
 from pynput.keyboard import Key
-from utils.helpers import image_to_string, resource_path, preprocess_char_count_img
+from utils.data import resource_path
+from utils.ocr import image_to_string, preprocess_char_count_img
 import pyautogui
-from .character_parser import CharacterParser
+from .parsers.character_parser import CharacterParser
 from config.character_scan import CHARACTER_NAV_DATA
 from PIL import Image
 from models.game_data import GameData
@@ -109,6 +110,7 @@ class HSRScanner(QtCore.QObject):
             return
 
         self.complete_signal.emit()
+        self.log_signal.emit("Starting OCR process. Please wait...")
 
         return {
             "source": "HSR-Scanner",
@@ -137,8 +139,12 @@ class HSRScanner(QtCore.QObject):
         time.sleep(1)
         self._nav.key_press(Key.esc)
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
         self._nav.key_press(self._config["inventory_key"])
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
         time.sleep(1)
@@ -204,12 +210,15 @@ class HSRScanner(QtCore.QObject):
 
                     # Get stats
                     stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
+                    item_id = quantity - quantity_remaining
                     x += nav_data["offset_x"]
 
                     # Check if item satisfies filters
                     if self._config["filters"]:
                         filter_results, stats_dict = strategy.check_filters(
-                            stats_dict, self._config["filters"]
+                            stats_dict,
+                            self._config["filters"],
+                            item_id,
                         )
                         if (
                             current_sort_method == "Lv"
@@ -226,7 +235,7 @@ class HSRScanner(QtCore.QObject):
                     # Update UI count
                     self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-                    task = asyncio.to_thread(strategy.parse, stats_dict)
+                    task = asyncio.to_thread(strategy.parse, stats_dict, item_id)
                     tasks.add(task)
 
                 # Next row
@@ -260,6 +269,8 @@ class HSRScanner(QtCore.QObject):
         # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
 
         # Locate and click databank button
         haystack = self._screenshot.screenshot_screen()
@@ -297,6 +308,8 @@ class HSRScanner(QtCore.QObject):
         # Navigate to characters menu
         self._nav.key_press(Key.esc)
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
         self._nav.key_press(Key.esc)
         time.sleep(1)
         self._nav.key_press("1")

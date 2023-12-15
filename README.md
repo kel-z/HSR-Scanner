@@ -2,11 +2,16 @@
 
 Easily export light cones, relics, and character data from Honkai: Star Rail to JSON format using OCR.
 
+The resulting output can be used in various community-made optimization tools including:
+
+- [Fribbel's HSR Optimizer](https://fribbels.github.io/hsr-optimizer/)
+- [Relic Harmonizer](https://relicharmonizer.com/)
+
 ## Installation
 
-If you haven't already, download and install [Microsoft Visual C++ Redistributable for Visual Studio 2015-2022](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) (x86 or x64 depending on system).
-
 [Download latest HSR Scanner](https://github.com/kel-z/HSR-Scanner/releases/latest) and then run as administrator (required to simulate keyboard and mouse presses).
+
+<!-- If you haven't already, download and install [Microsoft Visual C++ Redistributable for Visual Studio 2015-2022](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022) (x86 or x64 depending on system). -->
 
 ## Instructions
 
@@ -34,11 +39,11 @@ The scanner uses `b` and `c` by default to navigate to the inventory and charact
 
 ## Output
 
-The output is loosely based off of Genshin's `.GOOD` export format. **Please note that the current output format is subject to change.**
+The output is loosely based off of Genshin's `.GOOD` export format. I don't expect this output to change anytime soon. If a breaking change has to made to the output, the version will be incremented by one to differentiate the change from previous versions.
 
 ### Notes
 
-- Flat sub-stats and percentage sub-stats are differentiated by an underscore suffix in the key.
+- Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
@@ -183,6 +188,6 @@ Current output sample:
 
 Check [sample_output.json](sample_output.json) for a full-sized, unfiltered example.
 
-## Dev notes
+---
 
-- This app relies on reading text from images captured during the scan process, as opposed to reading directly from memory. As a result, OCR is prone to errors. It also doesn't help that the inventory screen is translucent, as mentioned in step two of [instructions](#instructions). This issue can be alleviated via error-checking in future releases once every possible sub-stat value is known and can be checked against.
+HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.
