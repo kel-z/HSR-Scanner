@@ -110,6 +110,7 @@ class HSRScanner(QtCore.QObject):
             return
 
         self.complete_signal.emit()
+        self.log_signal.emit("Starting OCR process. Please wait...")
 
         return {
             "source": "HSR-Scanner",
@@ -138,8 +139,12 @@ class HSRScanner(QtCore.QObject):
         time.sleep(1)
         self._nav.key_press(Key.esc)
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
         self._nav.key_press(self._config["inventory_key"])
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
         time.sleep(1)
@@ -264,6 +269,8 @@ class HSRScanner(QtCore.QObject):
         # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
 
         # Locate and click databank button
         haystack = self._screenshot.screenshot_screen()
@@ -301,6 +308,8 @@ class HSRScanner(QtCore.QObject):
         # Navigate to characters menu
         self._nav.key_press(Key.esc)
         time.sleep(1)
+        if self._interrupt_event.is_set():
+            return []
         self._nav.key_press(Key.esc)
         time.sleep(1)
         self._nav.key_press("1")
