@@ -82,7 +82,7 @@ SCREENSHOT_COORDS = {
             "equipped_avatar": (0.3525, 0.9425, 0.4375, 0.99),
             "mainStatKey": (0.115, 0.358, 0.7, 0.4),
             "substat_names": (0.115, 0.41, 0.5, 0.6),
-            "substat_vals": (0.7, 0.41, 1, 0.6),
+            "substat_vals": (0.775, 0.41, 0.975, 0.6),
         },
     }
 }

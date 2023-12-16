@@ -32,11 +32,11 @@ class CharacterParser:
         self._log_signal = log_signal
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
-        self._trailblazer_imgs = [
-            Image.open(resource_path("assets/images/trailblazerm.png")),
-            Image.open(resource_path("assets/images/trailblazerf.png")),
-        ]
-        self._trailblazerScanned = False
+        self._trailblazer_imgs = {
+            "M": Image.open(resource_path("assets/images/trailblazerm.png")),
+            "F": Image.open(resource_path("assets/images/trailblazerf.png")),
+        }
+        self._is_trailblazer_scanned = False
 
     def parse(self, stats_dict: dict, eidolon_images: list[Image.Image]) -> dict:
         """Parse the stats dictionary and return a character dictionary
@@ -125,12 +125,12 @@ class CharacterParser:
         path, _ = self._game_data.get_closest_path_name(path)
 
         if self._is_trailblazer(character_img):
-            if self._trailblazerScanned:
+            if self._is_trailblazer_scanned:
                 self._log_signal.emit(
                     "WARNING: Parsed more than one Trailblazer. Please review JSON output."
                 ) if self._log_signal else None
             else:
-                self._trailblazerScanned = True
+                self._is_trailblazer_scanned = True
 
             return "Trailblazer" + path.split(" ")[-1], path
         else:
@@ -151,9 +151,10 @@ class CharacterParser:
         :param character_img: The character image
         :return: True if the character is Trailblazer, False otherwise
         """
-        for trailblazer in self._trailblazer_imgs:
-            trailblazer = trailblazer.resize(character_img.size)
-            if locate(character_img, trailblazer, confidence=0.8) is not None:
+        for gender, trailblazer_img in self._trailblazer_imgs.items():
+            trailblazer_img = trailblazer_img.resize(character_img.size)
+            if locate(character_img, trailblazer_img, confidence=0.8) is not None:
+                self._game_data.is_trailblazer_female = gender == "F"
                 return True
 
         return False

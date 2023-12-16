@@ -7,6 +7,9 @@ import requests
 from PIL import Image
 
 GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/game_data_with_icons.json"
+SRO_MAPPINGS_URL = (
+    "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/sro_key_map.json"
+)
 
 RELIC_MAIN_STATS = {
     "SPD",
@@ -52,8 +55,11 @@ PATHS = {
 
 
 class GameData:
+    """GameData class for storing and accessing game data"""
+    is_trailblazer_female = True
+    sro_mappings = None
+
     def __init__(self) -> None:
-        """Constructor"""
         try:
             response = requests.get(GAME_DATA_URL)
             data = response.json()
@@ -90,6 +96,20 @@ class GameData:
             img = cv2.bitwise_and(img, img, mask=mask)
 
             self.EQUIPPED_ICONS[key] = img
+
+    def get_sro_mappings(self) -> dict:
+        """Get SRO mappings
+
+        :return: The SRO mappings
+        """
+        if self.sro_mappings is None:
+            try:
+                response = requests.get(SRO_MAPPINGS_URL)
+                self.sro_mappings = response.json()
+            except requests.exceptions.RequestException:
+                raise Exception("Failed to fetch SRO mappings from " + SRO_MAPPINGS_URL)
+
+        return self.sro_mappings
 
     def get_relic_meta_data(self, name: str) -> dict:
         """Get relic meta data from name

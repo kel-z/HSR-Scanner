@@ -316,5 +316,5 @@ class RelicStrategy:
 
         if substats_len < min_substats:
             self._log_signal.emit(
-                f"WARNING: Relic ID {relic_id} has {substats_len} substats, but the minimum for rarity {rarity} and level {level} is {min_substats}."
+                f"WARNING: Relic ID {relic_id} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}."
             )

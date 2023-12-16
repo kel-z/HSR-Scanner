@@ -6,6 +6,7 @@ from services.scanner.scanner import HSRScanner
 from enums.increment_type import IncrementType
 from pynput.keyboard import Key, Listener
 from utils.data import resource_path, save_to_json, executable_path
+from utils.conversion import convert_to_sro
 from models.game_data import GameData
 import pytesseract
 import sys
@@ -110,6 +111,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxScanChars.setChecked(
             self.settings.value("scan_characters", False) == "true"
         )
+        self.checkBoxSroFormat.setChecked(
+            self.settings.value("sro_format", False) == "true"
+        )
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
@@ -129,6 +133,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
         self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
+        self.settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
@@ -142,6 +147,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_light_cones", False)
         self.settings.setValue("scan_relics", False)
         self.settings.setValue("scan_characters", False)
+        self.settings.setValue("sro_format", False)
         self.load_settings()
 
     def start_scan(self) -> None:
@@ -242,6 +248,16 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             f"HSRScanData_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         )
         save_to_json(data, output_location, file_name)
+
+        if self.checkBoxSroFormat.isChecked():
+            self.log("Creating accompanying export in SRO format...")
+            try:
+                file_name = f"HSRScanData_SRO_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                save_to_json(
+                    convert_to_sro(data, self.game_data), output_location, file_name
+                )
+            except Exception as e:
+                self.log("Failed to convert to SRO format: " + str(e))
         self.log("Scan complete. Data saved to " + output_location)
 
     def increment_progress(self, enum: IncrementType) -> None:
