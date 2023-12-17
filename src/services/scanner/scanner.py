@@ -142,7 +142,7 @@ class HSRScanner(QtCore.QObject):
         if self._interrupt_event.is_set():
             return []
         self._nav.key_press(self._config["inventory_key"])
-        time.sleep(1)
+        time.sleep(1.5)
         if self._interrupt_event.is_set():
             return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
@@ -318,42 +318,36 @@ class HSRScanner(QtCore.QObject):
         time.sleep(1)
 
         tasks = set()
-        x, y = nav_data["char_start"]
-        i = 0
         while character_count > 0:
             if self._interrupt_event.is_set():
                 return tasks
 
-            # Next character
-            self._nav.move_cursor_to(x, y)
-            time.sleep(0.2)
-            self._nav.click()
-            time.sleep(0.1)
-
-            # Open details
-            self._nav.move_cursor_to(*nav_data["details_button"])
-            time.sleep(0.2)
-            self._nav.click()
-            time.sleep(0.2)
-
-            # Get character name and path
-            stats_dict = {}
-            character_name = self._screenshot.screenshot_character_name()
-            character_name = image_to_string(
-                character_name,
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7",
-                7,
+            character_x, character_y = (
+                nav_data["char_start"]
+                if character_count > nav_data["chars_per_scan"]
+                else nav_data["char_end"]
             )
-            try:
-                path, character_name = map(str.strip, character_name.split("/")[:2])
-                character_img = self._screenshot.screenshot_character()
-                character_name, path = char_parser.get_closest_name_and_path(
-                    character_name, path, character_img
-                )
-                stats_dict["name"] = character_name
+            offset_x = (
+                nav_data["offset_x"]
+                if character_count > nav_data["chars_per_scan"]
+                else -nav_data["offset_x"]
+            )
+            i_stop = min(character_count, nav_data["chars_per_scan"])
+            curr_page_res = [{} for _ in range(i_stop)]
 
-                # Get level
-                stats_dict["level"] = self._screenshot.screenshot_character_level()
+            # Details tab
+            i = 0
+            self._nav.move_cursor_to(*nav_data["details_button"])
+            time.sleep(0.05)
+            self._nav.click()
+            time.sleep(0.5)
+            while i < i_stop:
+                if self._interrupt_event.is_set():
+                    return tasks
+                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                time.sleep(0.05)
+                self._nav.click()
+                time.sleep(0.3)
 
                 # Get ascension by counting ascension stars
                 ascension_pos = nav_data["ascension_start"]
@@ -371,73 +365,110 @@ class HSRScanner(QtCore.QObject):
                         ascension_pos[0] + nav_data["ascension_offset_x"],
                         ascension_pos[1],
                     )
-                stats_dict["ascension"] = ascension
 
-                # Get traces
-                self._nav.move_cursor_to(*nav_data["traces_button"])
+                max_retry = 5
+                retry = 0
+                character_name = ""
+                while retry < max_retry and not character_name:
+                    try:
+                        character_name_img = (
+                            self._screenshot.screenshot_character_name()
+                        )
+                        character_name = image_to_string(
+                            character_name_img,
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7",
+                            7,
+                        )
+                        path, character_name = map(
+                            str.strip, character_name.split("/")[:2]
+                        )
+                        character_img = self._screenshot.screenshot_character()
+                        character_name, path = char_parser.get_closest_name_and_path(
+                            character_name, path, character_img
+                        )
+                    except Exception as e:
+                        retry += 1
+                        time.sleep(0.1)
+
+                if not character_name:
+                    self.log_signal.emit(
+                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early."
+                    )
+                    return tasks
+
+                curr_page_res[i] = {
+                    "name": character_name,
+                    "ascension": ascension,
+                    "path": path,
+                    "level": self._screenshot.screenshot_character_level(),
+                }
+                i += 1
+
+            # Traces tab
+            i = 0
+            self._nav.move_cursor_to(*nav_data["traces_button"])
+            time.sleep(0.05)
+            self._nav.click()
+            time.sleep(0.4)
+            while i < i_stop:
+                if self._interrupt_event.is_set():
+                    return tasks
+                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
                 time.sleep(0.05)
                 self._nav.click()
-                time.sleep(0.5)
-
-                traces_dict = self._screenshot.screenshot_character_traces(
-                    path.lower().split(" ")[-1]
-                )
-
-                stats_dict["traces"] = {
+                time.sleep(0.6)
+                path_key = curr_page_res[i]["path"].split(" ")[-1].lower()
+                traces_dict = self._screenshot.screenshot_character_traces(path_key)
+                curr_page_res[i]["traces"] = {
                     "levels": traces_dict,
                     "unlocks": {},
                 }
-                path_key = path.split(" ")[-1].lower()
                 for k, v in nav_data["traces"][path_key].items():
                     pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
                     dist = min(
                         sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
                         sum([(a - b) ** 2 for a, b in zip(pixel, (178, 200, 255))]),
                     )
-                    stats_dict["traces"]["unlocks"][k] = dist < 3000
+                    curr_page_res[i]["traces"]["unlocks"][k] = dist < 3000
+                i += 1
 
-                # Get eidolons
-                self._nav.move_cursor_to(*nav_data["eidolons_button"])
-                time.sleep(0.1)
+            # Eidolons tab
+            i = 0
+            self._nav.move_cursor_to(*nav_data["eidolons_button"])
+            time.sleep(0.1)
+            self._nav.click()
+            time.sleep(1.5 if character_total == character_count else 0.9)
+            while i < i_stop:
+                if self._interrupt_event.is_set():
+                    return tasks
+                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                time.sleep(0.05)
                 self._nav.click()
-                # First character's eidolons take longer to load
-                time.sleep(1.5 if character_total == character_count else 0.9)
-                eidolon_images = self._screenshot.screenshot_character_eidolons()
+                time.sleep(0.5)
+                curr_page_res[i][
+                    "eidolon_images"
+                ] = self._screenshot.screenshot_character_eidolons()
+                i += 1
 
-                task = asyncio.to_thread(char_parser.parse, stats_dict, eidolon_images)
+            for stats_dict in curr_page_res:
+                character_count -= 1
+                task = asyncio.to_thread(char_parser.parse, stats_dict)
                 tasks.add(task)
-            except Exception as e:
-                self.log_signal.emit(
-                    f'Failed to parse character {character_name}. Got "{e}" error. Skipping...'
-                )
 
-            if (
-                character_count - 1 == nav_data["chars_per_scan"]
-                or i == nav_data["chars_per_scan"] - 1
-            ):
-                x, y = nav_data["char_start"]
-                i += 1
-                x = x + nav_data["offset_x"] * i
-                self._nav.move_cursor_to(x, y)
+            # Drag to next page
+            if character_count > 0:
+                character_x, character_y = nav_data["char_start"]
+                character_x += nav_data["offset_x"] * nav_data["chars_per_scan"]
+                self._nav.move_cursor_to(character_x, character_y)
                 time.sleep(0.05)
                 self._nav.click()
                 time.sleep(0.05)
-                self._nav.drag_scroll(x, y, nav_data["char_start"][0] - 0.031, y)
-
-                # Move mouse to avoid clicking anything on next iteration since
-                # we're already on the correct character
-                x, y = 0, 0
-                i = 0
-
-            elif character_count <= nav_data["chars_per_scan"]:
-                x, y = nav_data["char_end"]
-                x -= nav_data["offset_x"] * (character_count - 2)
-            else:
-                x, y = nav_data["char_start"]
-                i += 1
-                x = x + nav_data["offset_x"] * i
-
-            character_count -= 1
+                self._nav.drag_scroll(
+                    character_x,
+                    character_y,
+                    nav_data["char_start"][0] - 0.031,
+                    character_y,
+                )
 
         time.sleep(1)
         self._nav.key_press(Key.esc)
