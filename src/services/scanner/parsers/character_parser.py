@@ -38,11 +38,10 @@ class CharacterParser:
         }
         self._is_trailblazer_scanned = False
 
-    def parse(self, stats_dict: dict, eidolon_images: list[Image.Image]) -> dict:
+    def parse(self, stats_dict: dict) -> dict:
         """Parse the stats dictionary and return a character dictionary
 
         :param stats_dict: The stats dictionary
-        :param eidolon_images: The eidolon images
         :raises ValueError: If the level cannot be parsed
         :return: The character dictionary
         """
@@ -53,7 +52,7 @@ class CharacterParser:
             "key": stats_dict["name"].split("#")[0],
             "level": 1,
             "ascension": stats_dict["ascension"],
-            "eidolon": self._process_eidolons(eidolon_images),
+            "eidolon": self._process_eidolons(stats_dict["eidolon_images"]),
             "skills": {
                 "basic": 0,
                 "skill": 0,
@@ -140,7 +139,7 @@ class CharacterParser:
 
             if min_dist > 5:
                 raise Exception(
-                    f"Character not found in database. Got {character_name}"
+                    f'Character not found in database. Got "{character_name}"'
                 )
 
             return character_name, path
