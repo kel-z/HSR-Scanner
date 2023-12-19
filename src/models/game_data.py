@@ -56,6 +56,7 @@ PATHS = {
 
 class GameData:
     """GameData class for storing and accessing game data"""
+
     is_trailblazer_female = True
     sro_mappings = None
 
@@ -87,9 +88,9 @@ class GameData:
             base64_string = data["mini_icons"][key]
             decoded_image = base64.b64decode(base64_string)
             img = Image.open(BytesIO(decoded_image))
-            img = cv2.cvtColor(np.array(img), cv2.COLOR_BGRA2RGB)
+            img = cv2.cvtColor(np.array(img), cv2.COLOR_RGBA2RGB)
 
-            # Circle mask
+            # # Circle mask
             mask = np.zeros(img.shape[:2], dtype="uint8")
             (h, w) = img.shape[:2]
             cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
@@ -143,6 +144,14 @@ class GameData:
         """
         equipped_avatar_img = np.array(equipped_avatar_img)
         equipped_avatar_img = cv2.resize(equipped_avatar_img, (100, 100))
+
+        # Circle mask
+        mask = np.zeros(equipped_avatar_img.shape[:2], dtype="uint8")
+        (h, w) = equipped_avatar_img.shape[:2]
+        cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
+        equipped_avatar_img = cv2.bitwise_and(
+            equipped_avatar_img, equipped_avatar_img, mask=mask
+        )
 
         max_conf = 0
         character = ""
