@@ -90,7 +90,7 @@ class GameData:
             img = Image.open(BytesIO(decoded_image))
             img = cv2.cvtColor(np.array(img), cv2.COLOR_RGBA2RGB)
 
-            # # Circle mask
+            # Circle mask
             mask = np.zeros(img.shape[:2], dtype="uint8")
             (h, w) = img.shape[:2]
             cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
