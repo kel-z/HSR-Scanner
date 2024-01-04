@@ -143,10 +143,15 @@ def _convert_relics_sro(
         substats = []
         for substat in relic["substats"]:
             try:
+                value = (
+                    round(substat["value"] / 100, 3)
+                    if substat["key"].endswith("_")
+                    else substat["value"]
+                )
                 substats.append(
                     {
                         "key": SRO_SUB_STAT_MAP[substat["key"]],
-                        "value": substat["value"],
+                        "value": value,
                     }
                 )
             except KeyError:
