@@ -99,6 +99,8 @@ class LightConeStrategy:
                             f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1."
                         )
                         stats_dict["level"] = "1/20"
+                        filter_results[key] = True
+                        continue
                     val = int(stats_dict["level"].split("/")[0])
 
             if not isinstance(val, int):

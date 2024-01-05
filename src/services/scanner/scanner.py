@@ -147,7 +147,7 @@ class HSRScanner(QtCore.QObject):
             return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
-        time.sleep(1)
+        time.sleep(1.5)
 
         # TODO: using quantity to know when to scan the bottom row is not ideal
         #       because it will not work for tabs that do not have a quantity
