@@ -86,6 +86,7 @@ class LightConeStrategy:
                     val = self._game_data.get_light_cone_meta_data(stats_dict["name"])[
                         "rarity"
                     ]
+                    stats_dict["rarity"] = val
                 elif key == "min_level":
                     # Trivial case
                     if filters[key] <= 1:

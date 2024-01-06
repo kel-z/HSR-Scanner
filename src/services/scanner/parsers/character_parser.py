@@ -139,7 +139,7 @@ class CharacterParser:
 
             if min_dist > 5:
                 raise Exception(
-                    f'Character not found in database. Got "{character_name}"'
+                    f'Failed to get a character name: got "{character_name}"'
                 )
 
             return character_name, path

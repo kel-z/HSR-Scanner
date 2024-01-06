@@ -256,7 +256,7 @@ class RelicStrategy:
                 self._log_signal.emit(
                     f"Relic ID {relic_id}: Failed to get value for substat: {name}."
                 )
-                continue
+                break
             val = vals[i]
 
             try:
