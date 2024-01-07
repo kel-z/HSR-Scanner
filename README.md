@@ -47,6 +47,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. I don't expe
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
+- For `Dan Heng • Imbibitor Lunae`, the character `•` will appear as `\u2022` in the JSON output. This is the Unicode representation of the character and is a normal behaviour when special characters are included in JSON. Most modern environments will automatically render `\u2022` as `•` when displaying or processing the JSON.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
     - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from bottom to top.
