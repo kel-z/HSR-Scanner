@@ -90,7 +90,7 @@ class GameData:
             img = Image.open(BytesIO(decoded_image))
             img = cv2.cvtColor(np.array(img), cv2.COLOR_RGBA2RGB)
 
-            # # Circle mask
+            # Circle mask
             mask = np.zeros(img.shape[:2], dtype="uint8")
             (h, w) = img.shape[:2]
             cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
@@ -266,13 +266,11 @@ class GameData:
         :return: The character keys
         """
         character_keys = list(self.CHARACTER_META_DATA.keys())
-        if "TrailblazerDestruction" in character_keys:
-            character_keys.remove("TrailblazerDestruction")
-            character_keys.append("TrailblazerDestruction#M")
-            character_keys.append("TrailblazerDestruction#F")
-        if "TrailblazerPreservation" in character_keys:
-            character_keys.remove("TrailblazerPreservation")
-            character_keys.append("TrailblazerPreservation#M")
-            character_keys.append("TrailblazerPreservation#F")
+        for path in PATHS:
+            path = path.split(" ")[-1]
+            if f"Trailblazer{path}" in character_keys:
+                character_keys.remove(f"Trailblazer{path}")
+                character_keys.append(f"Trailblazer{path}#M")
+                character_keys.append(f"Trailblazer{path}#F")
 
         return character_keys

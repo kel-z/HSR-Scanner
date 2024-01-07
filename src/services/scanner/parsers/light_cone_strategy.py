@@ -86,6 +86,7 @@ class LightConeStrategy:
                     val = self._game_data.get_light_cone_meta_data(stats_dict["name"])[
                         "rarity"
                     ]
+                    stats_dict["rarity"] = val
                 elif key == "min_level":
                     # Trivial case
                     if filters[key] <= 1:
@@ -99,6 +100,8 @@ class LightConeStrategy:
                             f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1."
                         )
                         stats_dict["level"] = "1/20"
+                        filter_results[key] = True
+                        continue
                     val = int(stats_dict["level"].split("/")[0])
 
             if not isinstance(val, int):

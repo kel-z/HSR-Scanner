@@ -91,7 +91,9 @@ class RelicStrategy:
                         self._log_signal.emit(
                             f"Relic ID {relic_id}: Failed to parse level. Setting to 0."
                         )
-                        level = 0
+                        stats_dict["level"] = 0
+                        filter_results[key] = True
+                        continue
                     val = stats_dict["level"] = int(level)
 
             if not isinstance(val, int):
@@ -254,7 +256,7 @@ class RelicStrategy:
                 self._log_signal.emit(
                     f"Relic ID {relic_id}: Failed to get value for substat: {name}."
                 )
-                continue
+                break
             val = vals[i]
 
             try:

@@ -72,6 +72,7 @@ class HSRScanner(QtCore.QObject):
 
         light_cones = []
         if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
+            self.log_signal.emit("Scanning light cones...")
             light_cones = self.scan_inventory(
                 LightConeStrategy(
                     self._game_data,
@@ -86,6 +87,7 @@ class HSRScanner(QtCore.QObject):
 
         relics = []
         if self._config["scan_relics"] and not self._interrupt_event.is_set():
+            self.log_signal.emit("Scanning relics...")
             relics = self.scan_inventory(
                 RelicStrategy(
                     self._game_data,
@@ -100,6 +102,7 @@ class HSRScanner(QtCore.QObject):
 
         characters = []
         if self._config["scan_characters"] and not self._interrupt_event.is_set():
+            self.log_signal.emit("Scanning characters...")
             characters = self.scan_characters()
             self.log_signal.emit(
                 "Finished scanning characters"
@@ -147,7 +150,7 @@ class HSRScanner(QtCore.QObject):
             return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
-        time.sleep(1)
+        time.sleep(1.5)
 
         # TODO: using quantity to know when to scan the bottom row is not ideal
         #       because it will not work for tabs that do not have a quantity
@@ -223,11 +226,20 @@ class HSRScanner(QtCore.QObject):
                         if (
                             current_sort_method == "Lv"
                             and not filter_results["min_level"]
-                        ) or (
+                        ):
+                            quantity_remaining = 0
+                            self.log_signal.emit(
+                                f"Reached minimum level filter (got level {stats_dict['level']})."
+                            )
+                            break
+                        if (
                             current_sort_method == "Rarity"
                             and not filter_results["min_rarity"]
                         ):
                             quantity_remaining = 0
+                            self.log_signal.emit(
+                                f"Reached minimum rarity filter (got rarity {stats_dict['rarity']})."
+                            )
                             break
                         if not all(filter_results.values()):
                             continue
@@ -392,7 +404,7 @@ class HSRScanner(QtCore.QObject):
 
                 if not character_name:
                     self.log_signal.emit(
-                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early."
+                        f"Failed to parse character name. Got '{character_name}' instead. Try changing game resolution. Ending scan early."
                     )
                     return tasks
 

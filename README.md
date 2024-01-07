@@ -19,6 +19,7 @@ The resulting output can be used in various community-made optimization tools in
    <!-- - Changing off from an ultra-wide resolution requires a game restart to reset the UI layout. -->
    <!-- ^^ wait... is this a thing in Star Rail? I know it was for Genshin -->
 2. **In Star Rail, look away from any bright colours.** _Yes, really._ The inventory screen is translucent and bright colours can bleed through to make the text harder to accurately detect and recognize. Looking towards the ground usually works in most cases, as long as the right side of the screen is relatively dark. (Double-check by opening the inventory page and see if the item info on the right contrasts well with the background.) You can skip this step if you're only scanning characters.
+![Dark background example](./example.png)
 3. Open the cellphone menu (ESC menu).
 4. Configure the necessary [scanner settings](#scanner-settings-and-configurations) in HSR Scanner.
 5. Start the scan.
