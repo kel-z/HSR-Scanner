@@ -88,6 +88,8 @@ class GameData:
             base64_string = data["mini_icons"][key]
             decoded_image = base64.b64decode(base64_string)
             img = Image.open(BytesIO(decoded_image))
+            background = Image.new("RGBA", img.size, (0, 0, 0))
+            img = Image.alpha_composite(background, img)
             img = cv2.cvtColor(np.array(img), cv2.COLOR_RGBA2RGB)
 
             # Circle mask
