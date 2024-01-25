@@ -100,7 +100,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.spinBoxLightConeMinRarity.setValue(
             self.settings.value("min_light_cone_rarity", 3)
         )
-        self.spinBoxRelicMinLevel.setValue(self.settings.value("min_relic_level", 1))
+        self.spinBoxRelicMinLevel.setValue(self.settings.value("min_relic_level", 0))
         self.spinBoxRelicMinRarity.setValue(self.settings.value("min_relic_rarity", 2))
         self.checkBoxScanLightCones.setChecked(
             self.settings.value("scan_light_cones", False) == "true"
