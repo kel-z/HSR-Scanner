@@ -35,7 +35,16 @@ class HSRScanner(QtCore.QObject):
         :raises Exception: Thrown if no scan options are selected
         """
         super().__init__()
-        for i, game_name in enumerate(["Honkai: Star Rail", "崩坏：星穹铁道", "崩壞：星穹鐵道"]):
+        for i, game_name in enumerate(
+            [
+                "Honkai: Star Rail",
+                "崩坏：星穹铁道",
+                "崩壞：星穹鐵道",
+                "붕괴:\u00A0스타레일",
+                "崩壊：スターレイル",
+                "Honkai\u00A0: Star Rail",
+            ]
+        ):
             self._hwnd = win32gui.FindWindow("UnityWndClass", game_name)
             if self._hwnd:
                 self._is_en = i == 0
