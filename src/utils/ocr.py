@@ -53,7 +53,7 @@ def preprocess_char_count_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    return _preprocess_img_by_colour_filter(img, (218, 194, 145), 30)
+    return _preprocess_img_by_colour_filter(img, [(218, 194, 145), (142,135,115)], 60)
 
 
 def preprocess_lc_level_img(img: Image) -> Image:
