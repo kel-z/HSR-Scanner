@@ -119,7 +119,7 @@ class RelicStrategy:
                     img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
                 )
             case "level":
-                return image_to_string(img, "0123456789S", 7).replace("S", "5")
+                return image_to_string(img, "0123456789S", 7, True).replace("S", "5")
             case "mainStatKey":
                 return image_to_string(
                     img,
