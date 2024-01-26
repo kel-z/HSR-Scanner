@@ -114,6 +114,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxSroFormat.setChecked(
             self.settings.value("sro_format", False) == "true"
         )
+        self.spinBoxNavDelay.setValue(self.settings.value("nav_delay", 0))
+        self.spinBoxScanDelay.setValue(self.settings.value("scan_delay", 0))
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
@@ -134,6 +136,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
         self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
         self.settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
+        self.settings.setValue("nav_delay", self.spinBoxNavDelay.value())
+        self.settings.setValue("scan_delay", self.spinBoxScanDelay.value())
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
@@ -148,6 +152,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_relics", False)
         self.settings.setValue("scan_characters", False)
         self.settings.setValue("sro_format", False)
+        self.settings.setValue("nav_delay", 0)
+        self.settings.setValue("scan_delay", 0)
         self.load_settings()
 
     def start_scan(self) -> None:
@@ -235,6 +241,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             raise Exception("Inventory key is not set.")
         if not config["characters_key"]:
             raise Exception("Characters key is not set.")
+
+        # delays
+        config["nav_delay"] = self.spinBoxNavDelay.value() / 1000
+        config["scan_delay"] = self.spinBoxScanDelay.value() / 1000
 
         return config
 

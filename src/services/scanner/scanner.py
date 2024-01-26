@@ -148,18 +148,18 @@ class HSRScanner(QtCore.QObject):
         nav_data = strategy.NAV_DATA[self._aspect_ratio]
 
         # Navigate to correct tab from cellphone menu
-        time.sleep(1)
+        self._nav_sleep(1)
         self._nav.key_press(Key.esc)
-        time.sleep(1)
+        self._nav_sleep(1)
         if self._interrupt_event.is_set():
             return []
         self._nav.key_press(self._config["inventory_key"])
-        time.sleep(1.5)
+        self._nav_sleep(1)
         if self._interrupt_event.is_set():
             return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
         self._nav.click()
-        time.sleep(1.5)
+        self._nav_sleep(1.5)
 
         # TODO: using quantity to know when to scan the bottom row is not ideal
         #       because it will not work for tabs that do not have a quantity
@@ -184,12 +184,13 @@ class HSRScanner(QtCore.QObject):
 
         if optimal_sort_method != current_sort_method:
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
+            time.sleep(0.05)
             self._nav.click()
-            time.sleep(0.5)
+            self._nav_sleep(0.5)
             self._nav.move_cursor_to(*nav_data["sort"][optimal_sort_method])
             self._nav.click()
             current_sort_method = optimal_sort_method
-            time.sleep(0.5)
+            self._nav_sleep(0.5)
 
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
@@ -217,7 +218,7 @@ class HSRScanner(QtCore.QObject):
                     self._nav.move_cursor_to(x, y)
                     time.sleep(0.05)
                     self._nav.click()
-                    time.sleep(0.1)
+                    self._scan_sleep(0.1)
                     quantity_remaining -= 1
 
                     # Get stats
@@ -269,10 +270,10 @@ class HSRScanner(QtCore.QObject):
             self._nav.scroll_page_down(num_times_scrolled)
             num_times_scrolled += 1
 
-            time.sleep(0.5)
+            self._scan_sleep(0.5)
 
         self._nav.key_press(Key.esc)
-        time.sleep(1.5)
+        self._nav_sleep(1.5)
         self._nav.key_press(Key.esc)
         return tasks
 
@@ -289,7 +290,7 @@ class HSRScanner(QtCore.QObject):
 
         # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
-        time.sleep(1)
+        self._nav_sleep(1)
         if self._interrupt_event.is_set():
             return []
 
@@ -303,9 +304,9 @@ class HSRScanner(QtCore.QObject):
             )
         )
         self._nav.move_cursor_to_image(haystack, needle)
-        time.sleep(0.1)
+        time.sleep(0.05)
         self._nav.click()
-        time.sleep(1)
+        self._nav_sleep(1)
 
         # Get character count
         character_total = self._screenshot.screenshot_character_count()
@@ -328,15 +329,15 @@ class HSRScanner(QtCore.QObject):
 
         # Navigate to characters menu
         self._nav.key_press(Key.esc)
-        time.sleep(1)
+        self._nav_sleep(1)
         if self._interrupt_event.is_set():
             return []
         self._nav.key_press(Key.esc)
-        time.sleep(1)
+        self._nav_sleep(1)
         self._nav.key_press("1")
-        time.sleep(0.2)
+        self._nav_sleep(0.2)
         self._nav.key_press(self._config["characters_key"])
-        time.sleep(1)
+        self._nav_sleep(1)
 
         tasks = set()
         while character_count > 0:
@@ -361,14 +362,14 @@ class HSRScanner(QtCore.QObject):
             self._nav.move_cursor_to(*nav_data["details_button"])
             time.sleep(0.05)
             self._nav.click()
-            time.sleep(0.5)
+            self._nav_sleep(0.5)
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
                 self._nav.move_cursor_to(character_x + i * offset_x, character_y)
                 time.sleep(0.05)
                 self._nav.click()
-                time.sleep(0.3)
+                self._scan_sleep(0.3)
 
                 # Get ascension by counting ascension stars
                 ascension_pos = nav_data["ascension_start"]
@@ -409,7 +410,7 @@ class HSRScanner(QtCore.QObject):
                         )
                     except Exception as e:
                         retry += 1
-                        time.sleep(0.1)
+                        self._scan_sleep(0.1)
 
                 if not character_name:
                     self.log_signal.emit(
@@ -430,14 +431,14 @@ class HSRScanner(QtCore.QObject):
             self._nav.move_cursor_to(*nav_data["traces_button"])
             time.sleep(0.05)
             self._nav.click()
-            time.sleep(0.4)
+            self._nav_sleep(0.4)
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
                 self._nav.move_cursor_to(character_x + i * offset_x, character_y)
                 time.sleep(0.05)
                 self._nav.click()
-                time.sleep(0.6)
+                self._scan_sleep(0.6)
                 path_key = curr_page_res[i]["path"].split(" ")[-1].lower()
                 traces_dict = self._screenshot.screenshot_character_traces(path_key)
                 curr_page_res[i]["traces"] = {
@@ -456,16 +457,16 @@ class HSRScanner(QtCore.QObject):
             # Eidolons tab
             i = 0
             self._nav.move_cursor_to(*nav_data["eidolons_button"])
-            time.sleep(0.1)
+            self._nav_sleep(0.1)
             self._nav.click()
-            time.sleep(1.5 if character_total == character_count else 0.9)
+            self._nav_sleep(1.5 if character_total == character_count else 0.9)
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
                 self._nav.move_cursor_to(character_x + i * offset_x, character_y)
                 time.sleep(0.05)
                 self._nav.click()
-                time.sleep(0.5)
+                self._scan_sleep(0.5)
                 curr_page_res[i][
                     "eidolon_images"
                 ] = self._screenshot.screenshot_character_eidolons()
@@ -491,11 +492,25 @@ class HSRScanner(QtCore.QObject):
                     character_y,
                 )
 
-        time.sleep(1)
+        self._nav_sleep(1)
         self._nav.key_press(Key.esc)
-        time.sleep(1.5)
+        self._nav_sleep(1.5)
         self._nav.key_press(Key.esc)
         return tasks
+
+    def _nav_sleep(self, seconds: float) -> None:
+        """Sleeps for the specified amount of time with navigation delay
+
+        :param seconds: The amount of time to sleep
+        """
+        time.sleep(seconds + self._config["nav_delay"])
+
+    def _scan_sleep(self, seconds: float) -> None:
+        """Sleeps for the specified amount of time with scan delay
+
+        :param seconds: The amount of time to sleep
+        """
+        time.sleep(seconds + self._config["scan_delay"])
 
     def _ceildiv(self, a, b) -> int:
         """Divides a by b and rounds up
