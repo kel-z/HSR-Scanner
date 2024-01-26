@@ -398,7 +398,7 @@ class ScannerThread(QtCore.QThread):
                 self.result_signal.emit(res)
         except Exception as e:
             self.error_signal.emit(
-                f"Scan aborted with error {e.__class__.__name__}: {e}. Try scanning with a different in-game background."
+                f"Scan aborted with error {e.__class__.__name__}: {e}. Try scanning with a different in-game background, window resolution, or fullscreen/windowed mode."
             )
 
     def interrupt_scan(self) -> None:

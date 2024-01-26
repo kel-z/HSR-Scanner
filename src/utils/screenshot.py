@@ -43,7 +43,7 @@ class Screenshot:
             case IncrementType.RELIC_ADD:
                 return self._screenshot_stats("relic")
             case _:
-                raise ValueError(f"Invalid scan type: {scan_type.name}")
+                raise ValueError(f"Invalid scan type: {scan_type.name}.")
 
     def screenshot_sort(self, scan_type: IncrementType) -> Image:
         """Takes a screenshot of the sort button
@@ -64,7 +64,7 @@ class Screenshot:
 
                 return self._take_screenshot(*coords)
             case _:
-                raise ValueError(f"Invalid scan type: {scan_type.name}")
+                raise ValueError(f"Invalid scan type: {scan_type.name}.")
 
     def screenshot_quantity(self) -> Image:
         """Takes a screenshot of the quantity

@@ -91,7 +91,7 @@ class HSRScanner(QtCore.QObject):
                 )
             )
             self.log_signal.emit(
-                "Finished scanning light cones"
+                "Finished scanning light cones."
             ) if not self._interrupt_event.is_set() else None
 
         relics = []
@@ -106,7 +106,7 @@ class HSRScanner(QtCore.QObject):
                 )
             )
             self.log_signal.emit(
-                "Finished scanning relics"
+                "Finished scanning relics."
             ) if not self._interrupt_event.is_set() else None
 
         characters = []
@@ -114,7 +114,7 @@ class HSRScanner(QtCore.QObject):
             self.log_signal.emit("Scanning characters...")
             characters = self.scan_characters()
             self.log_signal.emit(
-                "Finished scanning characters"
+                "Finished scanning characters."
             ) if not self._interrupt_event.is_set() else None
 
         if self._interrupt_event.is_set():
@@ -170,12 +170,12 @@ class HSRScanner(QtCore.QObject):
         quantity = image_to_string(quantity, "0123456789/", 7)
 
         try:
+            self.log_signal.emit(f"Quantity: {quantity}.")
             quantity = quantity_remaining = int(quantity.split("/")[0])
         except ValueError:
             raise ValueError(
                 "Failed to parse quantity."
                 + (f' Got "{quantity}" instead.' if quantity else "")
-                + " Did you start the scan from the ESC menu?"
             )
 
         current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
@@ -183,6 +183,9 @@ class HSRScanner(QtCore.QObject):
         optimal_sort_method = strategy.get_optimal_sort_method(self._config["filters"])
 
         if optimal_sort_method != current_sort_method:
+            self.log_signal.emit(
+                f"Sorting by {optimal_sort_method}... (was {current_sort_method})"
+            )
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
             time.sleep(0.05)
             self._nav.click()
@@ -314,13 +317,13 @@ class HSRScanner(QtCore.QObject):
             character_total, "0123456789/", 7, True, preprocess_char_count_img
         )
         try:
+            self.log_signal.emit(f"Character total: {character_total}.")
             character_total, _ = character_total.split("/")
             character_count = character_total = int(character_total)
         except ValueError:
             raise ValueError(
                 "Failed to parse character count from Data Bank screen."
                 + (f' Got "{character_total}" instead.' if character_total else "")
-                + " Did you start the scan from the ESC menu?"
             )
 
         # Update UI count
@@ -414,7 +417,7 @@ class HSRScanner(QtCore.QObject):
 
                 if not character_name:
                     self.log_signal.emit(
-                        f"Failed to parse character name. Got '{character_name}' instead. Try changing game resolution. Ending scan early."
+                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early."
                     )
                     return tasks
 
