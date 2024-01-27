@@ -150,7 +150,7 @@ class HSRScanner(QtCore.QObject):
         # Navigate to correct tab from cellphone menu
         self._nav_sleep(1)
         self._nav.key_press(Key.esc)
-        self._nav_sleep(1)
+        self._nav_sleep(1.5)
         if self._interrupt_event.is_set():
             return []
         self._nav.key_press(self._config["inventory_key"])
@@ -158,6 +158,7 @@ class HSRScanner(QtCore.QObject):
         if self._interrupt_event.is_set():
             return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
+        time.sleep(0.05)
         self._nav.click()
         self._nav_sleep(1.5)
 
@@ -336,7 +337,7 @@ class HSRScanner(QtCore.QObject):
         if self._interrupt_event.is_set():
             return []
         self._nav.key_press(Key.esc)
-        self._nav_sleep(1)
+        self._nav_sleep(1.5)
         self._nav.key_press("1")
         self._nav_sleep(0.2)
         self._nav.key_press(self._config["characters_key"])
@@ -460,7 +461,7 @@ class HSRScanner(QtCore.QObject):
             # Eidolons tab
             i = 0
             self._nav.move_cursor_to(*nav_data["eidolons_button"])
-            self._nav_sleep(0.1)
+            time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(1.5 if character_total == character_count else 0.9)
             while i < i_stop:
