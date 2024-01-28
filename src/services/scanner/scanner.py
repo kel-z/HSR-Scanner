@@ -123,6 +123,7 @@ class HSRScanner(QtCore.QObject):
 
         self.complete_signal.emit()
         self.log_signal.emit("Starting OCR process. Please wait...")
+        self.log_signal.disconnect()
 
         return {
             "source": "HSR-Scanner",
