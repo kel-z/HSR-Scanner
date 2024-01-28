@@ -88,14 +88,7 @@ class GameData:
             base64_string = data["mini_icons"][key]
             decoded_image = base64.b64decode(base64_string)
             img = Image.open(BytesIO(decoded_image))
-            img = cv2.cvtColor(np.array(img), cv2.COLOR_RGBA2RGB)
-
-            # Circle mask
-            mask = np.zeros(img.shape[:2], dtype="uint8")
-            (h, w) = img.shape[:2]
-            cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
-            img = cv2.bitwise_and(img, img, mask=mask)
-
+            img = np.array(img)
             self.EQUIPPED_ICONS[key] = img
 
     def get_sro_mappings(self) -> dict:

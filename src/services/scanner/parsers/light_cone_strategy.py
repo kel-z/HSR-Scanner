@@ -175,7 +175,7 @@ class LightConeStrategy:
             max_level = int(max_level)
         except ValueError:
             self._log_signal.emit(
-                f"Light Cone ID {lc_id}: Error parsing level, setting to 1"
+                f"Light Cone ID {lc_id}: Error parsing level, setting to 1."
             )
             level = 1
             max_level = 20
@@ -186,7 +186,7 @@ class LightConeStrategy:
             superimposition = int(superimposition)
         except ValueError:
             self._log_signal.emit(
-                f"Light Cone ID {lc_id}: Error parsing superimposition, setting to 1"
+                f"Light Cone ID {lc_id}: Error parsing superimposition, setting to 1."
             )
             superimposition = 1
 

@@ -16,8 +16,6 @@ The resulting output can be used in various community-made optimization tools in
 ## Instructions
 
 1. Set in-game resolution to one that has an aspect ratio of 16:9 (e.g. 1920x1080, 1280x720).
-   <!-- - Changing off from an ultra-wide resolution requires a game restart to reset the UI layout. -->
-   <!-- ^^ wait... is this a thing in Star Rail? I know it was for Genshin -->
 2. **In Star Rail, look away from any bright colours.** _Yes, really._ The inventory screen is translucent and bright colours can bleed through to make the text harder to accurately detect and recognize. Looking towards the ground usually works in most cases, as long as the right side of the screen is relatively dark. (Double-check by opening the inventory page and see if the item info on the right contrasts well with the background.) You can skip this step if you're only scanning characters.
 ![Dark background example](./example.png)
 3. Open the cellphone menu (ESC menu).
@@ -44,6 +42,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. I don't expe
 
 ### Notes
 
+- SPD substats have a hidden decimal place that the scanner cannot directly parse. As a result, reproducing your character's stats (such as on optimizer websites) will most likely have a lower SPD stat than what it displays in-game. This is not an issue with the scanner, but rather a limitation when obtaining substats through OCR.
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
