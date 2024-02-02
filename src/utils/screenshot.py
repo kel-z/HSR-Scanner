@@ -6,10 +6,13 @@ import win32gui
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
 from PIL import Image, ImageGrab
+from PyQt6 import QtCore
 
 
 class Screenshot:
     """Screenshot class for taking screenshots of the game window"""
+
+    log_signal = QtCore.pyqtSignal(str)
 
     def __init__(
         self, hwnd: int, aspect_ratio: str = "16:9", save_screenshots: bool = False, output_location: str = ""
@@ -245,4 +248,8 @@ class Screenshot:
         """
         file_name = f"{datetime.datetime.now().strftime('%H%M%S')}.png"
 
-        img.save(os.path.join(output_directory or self.output_location, file_name))
+        output_location = os.path.join(output_directory or self.output_location, file_name)
+
+        img.save(output_location)
+
+        self._log_signal.emit(f"Screenshot saved to \"{output_location}\".")
