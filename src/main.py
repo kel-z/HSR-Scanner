@@ -250,6 +250,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config["nav_delay"] = self.spinBoxNavDelay.value() / 1000
         config["scan_delay"] = self.spinBoxScanDelay.value() / 1000
 
+        # file location
+        config["output_location"] = self.lineEditOutputLocation.text()
+
         # debug mode
         config["debug"] = self.checkBoxDebugMode.isChecked()
 
