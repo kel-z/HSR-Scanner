@@ -63,7 +63,9 @@ class HSRScanner(QtCore.QObject):
                 f"Aspect ratio {self._aspect_ratio} not supported. Supported aspect ratios: {SUPPORTED_ASPECT_RATIOS}"
             )
 
-        self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
+        self._screenshot = Screenshot(
+            self._hwnd, self._aspect_ratio, config["debug"], config["output_location"] + "/debug"
+        )
         self._databank_img = Image.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
