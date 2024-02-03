@@ -1,27 +1,43 @@
 import cv2
 import numpy as np
+import datetime
+import os
 import win32gui
-from PIL import Image, ImageGrab
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
+from PIL import Image, ImageGrab
+from PyQt6.QtCore import pyqtBoundSignal
 
 
 class Screenshot:
     """Screenshot class for taking screenshots of the game window"""
 
-    def __init__(self, hwnd: int, aspect_ratio: str = "16:9") -> None:
+    def __init__(
+        self,
+        hwnd: int,
+        log_signal: pyqtBoundSignal,
+        aspect_ratio: str = "16:9",
+        debug: bool = False,
+        debug_output_location: str = "",
+    ) -> None:
         """Constructor
 
         :param hwnd: The window handle of the game window
         :param aspect_ratio: The aspect ratio of the game window, defaults to "16:9"
+        :param debug_mode: Whether to save screenshots, default False
+        :param debug_output_location: Output location of saved screenshots
         """
         self._aspect_ratio = aspect_ratio
+        self._log_signal = log_signal
 
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
 
         self._x_scaling_factor = self._window_width / 1920
         self._y_scaling_factor = self._window_height / 1080
+
+        self._debug = debug
+        self._debug_output_location = debug_output_location
 
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
@@ -139,6 +155,10 @@ class Screenshot:
 
             res.append(img)
 
+        if self._debug:
+            for img in res:
+                self._save_image(Image.fromarray(img))
+
         return res
 
     def screenshot_character_traces(self, key: str) -> dict:
@@ -173,6 +193,9 @@ class Screenshot:
         screenshot = screenshot.resize(
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
+
+        if self._debug:
+            self._save_image(screenshot)
 
         return screenshot
 
@@ -222,4 +245,18 @@ class Screenshot:
 
             res[k] = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
 
+        if self._debug:
+            for img in res.values():
+                self._save_image(img)
+
         return res
+
+    def _save_image(self, img: Image) -> None:
+        """Save the image on disk.
+
+        :param img: The image to save.
+        """
+        file_name = f"{datetime.datetime.now().strftime('%H%M%S%f')}.png"
+        output_location = os.path.join(self._debug_output_location, file_name)
+        img.save(output_location)
+        self._log_signal.emit(f"[DEBUG] Saving {file_name}.")

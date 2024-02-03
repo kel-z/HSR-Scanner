@@ -249,16 +249,16 @@ class Ui_MainWindow(object):
         self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
         self.groupBox_7 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_7.setGeometry(QtCore.QRect(10, 260, 131, 61))
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 280, 131, 61))
         self.groupBox_7.setObjectName("groupBox_7")
         self.pushButtonRestoreDefaults = QtWidgets.QPushButton(parent=self.groupBox_7)
         self.pushButtonRestoreDefaults.setGeometry(QtCore.QRect(10, 20, 111, 31))
         self.pushButtonRestoreDefaults.setObjectName("pushButtonRestoreDefaults")
         self.groupBox_8 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_8.setGeometry(QtCore.QRect(10, 200, 181, 51))
+        self.groupBox_8.setGeometry(QtCore.QRect(10, 200, 201, 71))
         self.groupBox_8.setObjectName("groupBox_8")
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.groupBox_8)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 161, 21))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 181, 42))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -266,6 +266,9 @@ class Ui_MainWindow(object):
         self.checkBoxSroFormat = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
         self.checkBoxSroFormat.setObjectName("checkBoxSroFormat")
         self.verticalLayout_2.addWidget(self.checkBoxSroFormat)
+        self.checkBoxDebugMode = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
+        self.checkBoxDebugMode.setObjectName("checkBoxDebugMode")
+        self.verticalLayout_2.addWidget(self.checkBoxDebugMode)
         self.groupBox_9 = QtWidgets.QGroupBox(parent=self.Configure)
         self.groupBox_9.setGeometry(QtCore.QRect(10, 100, 411, 91))
         self.groupBox_9.setObjectName("groupBox_9")
@@ -337,7 +340,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.0"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.1"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -371,7 +374,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.0</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.1</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">1. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
@@ -397,7 +400,9 @@ class Ui_MainWindow(object):
         self.groupBox_8.setTitle(_translate("MainWindow", "Developer"))
         self.checkBoxSroFormat.setToolTip(_translate("MainWindow", "Star Rail Optimizer"))
         self.checkBoxSroFormat.setText(_translate("MainWindow", "Also export in SRO format"))
-        self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay (if the scanner is too fast for inputs to register)"))
+        self.checkBoxDebugMode.setToolTip(_translate("MainWindow", "Saves ALL screenshots"))
+        self.checkBoxDebugMode.setText(_translate("MainWindow", "Debug mode"))
+        self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay (for slow computers)"))
         self.label_11.setToolTip(_translate("MainWindow", "Navigating between different pages (inventory, character details, etc.)"))
         self.label_11.setText(_translate("MainWindow", "Navigation speed (ms):"))
         self.label_13.setToolTip(_translate("MainWindow", "Clicking between each individual item (relics, light cones, and characters)"))
