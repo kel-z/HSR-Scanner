@@ -5,7 +5,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from services.scanner.scanner import HSRScanner
 from enums.increment_type import IncrementType
 from pynput.keyboard import Key, Listener
-from utils.data import resource_path, save_to_json, executable_path
+from utils.data import create_debug_folder, resource_path, save_to_json, executable_path
 from utils.conversion import convert_to_sro
 from models.game_data import GameData
 import pytesseract
@@ -250,14 +250,17 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config["nav_delay"] = self.spinBoxNavDelay.value() / 1000
         config["scan_delay"] = self.spinBoxScanDelay.value() / 1000
 
-        # file location
-        config["output_location"] = self.lineEditOutputLocation.text()
-
         # debug mode
         config["debug"] = self.checkBoxDebugMode.isChecked()
 
         if config["debug"]:
-            self.log("[DEBUG] Debug mode enabled.")
+            config["debug_output_location"] = create_debug_folder(
+                self.lineEditOutputLocation.text()
+            )
+            self.log(
+                "[DEBUG] Debug mode enabled. Debug output will be saved to "
+                + config["debug_output_location"]
+            )
 
         return config
 

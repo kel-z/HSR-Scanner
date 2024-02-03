@@ -6,16 +6,19 @@ import win32gui
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
 from PIL import Image, ImageGrab
-from PyQt6 import QtCore
+from PyQt6.QtCore import pyqtBoundSignal
 
 
 class Screenshot:
     """Screenshot class for taking screenshots of the game window"""
 
-    log_signal = QtCore.pyqtSignal(str)
-
     def __init__(
-        self, hwnd: int, aspect_ratio: str = "16:9", save_screenshots: bool = False, output_location: str = ""
+        self,
+        hwnd: int,
+        log_signal: pyqtBoundSignal,
+        aspect_ratio: str = "16:9",
+        save_screenshots: bool = False,
+        output_location: str = "",
     ) -> None:
         """Constructor
 
@@ -25,6 +28,7 @@ class Screenshot:
         :param output_location: Output location of saved screenshots
         """
         self._aspect_ratio = aspect_ratio
+        self._log_signal = log_signal
 
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
@@ -32,8 +36,8 @@ class Screenshot:
         self._x_scaling_factor = self._window_width / 1920
         self._y_scaling_factor = self._window_height / 1080
 
-        self.save_screenshots = save_screenshots
-        self.output_location = output_location
+        self._save_screenshots = save_screenshots
+        self._output_location = output_location
 
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
@@ -151,6 +155,10 @@ class Screenshot:
 
             res.append(img)
 
+        if self._save_screenshots:
+            for img in res:
+                self._save_image(Image.fromarray(img), self._output_location)
+
         return res
 
     def screenshot_character_traces(self, key: str) -> dict:
@@ -186,8 +194,8 @@ class Screenshot:
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
 
-        if self.save_screenshots:
-            self._save_image(screenshot, self.output_location)
+        if self._save_screenshots:
+            self._save_image(screenshot, self._output_location)
 
         return screenshot
 
@@ -237,6 +245,10 @@ class Screenshot:
 
             res[k] = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
 
+        if self._save_screenshots:
+            for img in res.values():
+                self._save_image(img, self._output_location)
+
         return res
 
     def _save_image(self, img: Image, output_directory: str | None = None) -> None:
@@ -246,10 +258,12 @@ class Screenshot:
         :param output_directory: The directory to output the image
         :return: Location of the saved image
         """
-        file_name = f"{datetime.datetime.now().strftime('%H%M%S')}.png"
+        file_name = f"{datetime.datetime.now().strftime('%H%M%S%f')}.png"
 
-        output_location = os.path.join(output_directory or self.output_location, file_name)
+        output_location = os.path.join(
+            output_directory or self._output_location, file_name
+        )
 
         img.save(output_location)
 
-        self._log_signal.emit(f"Screenshot saved to \"{output_location}\".")
+        self._log_signal.emit(f"[DEBUG] Saving {file_name}.")

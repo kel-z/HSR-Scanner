@@ -64,7 +64,11 @@ class HSRScanner(QtCore.QObject):
             )
 
         self._screenshot = Screenshot(
-            self._hwnd, self._aspect_ratio, config["debug"], config["output_location"] + "/debug"
+            self._hwnd,
+            self.log_signal,
+            self._aspect_ratio,
+            config["debug"],
+            config["debug_output_location"],
         )
         self._databank_img = Image.open(resource_path("assets/images/databank.png"))
 
@@ -92,9 +96,11 @@ class HSRScanner(QtCore.QObject):
                     self._interrupt_event,
                 )
             )
-            self.log_signal.emit(
-                "Finished scanning light cones."
-            ) if not self._interrupt_event.is_set() else None
+            (
+                self.log_signal.emit("Finished scanning light cones.")
+                if not self._interrupt_event.is_set()
+                else None
+            )
 
         relics = []
         if self._config["scan_relics"] and not self._interrupt_event.is_set():
@@ -107,17 +113,21 @@ class HSRScanner(QtCore.QObject):
                     self._interrupt_event,
                 )
             )
-            self.log_signal.emit(
-                "Finished scanning relics."
-            ) if not self._interrupt_event.is_set() else None
+            (
+                self.log_signal.emit("Finished scanning relics.")
+                if not self._interrupt_event.is_set()
+                else None
+            )
 
         characters = []
         if self._config["scan_characters"] and not self._interrupt_event.is_set():
             self.log_signal.emit("Scanning characters...")
             characters = self.scan_characters()
-            self.log_signal.emit(
-                "Finished scanning characters."
-            ) if not self._interrupt_event.is_set() else None
+            (
+                self.log_signal.emit("Finished scanning characters.")
+                if not self._interrupt_event.is_set()
+                else None
+            )
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)

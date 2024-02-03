@@ -1,3 +1,4 @@
+from datetime import datetime
 import sys
 import os
 import json
@@ -28,6 +29,18 @@ def executable_path(path: str) -> str:
     :return: The absolute path to the executable
     """
     return os.path.join(os.path.dirname(sys.executable), path)
+
+
+def create_debug_folder(output_location: str) -> str:
+    """Create a debug folder
+
+    :param output_location: The output location
+    """
+    debug_folder_path = (
+        f"{output_location}/debug/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    )
+    os.makedirs(debug_folder_path, exist_ok=True)
+    return debug_folder_path
 
 
 def save_to_json(data: dict, output_location: str, file_name: str) -> None:
