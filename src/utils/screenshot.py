@@ -1,19 +1,28 @@
 import cv2
 import numpy as np
+import datetime
+import os
 import win32gui
-from PIL import Image, ImageGrab
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
+from PIL import Image, ImageGrab
+from PyQt6 import QtCore
 
 
 class Screenshot:
     """Screenshot class for taking screenshots of the game window"""
 
-    def __init__(self, hwnd: int, aspect_ratio: str = "16:9") -> None:
+    log_signal = QtCore.pyqtSignal(str)
+
+    def __init__(
+        self, hwnd: int, aspect_ratio: str = "16:9", save_screenshots: bool = False, output_location: str = ""
+    ) -> None:
         """Constructor
 
         :param hwnd: The window handle of the game window
         :param aspect_ratio: The aspect ratio of the game window, defaults to "16:9"
+        :param save_screenshots: Whether to save screenshots, default False
+        :param output_location: Output location of saved screenshots
         """
         self._aspect_ratio = aspect_ratio
 
@@ -22,6 +31,9 @@ class Screenshot:
 
         self._x_scaling_factor = self._window_width / 1920
         self._y_scaling_factor = self._window_height / 1080
+
+        self.save_screenshots = save_screenshots
+        self.output_location = output_location
 
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
@@ -174,6 +186,9 @@ class Screenshot:
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
 
+        if self.save_screenshots:
+            self._save_image(screenshot, self.output_location)
+
         return screenshot
 
     def _screenshot_stats(self, key: str) -> dict:
@@ -223,3 +238,18 @@ class Screenshot:
             res[k] = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
 
         return res
+
+    def _save_image(self, img: Image, output_directory: str | None = None) -> None:
+        """Save the image on disk.
+
+        :param img: The image to save.
+        :param output_directory: The directory to output the image
+        :return: Location of the saved image
+        """
+        file_name = f"{datetime.datetime.now().strftime('%H%M%S')}.png"
+
+        output_location = os.path.join(output_directory or self.output_location, file_name)
+
+        img.save(output_location)
+
+        self._log_signal.emit(f"Screenshot saved to \"{output_location}\".")

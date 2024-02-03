@@ -114,6 +114,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxSroFormat.setChecked(
             self.settings.value("sro_format", False) == "true"
         )
+        self.checkBoxDebugMode.setChecked(
+            self.settings.value("debug_mode", False) == "true"
+        )
         self.spinBoxNavDelay.setValue(self.settings.value("nav_delay", 0))
         self.spinBoxScanDelay.setValue(self.settings.value("scan_delay", 0))
 
@@ -136,6 +139,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
         self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
         self.settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
+        self.settings.setValue("debug_mode", self.checkBoxSroFormat.isChecked())
         self.settings.setValue("nav_delay", self.spinBoxNavDelay.value())
         self.settings.setValue("scan_delay", self.spinBoxScanDelay.value())
 
@@ -245,6 +249,15 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # delays
         config["nav_delay"] = self.spinBoxNavDelay.value() / 1000
         config["scan_delay"] = self.spinBoxScanDelay.value() / 1000
+
+        # file location
+        config["output_location"] = self.lineEditOutputLocation.text()
+
+        # debug mode
+        config["debug"] = self.checkBoxDebugMode.isChecked()
+
+        if config["debug"]:
+            self.log("[DEBUG] Debug mode enabled.")
 
         return config
 

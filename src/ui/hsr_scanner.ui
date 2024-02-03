@@ -1,502 +1,502 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
-  <property name="enabled">
-   <bool>true</bool>
-  </property>
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>700</width>
-    <height>450</height>
-   </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>700</width>
-    <height>450</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>700</width>
-    <height>450</height>
-   </size>
-  </property>
-  <property name="mouseTracking">
-   <bool>false</bool>
-  </property>
-  <property name="windowTitle">
-   <string>HSR Scanner beta v0.6.0</string>
-  </property>
-  <widget class="QWidget" name="centralwidget">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <widget class="QTabWidget" name="tabWidget">
+  <class>MainWindow</class>
+  <widget class="QMainWindow" name="MainWindow">
     <property name="enabled">
-     <bool>true</bool>
+      <bool>true</bool>
     </property>
     <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>681</width>
-      <height>431</height>
-     </rect>
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>700</width>
+        <height>450</height>
+      </rect>
     </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
+    <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+      </sizepolicy>
     </property>
-    <property name="tabPosition">
-     <enum>QTabWidget::North</enum>
+    <property name="minimumSize">
+      <size>
+        <width>700</width>
+        <height>450</height>
+      </size>
     </property>
-    <property name="currentIndex">
-     <number>0</number>
+    <property name="maximumSize">
+      <size>
+        <width>700</width>
+        <height>450</height>
+      </size>
     </property>
-    <property name="tabBarAutoHide">
-     <bool>false</bool>
+    <property name="mouseTracking">
+      <bool>false</bool>
     </property>
-    <widget class="QWidget" name="Home">
-     <attribute name="title">
-      <string>Scan</string>
-     </attribute>
-     <widget class="QGroupBox" name="formGroupBox">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>151</width>
-        <height>101</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Items to scan</string>
-      </property>
-      <layout class="QFormLayout" name="formLayout">
-       <item row="1" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QCheckBox" name="checkBoxScanLightCones">
-           <property name="text">
-            <string>Light Cones</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBoxScanRelics">
-           <property name="text">
-            <string>Relics</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBoxScanChars">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="text">
-            <string>Characters</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QPushButton" name="pushButtonStartScan">
+    <property name="windowTitle">
+      <string>HSR Scanner beta v0.6.0</string>
+    </property>
+    <widget class="QWidget" name="centralwidget">
       <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>350</y>
-        <width>111</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Start Scan</string>
-      </property>
-     </widget>
-     <widget class="QGroupBox" name="groupBox">
-      <property name="geometry">
-       <rect>
-        <x>270</x>
-        <y>210</y>
-        <width>151</width>
-        <height>91</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Item count</string>
-      </property>
-      <widget class="QWidget" name="formLayoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>131</width>
-         <height>61</height>
-        </rect>
-       </property>
-       <layout class="QFormLayout" name="formLayout_3">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_23">
-          <property name="text">
-           <string>Light Cones:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_24">
-          <property name="text">
-           <string>Relics:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_25">
-          <property name="text">
-           <string>Characters:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <item>
-           <widget class="QLabel" name="labelLightConeProcessed">
-            <property name="layoutDirection">
-             <enum>Qt::LeftToRight</enum>
-            </property>
-            <property name="text">
-             <string>0</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>/</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelLightConeCount">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QLabel" name="labelRelicProcessed">
-            <property name="text">
-             <string>0</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>/</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelRelicCount">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QLabel" name="labelCharacterProcessed">
-            <property name="text">
-             <string>0</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>/</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelCharacterCount">
-            <property name="text">
-             <string>0</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>170</x>
-        <y>10</y>
-        <width>251</width>
-        <height>101</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Scan options</string>
-      </property>
-      <widget class="QWidget" name="formLayoutWidget_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>111</width>
-         <height>71</height>
-        </rect>
-       </property>
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Min Rarity:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="spinBoxLightConeMinRarity">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>3</number>
-          </property>
-          <property name="maximum">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>3</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Min Level:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QSpinBox" name="spinBoxLightConeMinLevel">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>80</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label_2">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Light Cone options</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="formLayoutWidget_3">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>20</y>
-         <width>111</width>
-         <height>71</height>
-        </rect>
-       </property>
-       <layout class="QFormLayout" name="formLayout_4">
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Min Rarity:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QSpinBox" name="spinBoxRelicMinRarity">
-          <property name="minimum">
-           <number>2</number>
-          </property>
-          <property name="maximum">
-           <number>5</number>
-          </property>
-          <property name="value">
-           <number>2</number>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>Min Level:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>Relic options</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QSpinBox" name="spinBoxRelicMinLevel">
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>15</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_3">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>120</y>
-        <width>411</width>
-        <height>81</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Output location</string>
-      </property>
-      <widget class="QWidget" name="gridLayoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>391</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="1">
-         <widget class="QPushButton" name="pushButtonOpenLocation">
-          <property name="text">
-           <string>Open Folder</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="pushButtonChangeLocation">
-          <property name="text">
-           <string>Change</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="0" column="0" colspan="3">
-         <widget class="QLineEdit" name="lineEditOutputLocation"/>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_4">
-      <property name="geometry">
-       <rect>
-        <x>430</x>
-        <y>10</y>
-        <width>231</width>
-        <height>381</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Info</string>
-      </property>
-      <widget class="QTextEdit" name="textEdit">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>211</width>
-         <height>351</height>
-        </rect>
-       </property>
-       <property name="readOnly">
         <bool>true</bool>
-       </property>
-       <property name="html">
-        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+      </property>
+      <widget class="QTabWidget" name="tabWidget">
+        <property name="enabled">
+          <bool>true</bool>
+        </property>
+        <property name="geometry">
+          <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>681</width>
+            <height>431</height>
+          </rect>
+        </property>
+        <property name="autoFillBackground">
+          <bool>false</bool>
+        </property>
+        <property name="tabPosition">
+          <enum>QTabWidget::North</enum>
+        </property>
+        <property name="currentIndex">
+          <number>0</number>
+        </property>
+        <property name="tabBarAutoHide">
+          <bool>false</bool>
+        </property>
+        <widget class="QWidget" name="Home">
+          <attribute name="title">
+            <string>Scan</string>
+          </attribute>
+          <widget class="QGroupBox" name="formGroupBox">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>151</width>
+                <height>101</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Items to scan</string>
+            </property>
+            <layout class="QFormLayout" name="formLayout">
+              <item row="1" column="1">
+                <layout class="QVBoxLayout" name="verticalLayout">
+                  <item>
+                    <widget class="QCheckBox" name="checkBoxScanLightCones">
+                      <property name="text">
+                        <string>Light Cones</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QCheckBox" name="checkBoxScanRelics">
+                      <property name="text">
+                        <string>Relics</string>
+                      </property>
+                    </widget>
+                  </item>
+                  <item>
+                    <widget class="QCheckBox" name="checkBoxScanChars">
+                      <property name="enabled">
+                        <bool>true</bool>
+                      </property>
+                      <property name="text">
+                        <string>Characters</string>
+                      </property>
+                    </widget>
+                  </item>
+                </layout>
+              </item>
+            </layout>
+          </widget>
+          <widget class="QPushButton" name="pushButtonStartScan">
+            <property name="enabled">
+              <bool>false</bool>
+            </property>
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>350</y>
+                <width>111</width>
+                <height>41</height>
+              </rect>
+            </property>
+            <property name="text">
+              <string>Start Scan</string>
+            </property>
+          </widget>
+          <widget class="QGroupBox" name="groupBox">
+            <property name="geometry">
+              <rect>
+                <x>270</x>
+                <y>210</y>
+                <width>151</width>
+                <height>91</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Item count</string>
+            </property>
+            <widget class="QWidget" name="formLayoutWidget">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>131</width>
+                  <height>61</height>
+                </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout_3">
+                <item row="0" column="0">
+                  <widget class="QLabel" name="label_23">
+                    <property name="text">
+                      <string>Light Cones:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="0">
+                  <widget class="QLabel" name="label_24">
+                    <property name="text">
+                      <string>Relics:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="0">
+                  <widget class="QLabel" name="label_25">
+                    <property name="text">
+                      <string>Characters:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_2">
+                    <item>
+                      <widget class="QLabel" name="labelLightConeProcessed">
+                        <property name="layoutDirection">
+                          <enum>Qt::LeftToRight</enum>
+                        </property>
+                        <property name="text">
+                          <string>0</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="label_5">
+                        <property name="text">
+                          <string>/</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="labelLightConeCount">
+                        <property name="text">
+                          <string>0</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </item>
+                <item row="1" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_3">
+                    <item>
+                      <widget class="QLabel" name="labelRelicProcessed">
+                        <property name="text">
+                          <string>0</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="label_12">
+                        <property name="text">
+                          <string>/</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="labelRelicCount">
+                        <property name="text">
+                          <string>0</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </item>
+                <item row="2" column="1">
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                    <item>
+                      <widget class="QLabel" name="labelCharacterProcessed">
+                        <property name="text">
+                          <string>0</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="label_14">
+                        <property name="text">
+                          <string>/</string>
+                        </property>
+                        <property name="alignment">
+                          <set>Qt::AlignCenter</set>
+                        </property>
+                      </widget>
+                    </item>
+                    <item>
+                      <widget class="QLabel" name="labelCharacterCount">
+                        <property name="text">
+                          <string>0</string>
+                        </property>
+                      </widget>
+                    </item>
+                  </layout>
+                </item>
+              </layout>
+            </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_2">
+            <property name="enabled">
+              <bool>true</bool>
+            </property>
+            <property name="geometry">
+              <rect>
+                <x>170</x>
+                <y>10</y>
+                <width>251</width>
+                <height>101</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Scan options</string>
+            </property>
+            <widget class="QWidget" name="formLayoutWidget_2">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>111</width>
+                  <height>71</height>
+                </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout_2">
+                <item row="1" column="0">
+                  <widget class="QLabel" name="label_3">
+                    <property name="enabled">
+                      <bool>true</bool>
+                    </property>
+                    <property name="text">
+                      <string>Min Rarity:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="1">
+                  <widget class="QSpinBox" name="spinBoxLightConeMinRarity">
+                    <property name="enabled">
+                      <bool>true</bool>
+                    </property>
+                    <property name="minimum">
+                      <number>3</number>
+                    </property>
+                    <property name="maximum">
+                      <number>5</number>
+                    </property>
+                    <property name="value">
+                      <number>3</number>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="0">
+                  <widget class="QLabel" name="label_4">
+                    <property name="enabled">
+                      <bool>true</bool>
+                    </property>
+                    <property name="text">
+                      <string>Min Level:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="1">
+                  <widget class="QSpinBox" name="spinBoxLightConeMinLevel">
+                    <property name="enabled">
+                      <bool>true</bool>
+                    </property>
+                    <property name="minimum">
+                      <number>1</number>
+                    </property>
+                    <property name="maximum">
+                      <number>80</number>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="0" colspan="2">
+                  <widget class="QLabel" name="label_2">
+                    <property name="enabled">
+                      <bool>true</bool>
+                    </property>
+                    <property name="text">
+                      <string>Light Cone options</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+            <widget class="QWidget" name="formLayoutWidget_3">
+              <property name="geometry">
+                <rect>
+                  <x>130</x>
+                  <y>20</y>
+                  <width>111</width>
+                  <height>71</height>
+                </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout_4">
+                <item row="1" column="0">
+                  <widget class="QLabel" name="label_6">
+                    <property name="text">
+                      <string>Min Rarity:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="1">
+                  <widget class="QSpinBox" name="spinBoxRelicMinRarity">
+                    <property name="minimum">
+                      <number>2</number>
+                    </property>
+                    <property name="maximum">
+                      <number>5</number>
+                    </property>
+                    <property name="value">
+                      <number>2</number>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="0">
+                  <widget class="QLabel" name="label_7">
+                    <property name="text">
+                      <string>Min Level:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="0" colspan="2">
+                  <widget class="QLabel" name="label_8">
+                    <property name="text">
+                      <string>Relic options</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="2" column="1">
+                  <widget class="QSpinBox" name="spinBoxRelicMinLevel">
+                    <property name="minimum">
+                      <number>0</number>
+                    </property>
+                    <property name="maximum">
+                      <number>15</number>
+                    </property>
+                    <property name="value">
+                      <number>0</number>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_3">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>120</y>
+                <width>411</width>
+                <height>81</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Output location</string>
+            </property>
+            <widget class="QWidget" name="gridLayoutWidget">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>391</width>
+                  <height>51</height>
+                </rect>
+              </property>
+              <layout class="QGridLayout" name="gridLayout">
+                <item row="1" column="1">
+                  <widget class="QPushButton" name="pushButtonOpenLocation">
+                    <property name="text">
+                      <string>Open Folder</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="0">
+                  <widget class="QPushButton" name="pushButtonChangeLocation">
+                    <property name="text">
+                      <string>Change</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="2">
+                  <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                      <size>
+                        <width>40</width>
+                        <height>20</height>
+                      </size>
+                    </property>
+                  </spacer>
+                </item>
+                <item row="0" column="0" colspan="3">
+                  <widget class="QLineEdit" name="lineEditOutputLocation"/>
+                </item>
+              </layout>
+            </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_4">
+            <property name="geometry">
+              <rect>
+                <x>430</x>
+                <y>10</y>
+                <width>231</width>
+                <height>381</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Info</string>
+            </property>
+            <widget class="QTextEdit" name="textEdit">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>211</width>
+                  <height>351</height>
+                </rect>
+              </property>
+              <property name="readOnly">
+                <bool>true</bool>
+              </property>
+              <property name="html">
+                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -513,422 +513,427 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- Database is updated separately from this app. If the database version doesn't match the latest game version, then the database hasn't been updated yet. You will need to check again later.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
+              </property>
+            </widget>
+          </widget>
+          <widget class="QLabel" name="label">
+            <property name="geometry">
+              <rect>
+                <x>140</x>
+                <y>360</y>
+                <width>161</width>
+                <height>16</height>
+              </rect>
+            </property>
+            <property name="font">
+              <font>
+                <pointsize>12</pointsize>
+              </font>
+            </property>
+            <property name="text">
+              <string>Press ENTER to cancel</string>
+            </property>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_5">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>210</y>
+                <width>251</width>
+                <height>131</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Log</string>
+            </property>
+            <widget class="QPlainTextEdit" name="textEditLog">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>231</width>
+                  <height>101</height>
+                </rect>
+              </property>
+              <property name="readOnly">
+                <bool>true</bool>
+              </property>
+            </widget>
+          </widget>
+        </widget>
+        <widget class="QWidget" name="Configure">
+          <attribute name="title">
+            <string>Configure</string>
+          </attribute>
+          <widget class="QGroupBox" name="groupBox_6">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>171</width>
+                <height>81</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Hotkeys</string>
+            </property>
+            <widget class="QWidget" name="formLayoutWidget_4">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>151</width>
+                  <height>51</height>
+                </rect>
+              </property>
+              <layout class="QFormLayout" name="formLayout_5">
+                <item row="0" column="0">
+                  <widget class="QLabel" name="label_9">
+                    <property name="text">
+                      <string>Inventory key:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="0">
+                  <widget class="QLabel" name="label_10">
+                    <property name="text">
+                      <string>Characters key:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="1">
+                  <widget class="QLineEdit" name="lineEditCharactersKey">
+                    <property name="text">
+                      <string>c</string>
+                    </property>
+                    <property name="maxLength">
+                      <number>1</number>
+                    </property>
+                    <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="1">
+                  <widget class="QLineEdit" name="lineEditInventoryKey">
+                    <property name="text">
+                      <string>b</string>
+                    </property>
+                    <property name="maxLength">
+                      <number>1</number>
+                    </property>
+                    <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                    </property>
+                    <property name="clearButtonEnabled">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_7">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>260</y>
+                <width>131</width>
+                <height>61</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Scanner</string>
+            </property>
+            <widget class="QPushButton" name="pushButtonRestoreDefaults">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>111</width>
+                  <height>31</height>
+                </rect>
+              </property>
+              <property name="text">
+                <string>Restore Defaults</string>
+              </property>
+            </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_8">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>200</y>
+                <width>181</width>
+                <height>51</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Developer</string>
+            </property>
+            <widget class="QWidget" name="verticalLayoutWidget">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>161</width>
+                  <height>21</height>
+                </rect>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                  <widget class="QCheckBox" name="checkBoxSroFormat">
+                    <property name="toolTip">
+                      <string>Star Rail Optimizer</string>
+                    </property>
+                    <property name="text">
+                      <string>Also export in SRO format</string>
+                    </property>
+                  </widget>
+                  <widget class="QCheckBox" name="checkBoxDebugMode">
+                    <property name="text">
+                      <string>Enable Debug Mode</string>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </widget>
+          <widget class="QGroupBox" name="groupBox_9">
+            <property name="geometry">
+              <rect>
+                <x>10</x>
+                <y>100</y>
+                <width>411</width>
+                <height>91</height>
+              </rect>
+            </property>
+            <property name="title">
+              <string>Additional Delay (if the scanner is too fast for inputs to register)</string>
+            </property>
+            <widget class="QWidget" name="gridLayoutWidget_2">
+              <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>20</y>
+                  <width>391</width>
+                  <height>61</height>
+                </rect>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_2">
+                <property name="verticalSpacing">
+                  <number>0</number>
+                </property>
+                <item row="1" column="1">
+                  <widget class="QScrollBar" name="horizontalScrollBarScanDelay">
+                    <property name="maximum">
+                      <number>5000</number>
+                    </property>
+                    <property name="singleStep">
+                      <number>100</number>
+                    </property>
+                    <property name="pageStep">
+                      <number>1000</number>
+                    </property>
+                    <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="0">
+                  <widget class="QLabel" name="label_11">
+                    <property name="toolTip">
+                      <string>Navigating between different pages (inventory, character details, etc.)</string>
+                    </property>
+                    <property name="text">
+                      <string>Navigation speed (ms):</string>
+                    </property>
+                    <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="0">
+                  <widget class="QLabel" name="label_13">
+                    <property name="toolTip">
+                      <string>Clicking between each individual item (relics, light cones, and characters)</string>
+                    </property>
+                    <property name="text">
+                      <string>Scan speed (ms):</string>
+                    </property>
+                    <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="2">
+                  <widget class="QSpinBox" name="spinBoxNavDelay">
+                    <property name="maximumSize">
+                      <size>
+                        <width>75</width>
+                        <height>16777215</height>
+                      </size>
+                    </property>
+                    <property name="wrapping">
+                      <bool>false</bool>
+                    </property>
+                    <property name="frame">
+                      <bool>true</bool>
+                    </property>
+                    <property name="readOnly">
+                      <bool>false</bool>
+                    </property>
+                    <property name="buttonSymbols">
+                      <enum>QAbstractSpinBox::UpDownArrows</enum>
+                    </property>
+                    <property name="correctionMode">
+                      <enum>QAbstractSpinBox::CorrectToPreviousValue</enum>
+                    </property>
+                    <property name="showGroupSeparator" stdset="0">
+                      <bool>false</bool>
+                    </property>
+                    <property name="suffix">
+                      <string/>
+                    </property>
+                    <property name="prefix">
+                      <string>+</string>
+                    </property>
+                    <property name="minimum">
+                      <number>0</number>
+                    </property>
+                    <property name="maximum">
+                      <number>100000</number>
+                    </property>
+                    <property name="singleStep">
+                      <number>100</number>
+                    </property>
+                    <property name="value">
+                      <number>0</number>
+                    </property>
+                  </widget>
+                </item>
+                <item row="1" column="2">
+                  <widget class="QSpinBox" name="spinBoxScanDelay">
+                    <property name="prefix">
+                      <string>+</string>
+                    </property>
+                    <property name="maximum">
+                      <number>100000</number>
+                    </property>
+                    <property name="singleStep">
+                      <number>100</number>
+                    </property>
+                    <property name="value">
+                      <number>0</number>
+                    </property>
+                  </widget>
+                </item>
+                <item row="0" column="1">
+                  <widget class="QScrollBar" name="horizontalScrollBarNavDelay">
+                    <property name="sizeIncrement">
+                      <size>
+                        <width>0</width>
+                        <height>0</height>
+                      </size>
+                    </property>
+                    <property name="inputMethodHints">
+                      <set>Qt::ImhNone</set>
+                    </property>
+                    <property name="maximum">
+                      <number>5000</number>
+                    </property>
+                    <property name="singleStep">
+                      <number>100</number>
+                    </property>
+                    <property name="pageStep">
+                      <number>1000</number>
+                    </property>
+                    <property name="value">
+                      <number>0</number>
+                    </property>
+                    <property name="sliderPosition">
+                      <number>0</number>
+                    </property>
+                    <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="invertedAppearance">
+                      <bool>false</bool>
+                    </property>
+                  </widget>
+                </item>
+              </layout>
+            </widget>
+          </widget>
+        </widget>
       </widget>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>140</x>
-        <y>360</y>
-        <width>161</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Press ENTER to cancel</string>
-      </property>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_5">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>210</y>
-        <width>251</width>
-        <height>131</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Log</string>
-      </property>
-      <widget class="QPlainTextEdit" name="textEditLog">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>231</width>
-         <height>101</height>
-        </rect>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </widget>
     </widget>
-    <widget class="QWidget" name="Configure">
-     <attribute name="title">
-      <string>Configure</string>
-     </attribute>
-     <widget class="QGroupBox" name="groupBox_6">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>10</y>
-        <width>171</width>
-        <height>81</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Hotkeys</string>
-      </property>
-      <widget class="QWidget" name="formLayoutWidget_4">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>151</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <layout class="QFormLayout" name="formLayout_5">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>Inventory key:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_10">
-          <property name="text">
-           <string>Characters key:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="lineEditCharactersKey">
-          <property name="text">
-           <string>c</string>
-          </property>
-          <property name="maxLength">
-           <number>1</number>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEditInventoryKey">
-          <property name="text">
-           <string>b</string>
-          </property>
-          <property name="maxLength">
-           <number>1</number>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="clearButtonEnabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_7">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>260</y>
-        <width>131</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Scanner</string>
-      </property>
-      <widget class="QPushButton" name="pushButtonRestoreDefaults">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>111</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Restore Defaults</string>
-       </property>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_8">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>200</y>
-        <width>181</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Developer</string>
-      </property>
-      <widget class="QWidget" name="verticalLayoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>161</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="checkBoxSroFormat">
-          <property name="toolTip">
-           <string>Star Rail Optimizer</string>
-          </property>
-          <property name="text">
-           <string>Also export in SRO format</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-     <widget class="QGroupBox" name="groupBox_9">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>100</y>
-        <width>411</width>
-        <height>91</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Additional Delay (if the scanner is too fast for inputs to register)</string>
-      </property>
-      <widget class="QWidget" name="gridLayoutWidget_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>391</width>
-         <height>61</height>
-        </rect>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <property name="verticalSpacing">
-         <number>0</number>
-        </property>
-        <item row="1" column="1">
-         <widget class="QScrollBar" name="horizontalScrollBarScanDelay">
-          <property name="maximum">
-           <number>5000</number>
-          </property>
-          <property name="singleStep">
-           <number>100</number>
-          </property>
-          <property name="pageStep">
-           <number>1000</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="toolTip">
-           <string>Navigating between different pages (inventory, character details, etc.)</string>
-          </property>
-          <property name="text">
-           <string>Navigation speed (ms):</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_13">
-          <property name="toolTip">
-           <string>Clicking between each individual item (relics, light cones, and characters)</string>
-          </property>
-          <property name="text">
-           <string>Scan speed (ms):</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QSpinBox" name="spinBoxNavDelay">
-          <property name="maximumSize">
-           <size>
-            <width>75</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="wrapping">
-           <bool>false</bool>
-          </property>
-          <property name="frame">
-           <bool>true</bool>
-          </property>
-          <property name="readOnly">
-           <bool>false</bool>
-          </property>
-          <property name="buttonSymbols">
-           <enum>QAbstractSpinBox::UpDownArrows</enum>
-          </property>
-          <property name="correctionMode">
-           <enum>QAbstractSpinBox::CorrectToPreviousValue</enum>
-          </property>
-          <property name="showGroupSeparator" stdset="0">
-           <bool>false</bool>
-          </property>
-          <property name="suffix">
-           <string/>
-          </property>
-          <property name="prefix">
-           <string>+</string>
-          </property>
-          <property name="minimum">
-           <number>0</number>
-          </property>
-          <property name="maximum">
-           <number>100000</number>
-          </property>
-          <property name="singleStep">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QSpinBox" name="spinBoxScanDelay">
-          <property name="prefix">
-           <string>+</string>
-          </property>
-          <property name="maximum">
-           <number>100000</number>
-          </property>
-          <property name="singleStep">
-           <number>100</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QScrollBar" name="horizontalScrollBarNavDelay">
-          <property name="sizeIncrement">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="inputMethodHints">
-           <set>Qt::ImhNone</set>
-          </property>
-          <property name="maximum">
-           <number>5000</number>
-          </property>
-          <property name="singleStep">
-           <number>100</number>
-          </property>
-          <property name="pageStep">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>0</number>
-          </property>
-          <property name="sliderPosition">
-           <number>0</number>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="invertedAppearance">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </widget>
-   </widget>
   </widget>
- </widget>
- <resources/>
- <connections>
-  <connection>
-   <sender>horizontalScrollBarNavDelay</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spinBoxNavDelay</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>265</x>
-     <y>169</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>384</x>
-     <y>169</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBoxNavDelay</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>horizontalScrollBarNavDelay</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>384</x>
-     <y>169</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>265</x>
-     <y>169</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>horizontalScrollBarScanDelay</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spinBoxScanDelay</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>265</x>
-     <y>202</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>384</x>
-     <y>202</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBoxScanDelay</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>horizontalScrollBarScanDelay</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>384</x>
-     <y>202</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>265</x>
-     <y>202</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+  <resources/>
+  <connections>
+    <connection>
+      <sender>horizontalScrollBarNavDelay</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>spinBoxNavDelay</receiver>
+      <slot>setValue(int)</slot>
+      <hints>
+        <hint type="sourcelabel">
+          <x>265</x>
+          <y>169</y>
+        </hint>
+        <hint type="destinationlabel">
+          <x>384</x>
+          <y>169</y>
+        </hint>
+      </hints>
+    </connection>
+    <connection>
+      <sender>spinBoxNavDelay</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>horizontalScrollBarNavDelay</receiver>
+      <slot>setValue(int)</slot>
+      <hints>
+        <hint type="sourcelabel">
+          <x>384</x>
+          <y>169</y>
+        </hint>
+        <hint type="destinationlabel">
+          <x>265</x>
+          <y>169</y>
+        </hint>
+      </hints>
+    </connection>
+    <connection>
+      <sender>horizontalScrollBarScanDelay</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>spinBoxScanDelay</receiver>
+      <slot>setValue(int)</slot>
+      <hints>
+        <hint type="sourcelabel">
+          <x>265</x>
+          <y>202</y>
+        </hint>
+        <hint type="destinationlabel">
+          <x>384</x>
+          <y>202</y>
+        </hint>
+      </hints>
+    </connection>
+    <connection>
+      <sender>spinBoxScanDelay</sender>
+      <signal>valueChanged(int)</signal>
+      <receiver>horizontalScrollBarScanDelay</receiver>
+      <slot>setValue(int)</slot>
+      <hints>
+        <hint type="sourcelabel">
+          <x>384</x>
+          <y>202</y>
+        </hint>
+        <hint type="destinationlabel">
+          <x>265</x>
+          <y>202</y>
+        </hint>
+      </hints>
+    </connection>
+  </connections>
 </ui>
