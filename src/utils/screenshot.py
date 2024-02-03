@@ -1,12 +1,16 @@
-import cv2
-import numpy as np
 import datetime
 import os
+
+import cv2
+import numpy as np
 import win32gui
+from PIL import Image as PILImage
+from PIL import ImageGrab
+from PIL.Image import Image
+from PyQt6.QtCore import pyqtBoundSignal
+
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
-from PIL import Image, ImageGrab
-from PyQt6.QtCore import pyqtBoundSignal
 
 
 class Screenshot:
@@ -133,7 +137,7 @@ class Screenshot:
         res = []
 
         screenshot = ImageGrab.grab(all_screens=True)
-        offset, _, _ = Image.core.grabscreen_win32(False, True)
+        offset, _, _ = PILImage.core.grabscreen_win32(False, True)
         x0, y0 = offset
         dim = 81
 
@@ -157,7 +161,7 @@ class Screenshot:
 
         if self._debug:
             for img in res:
-                self._save_image(Image.fromarray(img))
+                self._save_image(PILImage.fromarray(img))
 
         return res
 
@@ -234,7 +238,7 @@ class Screenshot:
         res = {}
 
         screenshot = ImageGrab.grab(all_screens=True)
-        offset, _, _ = Image.core.grabscreen_win32(False, True)
+        offset, _, _ = PILImage.core.grabscreen_win32(False, True)
         x0, y0 = offset
 
         for k, v in coords["character"]["traces"][key].items():

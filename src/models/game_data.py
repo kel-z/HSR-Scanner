@@ -1,10 +1,12 @@
 import base64
 from io import BytesIO
+
+import cv2
 import Levenshtein
 import numpy as np
-import cv2
 import requests
-from PIL import Image
+from PIL import Image as PILImage
+from PIL.Image import Image
 
 GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
@@ -87,7 +89,7 @@ class GameData:
         for key in data["mini_icons"]:
             base64_string = data["mini_icons"][key]
             decoded_image = base64.b64decode(base64_string)
-            img = Image.open(BytesIO(decoded_image))
+            img = PILImage.open(BytesIO(decoded_image))
             img = np.array(img)
             self.EQUIPPED_ICONS[key] = img
 

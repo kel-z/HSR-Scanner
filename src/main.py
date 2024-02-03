@@ -1,16 +1,17 @@
 import asyncio
 import datetime
-from ui.hsr_scanner import Ui_MainWindow
-from PyQt6 import QtCore, QtGui, QtWidgets
-from services.scanner.scanner import HSRScanner
-from enums.increment_type import IncrementType
-from pynput.keyboard import Key, Listener
-from utils.data import create_debug_folder, resource_path, save_to_json, executable_path
-from utils.conversion import convert_to_sro
-from models.game_data import GameData
-import pytesseract
 import sys
 
+import pytesseract
+from pynput.keyboard import Key, Listener
+from PyQt6 import QtCore, QtGui, QtWidgets
+
+from enums.increment_type import IncrementType
+from models.game_data import GameData
+from services.scanner.scanner import HSRScanner
+from ui.hsr_scanner import Ui_MainWindow
+from utils.conversion import convert_to_sro
+from utils.data import create_debug_folder, executable_path, resource_path, save_to_json
 
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 

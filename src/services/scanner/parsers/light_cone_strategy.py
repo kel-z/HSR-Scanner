@@ -1,17 +1,20 @@
-from models.game_data import GameData
+from asyncio import Event
+
+from PIL import Image as PILImage
+from PIL.Image import Image
 from pyautogui import locate
-from PIL import Image
+from PyQt6.QtCore import pyqtBoundSignal
+
+from config.light_cone_scan import LIGHT_CONE_NAV_DATA
+from enums.increment_type import IncrementType
+from models.game_data import GameData
 from utils.data import resource_path
 from utils.ocr import (
     image_to_string,
     preprocess_equipped_img,
-    preprocess_superimposition_img,
     preprocess_lc_level_img,
+    preprocess_superimposition_img,
 )
-from config.light_cone_scan import LIGHT_CONE_NAV_DATA
-from enums.increment_type import IncrementType
-from PyQt6.QtCore import pyqtBoundSignal
-from asyncio import Event
 
 
 class LightConeStrategy:
@@ -38,7 +41,7 @@ class LightConeStrategy:
         self._log_signal = log_signal
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
-        self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
+        self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -71,7 +74,7 @@ class LightConeStrategy:
 
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
-            if not val or isinstance(val, Image.Image):
+            if not val or isinstance(val, Image):
                 if key == "min_rarity":
                     # Trivial case
                     if filters[key] <= 3:
@@ -116,7 +119,7 @@ class LightConeStrategy:
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key: str, img: Image):
+    def extract_stats_data(self, key: str, img: Image) -> str | Image:
         """Extracts the stats data from the image
 
         :param key: The key
@@ -159,7 +162,7 @@ class LightConeStrategy:
             return
 
         for key in stats_dict:
-            if isinstance(stats_dict[key], Image.Image):
+            if isinstance(stats_dict[key], Image):
                 stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
         name = stats_dict["name"]

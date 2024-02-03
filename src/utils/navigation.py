@@ -1,10 +1,11 @@
+import time
+
 import cv2
 import numpy as np
-import win32gui
 import pyautogui
-import time
-from PIL import Image
-from pynput import mouse, keyboard
+import win32gui
+from PIL.Image import Image
+from pynput import keyboard, mouse
 
 
 class Navigation:

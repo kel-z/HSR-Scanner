@@ -1,20 +1,23 @@
-from utils.navigation import Navigation
-import win32gui
-import time
-from utils.screenshot import Screenshot
 import asyncio
+import time
+
+import pyautogui
+import win32gui
+from PIL import Image as PILImage
+from pynput.keyboard import Key
+from PyQt6 import QtCore
+
+from config.character_scan import CHARACTER_NAV_DATA
+from enums.increment_type import IncrementType
+from models.game_data import GameData
+from utils.data import resource_path
+from utils.navigation import Navigation
+from utils.ocr import image_to_string, preprocess_char_count_img
+from utils.screenshot import Screenshot
+
+from .parsers.character_parser import CharacterParser
 from .parsers.light_cone_strategy import LightConeStrategy
 from .parsers.relic_strategy import RelicStrategy
-from pynput.keyboard import Key
-from utils.data import resource_path
-from utils.ocr import image_to_string, preprocess_char_count_img
-import pyautogui
-from .parsers.character_parser import CharacterParser
-from config.character_scan import CHARACTER_NAV_DATA
-from PIL import Image
-from models.game_data import GameData
-from PyQt6 import QtCore
-from enums.increment_type import IncrementType
 
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
@@ -70,7 +73,7 @@ class HSRScanner(QtCore.QObject):
             config["debug"],
             config["debug_output_location"],
         )
-        self._databank_img = Image.open(resource_path("assets/images/databank.png"))
+        self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
 

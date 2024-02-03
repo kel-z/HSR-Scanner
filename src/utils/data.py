@@ -1,7 +1,7 @@
-from datetime import datetime
-import sys
-import os
 import json
+import os
+import sys
+from datetime import datetime
 
 
 def resource_path(relative_path: str) -> str:
