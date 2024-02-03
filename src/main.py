@@ -252,6 +252,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # debug mode
         config["debug"] = self.checkBoxDebugMode.isChecked()
+        config["debug_output_location"] = None
 
         if config["debug"]:
             config["debug_output_location"] = create_debug_folder(
@@ -414,7 +415,7 @@ class ScannerThread(QtCore.QThread):
                 self.result_signal.emit(res)
         except Exception as e:
             self.error_signal.emit(
-                f"Scan aborted with error {e.__class__.__name__}: {e} (Try scanning with a different in-game background, window resolution, or fullscreen/windowed mode.)"
+                f"Scan aborted with error {e.__class__.__name__}: {e} (Try scanning with a different in-game background, window resolution, or fullscreen/windowed mode, or increasing nav/scan delay in scanner configuration.)"
             )
 
     def interrupt_scan(self) -> None:

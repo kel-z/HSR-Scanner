@@ -664,7 +664,7 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>200</y>
-        <width>181</width>
+        <width>201</width>
         <height>71</height>
        </rect>
       </property>
@@ -676,7 +676,7 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>161</width>
+         <width>181</width>
          <height>42</height>
         </rect>
        </property>
@@ -694,7 +694,7 @@ p, li { white-space: pre-wrap; }
         <item>
          <widget class="QCheckBox" name="checkBoxDebugMode">
           <property name="toolTip">
-           <string>Save screenshots to output folder</string>
+           <string>Saves ALL screenshots</string>
           </property>
           <property name="text">
            <string>Debug mode</string>
@@ -714,7 +714,7 @@ p, li { white-space: pre-wrap; }
        </rect>
       </property>
       <property name="title">
-       <string>Additional Delay (if the scanner is too fast for inputs to register)</string>
+       <string>Additional Delay (for slow computers)</string>
       </property>
       <widget class="QWidget" name="gridLayoutWidget_2">
        <property name="geometry">

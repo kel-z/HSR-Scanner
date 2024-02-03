@@ -17,15 +17,15 @@ class Screenshot:
         hwnd: int,
         log_signal: pyqtBoundSignal,
         aspect_ratio: str = "16:9",
-        save_screenshots: bool = False,
-        output_location: str = "",
+        debug: bool = False,
+        debug_output_location: str = "",
     ) -> None:
         """Constructor
 
         :param hwnd: The window handle of the game window
         :param aspect_ratio: The aspect ratio of the game window, defaults to "16:9"
-        :param save_screenshots: Whether to save screenshots, default False
-        :param output_location: Output location of saved screenshots
+        :param debug_mode: Whether to save screenshots, default False
+        :param debug_output_location: Output location of saved screenshots
         """
         self._aspect_ratio = aspect_ratio
         self._log_signal = log_signal
@@ -36,8 +36,8 @@ class Screenshot:
         self._x_scaling_factor = self._window_width / 1920
         self._y_scaling_factor = self._window_height / 1080
 
-        self._save_screenshots = save_screenshots
-        self._output_location = output_location
+        self._debug = debug
+        self._debug_output_location = debug_output_location
 
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
@@ -155,9 +155,9 @@ class Screenshot:
 
             res.append(img)
 
-        if self._save_screenshots:
+        if self._debug:
             for img in res:
-                self._save_image(Image.fromarray(img), self._output_location)
+                self._save_image(Image.fromarray(img))
 
         return res
 
@@ -194,8 +194,8 @@ class Screenshot:
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
 
-        if self._save_screenshots:
-            self._save_image(screenshot, self._output_location)
+        if self._debug:
+            self._save_image(screenshot)
 
         return screenshot
 
@@ -245,25 +245,18 @@ class Screenshot:
 
             res[k] = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
 
-        if self._save_screenshots:
+        if self._debug:
             for img in res.values():
-                self._save_image(img, self._output_location)
+                self._save_image(img)
 
         return res
 
-    def _save_image(self, img: Image, output_directory: str | None = None) -> None:
+    def _save_image(self, img: Image) -> None:
         """Save the image on disk.
 
         :param img: The image to save.
-        :param output_directory: The directory to output the image
-        :return: Location of the saved image
         """
         file_name = f"{datetime.datetime.now().strftime('%H%M%S%f')}.png"
-
-        output_location = os.path.join(
-            output_directory or self._output_location, file_name
-        )
-
+        output_location = os.path.join(self._debug_output_location, file_name)
         img.save(output_location)
-
         self._log_signal.emit(f"[DEBUG] Saving {file_name}.")

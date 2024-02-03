@@ -36,8 +36,8 @@ def create_debug_folder(output_location: str) -> str:
 
     :param output_location: The output location
     """
-    debug_folder_path = (
-        f"{output_location}/debug/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    debug_folder_path = os.path.join(
+        output_location, "debug", datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     )
     os.makedirs(debug_folder_path, exist_ok=True)
     return debug_folder_path
