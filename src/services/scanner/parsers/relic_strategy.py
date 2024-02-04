@@ -253,7 +253,7 @@ class RelicStrategy:
 
             name, dist = self._game_data.get_closest_relic_sub_stat(name)
             if dist > 3:
-                continue
+                break
 
             if i >= len(vals):
                 self._log_signal.emit(
