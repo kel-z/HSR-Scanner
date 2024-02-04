@@ -275,24 +275,20 @@ class RelicStrategy:
                     )
                 continue
 
-            if not self._validate_substat(name, val, rarity):
-                self._log_signal.emit(
-                    f'WARNING: Relic ID {relic_id}: Substat {name} has illegal value "{val}".'
-                )
-
             substats.append({"key": name, "value": val})
 
         return substats
 
-    def _validate_substat(self, name: str, val: int | float, rarity: int) -> bool:
+    def _validate_substat(self, substat: dict[str, int | float], rarity: int) -> bool:
         """Validates the substat
 
-        :param name: The name of the substat
-        :param val: The value of the substat
+        :param name: The substat
         :param rarity: The rarity of the relic
         :return: True if the substat is valid, False otherwise
         """
         try:
+            name = substat["key"]
+            val = substat["value"]
             if name not in SUBSTAT_ROLL_VALS[str(rarity)]:
                 return False
             if str(val) not in SUBSTAT_ROLL_VALS[str(rarity)][name]:
@@ -316,10 +312,40 @@ class RelicStrategy:
         :param level: The level of the relic
         :param relic_id: The relic ID
         """
+        # check valid number of substats
         substats_len = len(substats)
         min_substats = min(rarity - 2 + int(level / 3), 4)
-
         if substats_len < min_substats:
             self._log_signal.emit(
                 f"WARNING: Relic ID {relic_id} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}."
+            )
+            return
+
+        # check valid roll value total
+        min_roll_value = round(min_substats * 0.8, 1)
+        max_roll_value = round(rarity - 1 + int(level / 3), 1)
+        total = 0
+        for substat in substats:
+            if not self._validate_substat(substat, rarity):
+                self._log_signal.emit(
+                    f'WARNING: Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}".'
+                )
+                continue
+
+            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][substat["key"]][
+                str(substat["value"])
+            ]
+            if isinstance(roll_value, list):
+                # assume maxed
+                roll_value = roll_value[-1]
+            total += roll_value
+
+        total = round(total, 1)
+        if total < min_roll_value:
+            self._log_signal.emit(
+                f"WARNING: Relic ID {relic_id} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}."
+            )
+        elif total > max_roll_value:
+            self._log_signal.emit(
+                f"WARNING: Relic ID {relic_id} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}."
             )

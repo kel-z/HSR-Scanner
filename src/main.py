@@ -140,7 +140,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
         self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
         self.settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
-        self.settings.setValue("debug_mode", self.checkBoxSroFormat.isChecked())
+        self.settings.setValue("debug_mode", self.checkBoxDebugMode.isChecked())
         self.settings.setValue("nav_delay", self.spinBoxNavDelay.value())
         self.settings.setValue("scan_delay", self.spinBoxScanDelay.value())
 
