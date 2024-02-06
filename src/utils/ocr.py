@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import pytesseract
-from PIL import Image
+from PIL import Image as PILImage
+from PIL.Image import Image
 
 
 def preprocess_img(img: Image) -> Image:
@@ -122,7 +123,7 @@ def preprocess_superimposition_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    img = _preprocess_img_by_colour_filter(img, (220, 196, 145), 50)
+    img = _preprocess_img_by_colour_filter(img, (220, 196, 145), 70)
     return img
 
 
@@ -166,4 +167,4 @@ def _preprocess_img_by_colour_filter(
     # invert
     img_arr = 255 - img_arr
 
-    return Image.fromarray(img_arr)
+    return PILImage.fromarray(img_arr)

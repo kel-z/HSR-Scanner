@@ -165,6 +165,7 @@ def _convert_relics_sro(
             "mainStatKey": mainStatKey,
             "location": character_key_fn(relic["location"]),
             "lock": relic["lock"],
+            "discard": relic["discard"],
             "substats": substats,
         }
         formatted_relics.append(res)

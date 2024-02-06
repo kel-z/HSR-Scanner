@@ -23,6 +23,7 @@ a.datas += [('assets\\tesseract\\tesseract.exe', 'src\\assets\\tesseract\\tesser
 a.datas += [('assets\\tesseract\\tessdata\\DIN-Alternate.traineddata','src\\assets\\tesseract\\tessdata\\DIN-Alternate.traineddata', "DATA")]
 a.datas += [('assets\\images\\databank.png','src\\assets\\images\\databank.png', "DATA")]
 a.datas += [('assets\\images\\lock.png','src\\assets\\images\\lock.png', "DATA")]
+a.datas += [('assets\\images\\discard.png','src\\assets\\images\\discard.png', "DATA")]
 a.datas += [('assets\\images\\trailblazerm.png','src\\assets\\images\\trailblazerm.png', "DATA")]
 a.datas += [('assets\\images\\trailblazerf.png','src\\assets\\images\\trailblazerf.png', "DATA")]
 a.datas += [('assets\\images\\app.ico','src\\assets\\images\\app.ico', "DATA")]

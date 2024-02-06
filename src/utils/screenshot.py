@@ -1,7 +1,14 @@
+import datetime
+import os
+
 import cv2
 import numpy as np
 import win32gui
-from PIL import Image, ImageGrab
+from PIL import Image as PILImage
+from PIL import ImageGrab
+from PIL.Image import Image
+from PyQt6.QtCore import pyqtBoundSignal
+
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
 
@@ -9,13 +16,23 @@ from enums.increment_type import IncrementType
 class Screenshot:
     """Screenshot class for taking screenshots of the game window"""
 
-    def __init__(self, hwnd: int, aspect_ratio: str = "16:9") -> None:
+    def __init__(
+        self,
+        hwnd: int,
+        log_signal: pyqtBoundSignal,
+        aspect_ratio: str = "16:9",
+        debug: bool = False,
+        debug_output_location: str = "",
+    ) -> None:
         """Constructor
 
         :param hwnd: The window handle of the game window
         :param aspect_ratio: The aspect ratio of the game window, defaults to "16:9"
+        :param debug_mode: Whether to save screenshots, default False
+        :param debug_output_location: Output location of saved screenshots
         """
         self._aspect_ratio = aspect_ratio
+        self._log_signal = log_signal
 
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
@@ -23,12 +40,16 @@ class Screenshot:
         self._x_scaling_factor = self._window_width / 1920
         self._y_scaling_factor = self._window_height / 1080
 
+        self._debug = debug
+        self._debug_output_location = debug_output_location
+
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
 
         :return: The screenshot
         """
-        return self._take_screenshot(0, 0, 1, 1)
+        do_not_save = True  # so users don't unintentionally reveal their UID when naively sharing debug folder
+        return self._take_screenshot(0, 0, 1, 1, do_not_save)
 
     def screenshot_stats(self, scan_type: IncrementType) -> dict:
         """Takes a screenshot of the stats
@@ -117,7 +138,7 @@ class Screenshot:
         res = []
 
         screenshot = ImageGrab.grab(all_screens=True)
-        offset, _, _ = Image.core.grabscreen_win32(False, True)
+        offset, _, _ = PILImage.core.grabscreen_win32(False, True)
         x0, y0 = offset
         dim = 81
 
@@ -139,6 +160,10 @@ class Screenshot:
 
             res.append(img)
 
+        if self._debug:
+            for img in res:
+                self._save_image(PILImage.fromarray(img))
+
         return res
 
     def screenshot_character_traces(self, key: str) -> dict:
@@ -150,7 +175,7 @@ class Screenshot:
         return self._screenshot_traces(key)
 
     def _take_screenshot(
-        self, x: float, y: float, width: float, height: float
+        self, x: float, y: float, width: float, height: float, do_not_save: bool = False
     ) -> Image:
         """Takes a screenshot of the game window
 
@@ -173,6 +198,9 @@ class Screenshot:
         screenshot = screenshot.resize(
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
+
+        if self._debug and not do_not_save:
+            self._save_image(screenshot)
 
         return screenshot
 
@@ -211,7 +239,7 @@ class Screenshot:
         res = {}
 
         screenshot = ImageGrab.grab(all_screens=True)
-        offset, _, _ = Image.core.grabscreen_win32(False, True)
+        offset, _, _ = PILImage.core.grabscreen_win32(False, True)
         x0, y0 = offset
 
         for k, v in coords["character"]["traces"][key].items():
@@ -222,4 +250,18 @@ class Screenshot:
 
             res[k] = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
 
+        if self._debug:
+            for img in res.values():
+                self._save_image(img)
+
         return res
+
+    def _save_image(self, img: Image) -> None:
+        """Save the image on disk.
+
+        :param img: The image to save.
+        """
+        file_name = f"{datetime.datetime.now().strftime('%H%M%S%f')}.png"
+        output_location = os.path.join(self._debug_output_location, file_name)
+        img.save(output_location)
+        self._log_signal.emit(f"[DEBUG] Saving {file_name}.")

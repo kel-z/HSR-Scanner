@@ -1,20 +1,23 @@
-from utils.navigation import Navigation
-import win32gui
-import time
-from utils.screenshot import Screenshot
 import asyncio
+import time
+
+import pyautogui
+import win32gui
+from PIL import Image as PILImage
+from pynput.keyboard import Key
+from PyQt6 import QtCore
+
+from config.character_scan import CHARACTER_NAV_DATA
+from enums.increment_type import IncrementType
+from models.game_data import GameData
+from utils.data import resource_path
+from utils.navigation import Navigation
+from utils.ocr import image_to_string, preprocess_char_count_img
+from utils.screenshot import Screenshot
+
+from .parsers.character_parser import CharacterParser
 from .parsers.light_cone_strategy import LightConeStrategy
 from .parsers.relic_strategy import RelicStrategy
-from pynput.keyboard import Key
-from utils.data import resource_path
-from utils.ocr import image_to_string, preprocess_char_count_img
-import pyautogui
-from .parsers.character_parser import CharacterParser
-from config.character_scan import CHARACTER_NAV_DATA
-from PIL import Image
-from models.game_data import GameData
-from PyQt6 import QtCore
-from enums.increment_type import IncrementType
 
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
@@ -63,8 +66,14 @@ class HSRScanner(QtCore.QObject):
                 f"Aspect ratio {self._aspect_ratio} not supported. Supported aspect ratios: {SUPPORTED_ASPECT_RATIOS}"
             )
 
-        self._screenshot = Screenshot(self._hwnd, self._aspect_ratio)
-        self._databank_img = Image.open(resource_path("assets/images/databank.png"))
+        self._screenshot = Screenshot(
+            self._hwnd,
+            self.log_signal,
+            self._aspect_ratio,
+            config["debug"],
+            config["debug_output_location"],
+        )
+        self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
 
@@ -90,9 +99,11 @@ class HSRScanner(QtCore.QObject):
                     self._interrupt_event,
                 )
             )
-            self.log_signal.emit(
-                "Finished scanning light cones."
-            ) if not self._interrupt_event.is_set() else None
+            (
+                self.log_signal.emit("Finished scanning light cones.")
+                if not self._interrupt_event.is_set()
+                else None
+            )
 
         relics = []
         if self._config["scan_relics"] and not self._interrupt_event.is_set():
@@ -105,17 +116,21 @@ class HSRScanner(QtCore.QObject):
                     self._interrupt_event,
                 )
             )
-            self.log_signal.emit(
-                "Finished scanning relics."
-            ) if not self._interrupt_event.is_set() else None
+            (
+                self.log_signal.emit("Finished scanning relics.")
+                if not self._interrupt_event.is_set()
+                else None
+            )
 
         characters = []
         if self._config["scan_characters"] and not self._interrupt_event.is_set():
             self.log_signal.emit("Scanning characters...")
             characters = self.scan_characters()
-            self.log_signal.emit(
-                "Finished scanning characters."
-            ) if not self._interrupt_event.is_set() else None
+            (
+                self.log_signal.emit("Finished scanning characters.")
+                if not self._interrupt_event.is_set()
+                else None
+            )
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)

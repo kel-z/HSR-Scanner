@@ -133,6 +133,7 @@ class Ui_MainWindow(object):
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_3)
         self.spinBoxLightConeMinRarity = QtWidgets.QSpinBox(parent=self.formLayoutWidget_2)
         self.spinBoxLightConeMinRarity.setEnabled(True)
+        self.spinBoxLightConeMinRarity.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxLightConeMinRarity.setMinimum(3)
         self.spinBoxLightConeMinRarity.setMaximum(5)
         self.spinBoxLightConeMinRarity.setProperty("value", 3)
@@ -144,6 +145,7 @@ class Ui_MainWindow(object):
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_4)
         self.spinBoxLightConeMinLevel = QtWidgets.QSpinBox(parent=self.formLayoutWidget_2)
         self.spinBoxLightConeMinLevel.setEnabled(True)
+        self.spinBoxLightConeMinLevel.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxLightConeMinLevel.setMinimum(1)
         self.spinBoxLightConeMinLevel.setMaximum(80)
         self.spinBoxLightConeMinLevel.setObjectName("spinBoxLightConeMinLevel")
@@ -162,6 +164,7 @@ class Ui_MainWindow(object):
         self.label_6.setObjectName("label_6")
         self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_6)
         self.spinBoxRelicMinRarity = QtWidgets.QSpinBox(parent=self.formLayoutWidget_3)
+        self.spinBoxRelicMinRarity.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxRelicMinRarity.setMinimum(2)
         self.spinBoxRelicMinRarity.setMaximum(5)
         self.spinBoxRelicMinRarity.setProperty("value", 2)
@@ -174,6 +177,7 @@ class Ui_MainWindow(object):
         self.label_8.setObjectName("label_8")
         self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.label_8)
         self.spinBoxRelicMinLevel = QtWidgets.QSpinBox(parent=self.formLayoutWidget_3)
+        self.spinBoxRelicMinLevel.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxRelicMinLevel.setMinimum(0)
         self.spinBoxRelicMinLevel.setMaximum(15)
         self.spinBoxRelicMinLevel.setProperty("value", 0)
@@ -249,20 +253,23 @@ class Ui_MainWindow(object):
         self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
         self.groupBox_7 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_7.setGeometry(QtCore.QRect(10, 260, 131, 61))
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 280, 131, 61))
         self.groupBox_7.setObjectName("groupBox_7")
         self.pushButtonRestoreDefaults = QtWidgets.QPushButton(parent=self.groupBox_7)
         self.pushButtonRestoreDefaults.setGeometry(QtCore.QRect(10, 20, 111, 31))
         self.pushButtonRestoreDefaults.setObjectName("pushButtonRestoreDefaults")
         self.groupBox_8 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_8.setGeometry(QtCore.QRect(10, 200, 181, 51))
+        self.groupBox_8.setGeometry(QtCore.QRect(10, 200, 201, 71))
         self.groupBox_8.setObjectName("groupBox_8")
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.groupBox_8)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 161, 21))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 181, 42))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.checkBoxDebugMode = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
+        self.checkBoxDebugMode.setObjectName("checkBoxDebugMode")
+        self.verticalLayout_2.addWidget(self.checkBoxDebugMode)
         self.checkBoxSroFormat = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
         self.checkBoxSroFormat.setObjectName("checkBoxSroFormat")
         self.verticalLayout_2.addWidget(self.checkBoxSroFormat)
@@ -297,7 +304,7 @@ class Ui_MainWindow(object):
         self.spinBoxNavDelay.setFrame(True)
         self.spinBoxNavDelay.setReadOnly(False)
         self.spinBoxNavDelay.setButtonSymbols(QtWidgets.QAbstractSpinBox.ButtonSymbols.UpDownArrows)
-        self.spinBoxNavDelay.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToPreviousValue)
+        self.spinBoxNavDelay.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxNavDelay.setProperty("showGroupSeparator", False)
         self.spinBoxNavDelay.setSuffix("")
         self.spinBoxNavDelay.setMinimum(0)
@@ -307,6 +314,7 @@ class Ui_MainWindow(object):
         self.spinBoxNavDelay.setObjectName("spinBoxNavDelay")
         self.gridLayout_2.addWidget(self.spinBoxNavDelay, 0, 2, 1, 1)
         self.spinBoxScanDelay = QtWidgets.QSpinBox(parent=self.gridLayoutWidget_2)
+        self.spinBoxScanDelay.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxScanDelay.setMaximum(100000)
         self.spinBoxScanDelay.setSingleStep(100)
         self.spinBoxScanDelay.setProperty("value", 0)
@@ -337,7 +345,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.0"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.1"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -371,7 +379,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.0</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.1</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">1. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
@@ -395,9 +403,11 @@ class Ui_MainWindow(object):
         self.groupBox_7.setTitle(_translate("MainWindow", "Scanner"))
         self.pushButtonRestoreDefaults.setText(_translate("MainWindow", "Restore Defaults"))
         self.groupBox_8.setTitle(_translate("MainWindow", "Developer"))
+        self.checkBoxDebugMode.setToolTip(_translate("MainWindow", "Saves ALL screenshots"))
+        self.checkBoxDebugMode.setText(_translate("MainWindow", "Debug mode"))
         self.checkBoxSroFormat.setToolTip(_translate("MainWindow", "Star Rail Optimizer"))
         self.checkBoxSroFormat.setText(_translate("MainWindow", "Also export in SRO format"))
-        self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay (if the scanner is too fast for inputs to register)"))
+        self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay (for slow computers)"))
         self.label_11.setToolTip(_translate("MainWindow", "Navigating between different pages (inventory, character details, etc.)"))
         self.label_11.setText(_translate("MainWindow", "Navigation speed (ms):"))
         self.label_13.setToolTip(_translate("MainWindow", "Clicking between each individual item (relics, light cones, and characters)"))

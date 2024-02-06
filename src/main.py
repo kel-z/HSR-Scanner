@@ -1,16 +1,17 @@
 import asyncio
 import datetime
-from ui.hsr_scanner import Ui_MainWindow
-from PyQt6 import QtCore, QtGui, QtWidgets
-from services.scanner.scanner import HSRScanner
-from enums.increment_type import IncrementType
-from pynput.keyboard import Key, Listener
-from utils.data import resource_path, save_to_json, executable_path
-from utils.conversion import convert_to_sro
-from models.game_data import GameData
-import pytesseract
 import sys
 
+import pytesseract
+from pynput.keyboard import Key, Listener
+from PyQt6 import QtCore, QtGui, QtWidgets
+
+from enums.increment_type import IncrementType
+from models.game_data import GameData
+from services.scanner.scanner import HSRScanner
+from ui.hsr_scanner import Ui_MainWindow
+from utils.conversion import convert_to_sro
+from utils.data import create_debug_folder, executable_path, resource_path, save_to_json
 
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
@@ -114,6 +115,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxSroFormat.setChecked(
             self.settings.value("sro_format", False) == "true"
         )
+        self.checkBoxDebugMode.setChecked(
+            self.settings.value("debug_mode", False) == "true"
+        )
         self.spinBoxNavDelay.setValue(self.settings.value("nav_delay", 0))
         self.spinBoxScanDelay.setValue(self.settings.value("scan_delay", 0))
 
@@ -136,6 +140,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
         self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
         self.settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
+        self.settings.setValue("debug_mode", self.checkBoxDebugMode.isChecked())
         self.settings.setValue("nav_delay", self.spinBoxNavDelay.value())
         self.settings.setValue("scan_delay", self.spinBoxScanDelay.value())
 
@@ -245,6 +250,19 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # delays
         config["nav_delay"] = self.spinBoxNavDelay.value() / 1000
         config["scan_delay"] = self.spinBoxScanDelay.value() / 1000
+
+        # debug mode
+        config["debug"] = self.checkBoxDebugMode.isChecked()
+        config["debug_output_location"] = None
+
+        if config["debug"]:
+            config["debug_output_location"] = create_debug_folder(
+                self.lineEditOutputLocation.text()
+            )
+            self.log(
+                "[DEBUG] Debug mode enabled. Debug output will be saved to "
+                + config["debug_output_location"]
+            )
 
         return config
 
@@ -398,7 +416,7 @@ class ScannerThread(QtCore.QThread):
                 self.result_signal.emit(res)
         except Exception as e:
             self.error_signal.emit(
-                f"Scan aborted with error {e.__class__.__name__}: {e} (Try scanning with a different in-game background, window resolution, or fullscreen/windowed mode.)"
+                f"Scan aborted with error {e.__class__.__name__}: {e} (Try scanning with a different in-game background, window resolution, or fullscreen/windowed mode, or increasing nav/scan delay in scanner configuration.)"
             )
 
     def interrupt_scan(self) -> None:

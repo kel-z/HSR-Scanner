@@ -1,14 +1,16 @@
+from asyncio import Event
+
 import cv2
 import numpy as np
+from PIL import Image as PILImage
+from PIL.Image import Image
 from pyautogui import locate
-from utils.data import resource_path
-from utils.ocr import image_to_string
-from PIL import Image
-from utils.ocr import preprocess_trace_img, image_to_string
-from models.game_data import GameData
 from PyQt6.QtCore import pyqtBoundSignal
-from asyncio import Event
+
 from enums.increment_type import IncrementType
+from models.game_data import GameData
+from utils.data import resource_path
+from utils.ocr import image_to_string, preprocess_trace_img
 
 
 class CharacterParser:
@@ -33,8 +35,8 @@ class CharacterParser:
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
         self._trailblazer_imgs = {
-            "M": Image.open(resource_path("assets/images/trailblazerm.png")),
-            "F": Image.open(resource_path("assets/images/trailblazerf.png")),
+            "M": PILImage.open(resource_path("assets/images/trailblazerm.png")),
+            "F": PILImage.open(resource_path("assets/images/trailblazerf.png")),
         }
         self._is_trailblazer_scanned = False
 
@@ -111,7 +113,7 @@ class CharacterParser:
         return character
 
     def get_closest_name_and_path(
-        self, character_name: str, path: str, character_img: Image.Image
+        self, character_name: str, path: str, character_img: Image
     ) -> tuple[str, str]:
         """Get the closest name and path
 
@@ -125,9 +127,13 @@ class CharacterParser:
 
         if self._is_trailblazer(character_img):
             if self._is_trailblazer_scanned:
-                self._log_signal.emit(
-                    "WARNING: Parsed more than one Trailblazer. Please review JSON output."
-                ) if self._log_signal else None
+                (
+                    self._log_signal.emit(
+                        "WARNING: Parsed more than one Trailblazer. Please review JSON output."
+                    )
+                    if self._log_signal
+                    else None
+                )
             else:
                 self._is_trailblazer_scanned = True
 
@@ -158,7 +164,7 @@ class CharacterParser:
 
         return False
 
-    def _process_eidolons(self, eidolon_images: list[Image.Image]) -> int:
+    def _process_eidolons(self, eidolon_images: list[Image]) -> int:
         """Process eidolons
 
         :param eidolon_images: The eidolon images

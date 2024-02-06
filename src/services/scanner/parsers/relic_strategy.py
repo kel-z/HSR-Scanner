@@ -1,19 +1,22 @@
-from models.game_data import GameData
+from asyncio import Event
+
 import numpy as np
+from PIL import Image as PILImage
+from PIL.Image import Image
+from pyautogui import locate
+from PyQt6.QtCore import pyqtBoundSignal
+
 from config.relic_scan import RELIC_NAV_DATA
+from enums.increment_type import IncrementType
+from models.game_data import GameData
+from models.substat_vals import SUBSTAT_ROLL_VALS
 from utils.data import resource_path
 from utils.ocr import (
     image_to_string,
+    preprocess_equipped_img,
     preprocess_main_stat_img,
     preprocess_sub_stat_img,
-    preprocess_equipped_img,
 )
-from PIL import Image
-from pyautogui import locate
-from enums.increment_type import IncrementType
-from PyQt6.QtCore import pyqtBoundSignal
-from asyncio import Event
-from models.substat_vals import SUBSTAT_ROLL_VALS
 
 
 class RelicStrategy:
@@ -40,7 +43,8 @@ class RelicStrategy:
         self._log_signal = log_signal
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
-        self._lock_icon = Image.open(resource_path("assets/images/lock.png"))
+        self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
+        self._discard_icon = PILImage.open(resource_path("assets/images/discard.png"))
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -72,7 +76,7 @@ class RelicStrategy:
 
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
-            if not val or isinstance(val, Image.Image):
+            if not val or isinstance(val, Image):
                 if key == "min_rarity":
                     # Trivial case
                     if filters[key] <= 2:
@@ -106,7 +110,7 @@ class RelicStrategy:
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key: str, img: Image):
+    def extract_stats_data(self, key: str, img: Image) -> str | int | Image:
         """Extracts the stats data from the image
 
         :param key: The key
@@ -164,13 +168,14 @@ class RelicStrategy:
             return
 
         for key in stats_dict:
-            if isinstance(stats_dict[key], Image.Image):
+            if isinstance(stats_dict[key], Image):
                 stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
         name = stats_dict["name"]
         level = stats_dict["level"]
         main_stat_key = stats_dict["mainStatKey"]
         lock = stats_dict["lock"]
+        discard = stats_dict["discard"]
         rarity = stats_dict["rarity"]
         equipped = stats_dict["equipped"]
         substat_names = stats_dict["substat_names"]
@@ -204,10 +209,13 @@ class RelicStrategy:
         set_key = metadata["set"]
         slot_key = metadata["slot"]
 
-        # Check if locked by image matching
+        # Check if locked/discarded by image matching
         min_dim = min(lock.size)
         lock_img = self._lock_icon.resize((min_dim, min_dim))
-        lock = locate(lock_img, lock, confidence=0.1) is not None
+        lock = locate(lock_img, lock, confidence=0.3) is not None
+        min_dim = min(discard.size)
+        discard_img = self._discard_icon.resize((min_dim, min_dim))
+        discard = locate(discard_img, discard, confidence=0.3) is not None
 
         location = ""
         if equipped == "Equipped":
@@ -224,6 +232,7 @@ class RelicStrategy:
             "substats": substats_res,
             "location": location,
             "lock": lock,
+            "discard": discard,
             "_id": f"relic_{relic_id}",
         }
 
@@ -250,7 +259,7 @@ class RelicStrategy:
 
             name, dist = self._game_data.get_closest_relic_sub_stat(name)
             if dist > 3:
-                continue
+                break
 
             if i >= len(vals):
                 self._log_signal.emit(
@@ -272,24 +281,20 @@ class RelicStrategy:
                     )
                 continue
 
-            if not self._validate_substat(name, val, rarity):
-                self._log_signal.emit(
-                    f'WARNING: Relic ID {relic_id}: Substat {name} has illegal value "{val}".'
-                )
-
             substats.append({"key": name, "value": val})
 
         return substats
 
-    def _validate_substat(self, name: str, val: int | float, rarity: int) -> bool:
+    def _validate_substat(self, substat: dict[str, int | float], rarity: int) -> bool:
         """Validates the substat
 
-        :param name: The name of the substat
-        :param val: The value of the substat
+        :param substat: The substat
         :param rarity: The rarity of the relic
         :return: True if the substat is valid, False otherwise
         """
         try:
+            name = substat["key"]
+            val = substat["value"]
             if name not in SUBSTAT_ROLL_VALS[str(rarity)]:
                 return False
             if str(val) not in SUBSTAT_ROLL_VALS[str(rarity)][name]:
@@ -313,10 +318,40 @@ class RelicStrategy:
         :param level: The level of the relic
         :param relic_id: The relic ID
         """
+        # check valid number of substats
         substats_len = len(substats)
         min_substats = min(rarity - 2 + int(level / 3), 4)
-
         if substats_len < min_substats:
             self._log_signal.emit(
                 f"WARNING: Relic ID {relic_id} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}."
+            )
+            return
+
+        # check valid roll value total
+        min_roll_value = round(min_substats * 0.8, 1)
+        max_roll_value = round(rarity - 1 + int(level / 3), 1)
+        total = 0
+        for substat in substats:
+            if not self._validate_substat(substat, rarity):
+                self._log_signal.emit(
+                    f'WARNING: Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}".'
+                )
+                return
+
+            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][substat["key"]][
+                str(substat["value"])
+            ]
+            if isinstance(roll_value, list):
+                # assume maxed
+                roll_value = roll_value[-1]
+            total += roll_value
+
+        total = round(total, 1)
+        if total < min_roll_value:
+            self._log_signal.emit(
+                f"WARNING: Relic ID {relic_id} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}."
+            )
+        elif total > max_roll_value:
+            self._log_signal.emit(
+                f"WARNING: Relic ID {relic_id} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}."
             )
