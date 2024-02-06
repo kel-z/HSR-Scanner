@@ -44,6 +44,7 @@ class RelicStrategy:
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
         self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
+        self._discard_icon = PILImage.open(resource_path("assets/images/discard.png"))
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -174,6 +175,7 @@ class RelicStrategy:
         level = stats_dict["level"]
         main_stat_key = stats_dict["mainStatKey"]
         lock = stats_dict["lock"]
+        discard = stats_dict["discard"]
         rarity = stats_dict["rarity"]
         equipped = stats_dict["equipped"]
         substat_names = stats_dict["substat_names"]
@@ -207,10 +209,13 @@ class RelicStrategy:
         set_key = metadata["set"]
         slot_key = metadata["slot"]
 
-        # Check if locked by image matching
+        # Check if locked/discarded by image matching
         min_dim = min(lock.size)
         lock_img = self._lock_icon.resize((min_dim, min_dim))
-        lock = locate(lock_img, lock, confidence=0.1) is not None
+        lock = locate(lock_img, lock, confidence=0.3) is not None
+        min_dim = min(discard.size)
+        discard_img = self._discard_icon.resize((min_dim, min_dim))
+        discard = locate(discard_img, discard, confidence=0.3) is not None
 
         location = ""
         if equipped == "Equipped":
@@ -227,6 +232,7 @@ class RelicStrategy:
             "substats": substats_res,
             "location": location,
             "lock": lock,
+            "discard": discard,
             "_id": f"relic_{relic_id}",
         }
 
@@ -282,7 +288,7 @@ class RelicStrategy:
     def _validate_substat(self, substat: dict[str, int | float], rarity: int) -> bool:
         """Validates the substat
 
-        :param name: The substat
+        :param substat: The substat
         :param rarity: The rarity of the relic
         :return: True if the substat is valid, False otherwise
         """
@@ -330,7 +336,7 @@ class RelicStrategy:
                 self._log_signal.emit(
                     f'WARNING: Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}".'
                 )
-                continue
+                return
 
             roll_value = SUBSTAT_ROLL_VALS[str(rarity)][substat["key"]][
                 str(substat["value"])

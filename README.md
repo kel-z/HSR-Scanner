@@ -34,7 +34,13 @@ HSR Scanner has the following scan options:
 - Set output location for the JSON file.
 - Filter light cones and relics based on a minimum rarity or level threshhold.
 
+For slower systems, the scanner might perform its inputs too fast for the game to respond or render in time. To work around this, there are two types of delays that can be increased in the configure tab:
+- Navigation delay for navigating between different pages (inventory, character details, etc.)
+- Scan delay for clicking between individual items (relics, light cones, and characters).
+
 The scanner uses `b` and `c` by default to navigate to the inventory and character screen, respectively. If you changed these hotkeys, you will need to update the corresponding key in the configure tab.
+
+If debug mode is enabled, the scanner will save ALL the screenshots taken during a scan to a debug folder in the specified output directory.
 
 ## Output
 
@@ -105,6 +111,7 @@ Current output sample:
             ],
             "location": "Bronya",
             "lock": true,
+            "discard": false,
             "_id": "relic_1"
         },
         {
@@ -125,6 +132,7 @@ Current output sample:
             ],
             "location": "",
             "lock": false,
+            "discard": true,
             "_id": "relic_2"
         }
     ],

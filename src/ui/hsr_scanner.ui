@@ -310,6 +310,9 @@
           <property name="enabled">
            <bool>true</bool>
           </property>
+          <property name="correctionMode">
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+          </property>
           <property name="minimum">
            <number>3</number>
           </property>
@@ -335,6 +338,9 @@
          <widget class="QSpinBox" name="spinBoxLightConeMinLevel">
           <property name="enabled">
            <bool>true</bool>
+          </property>
+          <property name="correctionMode">
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
           </property>
           <property name="minimum">
            <number>1</number>
@@ -375,6 +381,9 @@
         </item>
         <item row="1" column="1">
          <widget class="QSpinBox" name="spinBoxRelicMinRarity">
+          <property name="correctionMode">
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+          </property>
           <property name="minimum">
            <number>2</number>
           </property>
@@ -402,6 +411,9 @@
         </item>
         <item row="2" column="1">
          <widget class="QSpinBox" name="spinBoxRelicMinLevel">
+          <property name="correctionMode">
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+          </property>
           <property name="minimum">
            <number>0</number>
           </property>
@@ -682,22 +694,22 @@ p, li { white-space: pre-wrap; }
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QCheckBox" name="checkBoxSroFormat">
-          <property name="toolTip">
-           <string>Star Rail Optimizer</string>
-          </property>
-          <property name="text">
-           <string>Also export in SRO format</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QCheckBox" name="checkBoxDebugMode">
           <property name="toolTip">
            <string>Saves ALL screenshots</string>
           </property>
           <property name="text">
            <string>Debug mode</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxSroFormat">
+          <property name="toolTip">
+           <string>Star Rail Optimizer</string>
+          </property>
+          <property name="text">
+           <string>Also export in SRO format</string>
           </property>
          </widget>
         </item>
@@ -792,7 +804,7 @@ p, li { white-space: pre-wrap; }
            <enum>QAbstractSpinBox::UpDownArrows</enum>
           </property>
           <property name="correctionMode">
-           <enum>QAbstractSpinBox::CorrectToPreviousValue</enum>
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
           </property>
           <property name="showGroupSeparator" stdset="0">
            <bool>false</bool>
@@ -819,6 +831,9 @@ p, li { white-space: pre-wrap; }
         </item>
         <item row="1" column="2">
          <widget class="QSpinBox" name="spinBoxScanDelay">
+          <property name="correctionMode">
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+          </property>
           <property name="prefix">
            <string>+</string>
           </property>

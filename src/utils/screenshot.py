@@ -48,7 +48,8 @@ class Screenshot:
 
         :return: The screenshot
         """
-        return self._take_screenshot(0, 0, 1, 1)
+        do_not_save = True  # so users don't unintentionally reveal their UID when naively sharing debug folder
+        return self._take_screenshot(0, 0, 1, 1, do_not_save)
 
     def screenshot_stats(self, scan_type: IncrementType) -> dict:
         """Takes a screenshot of the stats
@@ -174,7 +175,7 @@ class Screenshot:
         return self._screenshot_traces(key)
 
     def _take_screenshot(
-        self, x: float, y: float, width: float, height: float
+        self, x: float, y: float, width: float, height: float, do_not_save: bool = False
     ) -> Image:
         """Takes a screenshot of the game window
 
@@ -198,7 +199,7 @@ class Screenshot:
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
 
-        if self._debug:
+        if self._debug and not do_not_save:
             self._save_image(screenshot)
 
         return screenshot
