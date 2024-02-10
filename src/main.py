@@ -7,6 +7,7 @@ from pynput.keyboard import Key, Listener
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from enums.increment_type import IncrementType
+from enums.scan_mode import ScanMode
 from models.game_data import GameData
 from services.scanner.scanner import HSRScanner
 from ui.hsr_scanner import Ui_MainWindow
@@ -41,9 +42,23 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.game_data = game_data
         self.log("Loaded database version: " + self.game_data.version)
+
+        try:
+            self.pushButtonStartScan.clicked.disconnect()
+            self.pushButtonStartScanRecentRelics.clicked.disconnect()
+        except Exception:
+            pass
+
         self.pushButtonStartScan.clicked.connect(self.start_scan)
         self.pushButtonStartScan.setEnabled(True)
         self.pushButtonStartScan.setText("Start Scan")
+
+        self.pushButtonStartScanRecentRelics.clicked.connect(
+            self.start_scan_recent_relics
+        )
+        self.pushButtonStartScanRecentRelics.setEnabled(True)
+        self.pushButtonStartScanRecentRelics.setText("Scan")
+
         self._fetch_game_data_thread.deleteLater()
 
     def handle_game_data_error(self, e: Exception) -> None:
@@ -52,9 +67,22 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param e: The error
         """
         self.log(str(e))
+
+        try:
+            self.pushButtonStartScan.clicked.disconnect()
+            self.pushButtonStartScanRecentRelics.clicked.disconnect()
+        except Exception:
+            pass
+
         self.pushButtonStartScan.clicked.connect(self._fetch_game_data_thread.start)
         self.pushButtonStartScan.setEnabled(True)
         self.pushButtonStartScan.setText("Retry")
+
+        self.pushButtonStartScanRecentRelics.clicked.connect(
+            self._fetch_game_data_thread.start
+        )
+        self.pushButtonStartScanRecentRelics.setEnabled(True)
+        self.pushButtonStartScanRecentRelics.setText("Retry")
 
     def setup_ui(self, MainWindow: QtWidgets.QMainWindow) -> None:
         """Sets up the UI for the application
@@ -120,6 +148,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.spinBoxNavDelay.setValue(self.settings.value("nav_delay", 0))
         self.spinBoxScanDelay.setValue(self.settings.value("scan_delay", 0))
+        self.spinBoxRecentRelics.setValue(self.settings.value("recent_relics_num", 5))
+        self.checkBoxRecentRelicsFiveStar.setChecked(
+            self.settings.value("recent_relics_five_star", False) == "true"
+        )
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
@@ -143,6 +175,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("debug_mode", self.checkBoxDebugMode.isChecked())
         self.settings.setValue("nav_delay", self.spinBoxNavDelay.value())
         self.settings.setValue("scan_delay", self.spinBoxScanDelay.value())
+        self.settings.setValue("recent_relics_num", self.spinBoxRecentRelics.value())
+        self.settings.setValue(
+            "recent_relics_five_star", self.checkBoxRecentRelicsFiveStar.isChecked()
+        )
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
@@ -159,14 +195,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("sro_format", False)
         self.settings.setValue("nav_delay", 0)
         self.settings.setValue("scan_delay", 0)
+        self.settings.setValue("recent_relics_num", 8)
+        self.settings.setValue("recent_relics_five_star", True)
         self.load_settings()
 
-    def start_scan(self) -> None:
-        """Starts the scan"""
-        self.disable_start_scan_button()
-        self.save_settings()
-
-        # reset fields
+    def reset_fields(self) -> None:
+        """Resets the fields on the UI"""
         for label in [
             self.labelLightConeCount,
             self.labelRelicCount,
@@ -178,16 +212,78 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             label.setText("0")
         self.textEditLog.clear()
 
+    def start_scan(self) -> None:
+        """Starts the scan"""
+        if self.is_scanning:
+            return
+        self.save_settings()
+        self.reset_fields()
+
+        config = self.get_config()
+
         # initialize scanner
         try:
-            scanner = HSRScanner(self.get_config(), self.game_data)
-            scanner.log_signal.connect(self.log)
-            scanner.update_signal.connect(self.increment_progress)
-            scanner.complete_signal.connect(self._listener.stop)
+            if not any(
+                [
+                    config["scan_light_cones"],
+                    config["scan_relics"],
+                    config["scan_characters"],
+                ]
+            ):
+                raise Exception("No scan options selected. Please select at least one.")
+            scanner = HSRScanner(config, self.game_data)
         except Exception as e:
             self.log(e)
-            self.enable_start_scan_button()
             return
+
+        self.log("Starting scan...")
+        self.to_scanner_thread(scanner)
+
+    def start_scan_recent_relics(self) -> None:
+        """Starts the scan for recent relics"""
+        if self.is_scanning:
+            return
+        self.save_settings()
+        self.reset_fields()
+        self.tabWidget.setCurrentIndex(0)
+
+        config = self.get_config()
+        config["scan_light_cones"] = False
+        config["scan_characters"] = False
+        config["scan_relics"] = True
+        config["filters"] = {
+            "relic": {
+                "min_rarity": 5 if config["recent_relics_five_star"] else 0,
+            }
+        }
+
+        # initialize scanner
+        try:
+            if config["recent_relics_num"] < 1:
+                raise Exception("At least one relic must be scanned.")
+            scanner = HSRScanner(
+                config, self.game_data, scan_mode=ScanMode.RECENT_RELICS.value
+            )
+        except Exception as e:
+            self.log(e)
+            return
+
+        self.log(
+            f"Starting recent relics scan for {config['recent_relics_num']} relics..."
+        )
+        self.to_scanner_thread(scanner)
+
+    def to_scanner_thread(self, scanner: HSRScanner) -> None:
+        """Starts the scanner thread
+
+        :param scanner: The HSRScanner class instance
+        """
+        self.disable_start_scan_button()
+
+        # connect signals
+        scanner.log_signal.connect(self.log)
+        scanner.update_signal.connect(self.increment_progress)
+        scanner.complete_signal.connect(self._listener.stop)
 
         # initialize thread
         self._scanner_thread = ScannerThread(scanner)
@@ -218,14 +314,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
         config["scan_relics"] = self.checkBoxScanRelics.isChecked()
         config["scan_characters"] = self.checkBoxScanChars.isChecked()
-        if not any(
-            [
-                config["scan_light_cones"],
-                config["scan_relics"],
-                config["scan_characters"],
-            ]
-        ):
-            raise Exception("No scan options selected. Please select at least one.")
+
+        # recent relics scan options
+        config["recent_relics_num"] = self.spinBoxRecentRelics.value()
+        config["recent_relics_five_star"] = (
+            self.checkBoxRecentRelicsFiveStar.isChecked()
+        )
 
         # filters
         config["filters"] = {
@@ -320,14 +414,22 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def disable_start_scan_button(self) -> None:
         """Disables the start scan button and sets the text to Processing"""
         self.is_scanning = True
+
         self.pushButtonStartScan.setText("Processing...")
         self.pushButtonStartScan.setEnabled(False)
+
+        self.pushButtonStartScanRecentRelics.setText("Processing...")
+        self.pushButtonStartScanRecentRelics.setEnabled(False)
 
     def enable_start_scan_button(self) -> None:
         """Enables the start scan button and sets the text to Start Scan"""
         self.is_scanning = False
+
         self.pushButtonStartScan.setText("Start Scan")
         self.pushButtonStartScan.setEnabled(True)
+
+        self.pushButtonStartScanRecentRelics.setText("Scan")
+        self.pushButtonStartScanRecentRelics.setEnabled(True)
 
     def log(self, message: str) -> None:
         """Logs a message to the log box
@@ -408,7 +510,6 @@ class ScannerThread(QtCore.QThread):
     def run(self) -> None:
         """Runs the scan"""
         try:
-            self.log_signal.emit("Starting scan...")
             res = asyncio.run(self._scanner.start_scan())
             if self._interrupt_requested:
                 self.error_signal.emit("Scan interrupted")

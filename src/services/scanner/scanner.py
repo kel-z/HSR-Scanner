@@ -9,6 +9,7 @@ from PyQt6 import QtCore
 
 from config.character_scan import CHARACTER_NAV_DATA
 from enums.increment_type import IncrementType
+from enums.scan_mode import ScanMode
 from models.game_data import GameData
 from utils.data import resource_path
 from utils.navigation import Navigation
@@ -29,7 +30,7 @@ class HSRScanner(QtCore.QObject):
     log_signal = QtCore.pyqtSignal(str)
     complete_signal = QtCore.pyqtSignal()
 
-    def __init__(self, config: dict, game_data: GameData) -> None:
+    def __init__(self, config: dict, game_data: GameData, scan_mode: int = 0):
         """Constructor
 
         :param config: The config dict
@@ -56,8 +57,10 @@ class HSRScanner(QtCore.QObject):
             raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
             )
-        self._game_data = game_data
         self._config = config
+        self._game_data = game_data
+        self._scan_mode = scan_mode
+
         self._nav = Navigation(self._hwnd)
 
         self._aspect_ratio = self._nav.get_aspect_ratio()
@@ -195,8 +198,14 @@ class HSRScanner(QtCore.QObject):
             )
 
         current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
-        current_sort_method = image_to_string(current_sort_method, "RarityLv", 7)
-        optimal_sort_method = strategy.get_optimal_sort_method(self._config["filters"])
+        current_sort_method = image_to_string(
+            current_sort_method, "RarityLvDate obtained", 7
+        )
+        optimal_sort_method = "Date obtained"
+        if self._scan_mode != ScanMode.RECENT_RELICS.value:
+            optimal_sort_method = strategy.get_optimal_sort_method(
+                self._config["filters"]
+            )
 
         if optimal_sort_method != current_sort_method:
             self.log_signal.emit(
@@ -214,7 +223,14 @@ class HSRScanner(QtCore.QObject):
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
         num_times_scrolled = 0
-        while quantity_remaining > 0:
+        scanned = 0
+
+        def should_stop():
+            if self._scan_mode == ScanMode.RECENT_RELICS.value:
+                return quantity_remaining <= 0 or scanned >= self._config["recent_relics_num"]
+            return quantity_remaining <= 0
+
+        while not should_stop():
             if (
                 quantity_remaining <= scanned_per_scroll
                 and not quantity <= scanned_per_scroll
@@ -227,7 +243,7 @@ class HSRScanner(QtCore.QObject):
 
             for r in range(nav_data["rows"]):
                 for c in range(nav_data["cols"]):
-                    if quantity_remaining <= 0:
+                    if should_stop():
                         break
 
                     if self._interrupt_event.is_set():
@@ -246,7 +262,7 @@ class HSRScanner(QtCore.QObject):
                     x += nav_data["offset_x"]
 
                     # Check if item satisfies filters
-                    if self._config["filters"]:
+                    if "filters" in self._config:
                         filter_results, stats_dict = strategy.check_filters(
                             stats_dict,
                             self._config["filters"],
@@ -254,6 +270,7 @@ class HSRScanner(QtCore.QObject):
                         )
                         if (
                             current_sort_method == "Lv"
+                            and "min_level" in filter_results
                             and not filter_results["min_level"]
                         ):
                             quantity_remaining = 0
@@ -263,6 +280,7 @@ class HSRScanner(QtCore.QObject):
                             break
                         if (
                             current_sort_method == "Rarity"
+                            and "min_rarity" in filter_results
                             and not filter_results["min_rarity"]
                         ):
                             quantity_remaining = 0
@@ -270,6 +288,12 @@ class HSRScanner(QtCore.QObject):
                                 f"Reached minimum rarity filter (got rarity {stats_dict['rarity']})."
                             )
                             break
+                        if (
+                            current_sort_method == "Date obtained"
+                            and "min_rarity" in filter_results
+                            and filter_results["min_rarity"]
+                        ):
+                            scanned += 1
                         if not all(filter_results.values()):
                             continue
 
@@ -283,7 +307,7 @@ class HSRScanner(QtCore.QObject):
                 x = nav_data["row_start_top"][0]
                 y += nav_data["offset_y"]
 
-            if quantity_remaining <= 0:
+            if should_stop():
                 break
 
             self._nav.scroll_page_down(num_times_scrolled)

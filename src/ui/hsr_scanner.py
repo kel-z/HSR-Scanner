@@ -30,11 +30,14 @@ class Ui_MainWindow(object):
         self.tabWidget.setGeometry(QtCore.QRect(10, 10, 681, 431))
         self.tabWidget.setAutoFillBackground(False)
         self.tabWidget.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
+        self.tabWidget.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
+        self.tabWidget.setElideMode(QtCore.Qt.TextElideMode.ElideNone)
+        self.tabWidget.setMovable(False)
         self.tabWidget.setTabBarAutoHide(False)
         self.tabWidget.setObjectName("tabWidget")
-        self.Home = QtWidgets.QWidget()
-        self.Home.setObjectName("Home")
-        self.formGroupBox = QtWidgets.QGroupBox(parent=self.Home)
+        self.Scan = QtWidgets.QWidget()
+        self.Scan.setObjectName("Scan")
+        self.formGroupBox = QtWidgets.QGroupBox(parent=self.Scan)
         self.formGroupBox.setGeometry(QtCore.QRect(10, 10, 151, 101))
         self.formGroupBox.setObjectName("formGroupBox")
         self.formLayout = QtWidgets.QFormLayout(self.formGroupBox)
@@ -52,11 +55,11 @@ class Ui_MainWindow(object):
         self.checkBoxScanChars.setObjectName("checkBoxScanChars")
         self.verticalLayout.addWidget(self.checkBoxScanChars)
         self.formLayout.setLayout(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.verticalLayout)
-        self.pushButtonStartScan = QtWidgets.QPushButton(parent=self.Home)
+        self.pushButtonStartScan = QtWidgets.QPushButton(parent=self.Scan)
         self.pushButtonStartScan.setEnabled(False)
         self.pushButtonStartScan.setGeometry(QtCore.QRect(10, 350, 111, 41))
         self.pushButtonStartScan.setObjectName("pushButtonStartScan")
-        self.groupBox = QtWidgets.QGroupBox(parent=self.Home)
+        self.groupBox = QtWidgets.QGroupBox(parent=self.Scan)
         self.groupBox.setGeometry(QtCore.QRect(270, 210, 151, 91))
         self.groupBox.setObjectName("groupBox")
         self.formLayoutWidget = QtWidgets.QWidget(parent=self.groupBox)
@@ -117,7 +120,7 @@ class Ui_MainWindow(object):
         self.labelCharacterCount.setObjectName("labelCharacterCount")
         self.horizontalLayout_4.addWidget(self.labelCharacterCount)
         self.formLayout_3.setLayout(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.horizontalLayout_4)
-        self.groupBox_2 = QtWidgets.QGroupBox(parent=self.Home)
+        self.groupBox_2 = QtWidgets.QGroupBox(parent=self.Scan)
         self.groupBox_2.setEnabled(True)
         self.groupBox_2.setGeometry(QtCore.QRect(170, 10, 251, 101))
         self.groupBox_2.setObjectName("groupBox_2")
@@ -183,7 +186,7 @@ class Ui_MainWindow(object):
         self.spinBoxRelicMinLevel.setProperty("value", 0)
         self.spinBoxRelicMinLevel.setObjectName("spinBoxRelicMinLevel")
         self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.spinBoxRelicMinLevel)
-        self.groupBox_3 = QtWidgets.QGroupBox(parent=self.Home)
+        self.groupBox_3 = QtWidgets.QGroupBox(parent=self.Scan)
         self.groupBox_3.setGeometry(QtCore.QRect(10, 120, 411, 81))
         self.groupBox_3.setObjectName("groupBox_3")
         self.gridLayoutWidget = QtWidgets.QWidget(parent=self.groupBox_3)
@@ -203,27 +206,63 @@ class Ui_MainWindow(object):
         self.lineEditOutputLocation = QtWidgets.QLineEdit(parent=self.gridLayoutWidget)
         self.lineEditOutputLocation.setObjectName("lineEditOutputLocation")
         self.gridLayout.addWidget(self.lineEditOutputLocation, 0, 0, 1, 3)
-        self.groupBox_4 = QtWidgets.QGroupBox(parent=self.Home)
+        self.groupBox_4 = QtWidgets.QGroupBox(parent=self.Scan)
         self.groupBox_4.setGeometry(QtCore.QRect(430, 10, 231, 381))
         self.groupBox_4.setObjectName("groupBox_4")
         self.textEdit = QtWidgets.QTextEdit(parent=self.groupBox_4)
         self.textEdit.setGeometry(QtCore.QRect(10, 20, 211, 351))
         self.textEdit.setReadOnly(True)
         self.textEdit.setObjectName("textEdit")
-        self.label = QtWidgets.QLabel(parent=self.Home)
+        self.label = QtWidgets.QLabel(parent=self.Scan)
         self.label.setGeometry(QtCore.QRect(140, 360, 161, 16))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.label.setFont(font)
         self.label.setObjectName("label")
-        self.groupBox_5 = QtWidgets.QGroupBox(parent=self.Home)
+        self.groupBox_5 = QtWidgets.QGroupBox(parent=self.Scan)
         self.groupBox_5.setGeometry(QtCore.QRect(10, 210, 251, 131))
         self.groupBox_5.setObjectName("groupBox_5")
         self.textEditLog = QtWidgets.QPlainTextEdit(parent=self.groupBox_5)
         self.textEditLog.setGeometry(QtCore.QRect(10, 20, 231, 101))
         self.textEditLog.setReadOnly(True)
         self.textEditLog.setObjectName("textEditLog")
-        self.tabWidget.addTab(self.Home, "")
+        self.tabWidget.addTab(self.Scan, "")
+        self.Extra = QtWidgets.QWidget()
+        self.Extra.setEnabled(True)
+        self.Extra.setObjectName("Extra")
+        self.formGroupBox_2 = QtWidgets.QGroupBox(parent=self.Extra)
+        self.formGroupBox_2.setGeometry(QtCore.QRect(10, 10, 171, 111))
+        self.formGroupBox_2.setObjectName("formGroupBox_2")
+        self.formLayout_6 = QtWidgets.QFormLayout(self.formGroupBox_2)
+        self.formLayout_6.setObjectName("formLayout_6")
+        self.checkBoxRecentRelicsFiveStar = QtWidgets.QCheckBox(parent=self.formGroupBox_2)
+        self.checkBoxRecentRelicsFiveStar.setChecked(True)
+        self.checkBoxRecentRelicsFiveStar.setObjectName("checkBoxRecentRelicsFiveStar")
+        self.formLayout_6.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.checkBoxRecentRelicsFiveStar)
+        self.formLayout_9 = QtWidgets.QFormLayout()
+        self.formLayout_9.setObjectName("formLayout_9")
+        self.label_15 = QtWidgets.QLabel(parent=self.formGroupBox_2)
+        self.label_15.setObjectName("label_15")
+        self.formLayout_9.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_15)
+        self.spinBoxRecentRelics = QtWidgets.QSpinBox(parent=self.formGroupBox_2)
+        self.spinBoxRecentRelics.setMinimum(1)
+        self.spinBoxRecentRelics.setMaximum(1500)
+        self.spinBoxRecentRelics.setProperty("value", 8)
+        self.spinBoxRecentRelics.setObjectName("spinBoxRecentRelics")
+        self.formLayout_9.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.spinBoxRecentRelics)
+        self.formLayout_6.setLayout(0, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.formLayout_9)
+        self.pushButtonStartScanRecentRelics = QtWidgets.QPushButton(parent=self.formGroupBox_2)
+        self.pushButtonStartScanRecentRelics.setEnabled(False)
+        self.pushButtonStartScanRecentRelics.setObjectName("pushButtonStartScanRecentRelics")
+        self.formLayout_6.setWidget(2, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.pushButtonStartScanRecentRelics)
+        self.groupBox_10 = QtWidgets.QGroupBox(parent=self.Extra)
+        self.groupBox_10.setGeometry(QtCore.QRect(430, 10, 231, 381))
+        self.groupBox_10.setObjectName("groupBox_10")
+        self.textEdit_2 = QtWidgets.QTextEdit(parent=self.groupBox_10)
+        self.textEdit_2.setGeometry(QtCore.QRect(10, 20, 211, 351))
+        self.textEdit_2.setReadOnly(True)
+        self.textEdit_2.setObjectName("textEdit_2")
+        self.tabWidget.addTab(self.Extra, "")
         self.Configure = QtWidgets.QWidget()
         self.Configure.setObjectName("Configure")
         self.groupBox_6 = QtWidgets.QGroupBox(parent=self.Configure)
@@ -332,6 +371,13 @@ class Ui_MainWindow(object):
         self.horizontalScrollBarNavDelay.setInvertedAppearance(False)
         self.horizontalScrollBarNavDelay.setObjectName("horizontalScrollBarNavDelay")
         self.gridLayout_2.addWidget(self.horizontalScrollBarNavDelay, 0, 1, 1, 1)
+        self.groupBox_11 = QtWidgets.QGroupBox(parent=self.Configure)
+        self.groupBox_11.setGeometry(QtCore.QRect(430, 10, 231, 381))
+        self.groupBox_11.setObjectName("groupBox_11")
+        self.textEdit_3 = QtWidgets.QTextEdit(parent=self.groupBox_11)
+        self.textEdit_3.setGeometry(QtCore.QRect(10, 20, 211, 351))
+        self.textEdit_3.setReadOnly(True)
+        self.textEdit_3.setObjectName("textEdit_3")
         self.tabWidget.addTab(self.Configure, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -345,7 +391,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.1"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.2"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -379,7 +425,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.1</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.2</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">1. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
@@ -394,7 +440,23 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.</p></body></html>"))
         self.label.setText(_translate("MainWindow", "Press ENTER to cancel"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Log"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Home), _translate("MainWindow", "Scan"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Scan), _translate("MainWindow", "Scan"))
+        self.formGroupBox_2.setTitle(_translate("MainWindow", "Scan most recent relics"))
+        self.checkBoxRecentRelicsFiveStar.setText(_translate("MainWindow", "Only include 5-star relics"))
+        self.label_15.setText(_translate("MainWindow", "Number of relics:"))
+        self.pushButtonStartScanRecentRelics.setText(_translate("MainWindow", "Scan"))
+        self.groupBox_10.setTitle(_translate("MainWindow", "Info"))
+        self.textEdit_2.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">This tab will contain partial scan options for cases where scanning the entire account again isn\'t ideal.</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">SCAN MOST RECENT RELICS</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Use for newly acquired relics.</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Extra), _translate("MainWindow", "Extra"))
         self.groupBox_6.setTitle(_translate("MainWindow", "Hotkeys"))
         self.label_9.setText(_translate("MainWindow", "Inventory key:"))
         self.label_10.setText(_translate("MainWindow", "Characters key:"))
@@ -414,4 +476,19 @@ class Ui_MainWindow(object):
         self.label_13.setText(_translate("MainWindow", "Scan speed (ms):"))
         self.spinBoxNavDelay.setPrefix(_translate("MainWindow", "+"))
         self.spinBoxScanDelay.setPrefix(_translate("MainWindow", "+"))
+        self.groupBox_11.setTitle(_translate("MainWindow", "Info"))
+        self.textEdit_3.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOTKEYS</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Change these to the shortcuts used to open the inventory and character screens.</p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">ADDITIONAL DELAY</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If Star Rail lags during the scan process, the scanner might produce inaccurate output or fail entirely. To compensate, there are two types of delay that can be increased accordingly to your system:</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">- Navigation delay for navigating between different pages (inventory, character details, etc.)</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">- Scan delay for clicking between individual items (relics, light cones, and characters).</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">DEBUG MODE</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.</p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Configure), _translate("MainWindow", "Configure"))

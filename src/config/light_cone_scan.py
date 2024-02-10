@@ -5,6 +5,7 @@ LIGHT_CONE_NAV_DATA = {
             "button": (0.093, 0.91),
             "Rarity": (0.093, 0.42),
             "Lv": (0.093, 0.49),
+            "Date obtained": (0.093, 0.),
         },
         "row_start_top": (0.096, 0.162),
         "row_start_bottom": (0.1, 0.77),

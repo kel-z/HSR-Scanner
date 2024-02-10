@@ -5,6 +5,7 @@ RELIC_NAV_DATA = {
             "button": (0.12, 0.91),
             "Rarity": (0.12, 0.7),
             "Lv": (0.12, 0.77),
+            "Date obtained": (0.12, 0.84),
         },
         "row_start_top": (0.096875, 0.23),
         "row_start_bottom": (0.096875, 0.776),
