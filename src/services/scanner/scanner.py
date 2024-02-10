@@ -227,7 +227,10 @@ class HSRScanner(QtCore.QObject):
 
         def should_stop():
             if self._scan_mode == ScanMode.RECENT_RELICS.value:
-                return quantity_remaining <= 0 or scanned >= self._config["recent_relics_num"]
+                return (
+                    quantity_remaining <= 0
+                    or scanned >= self._config["recent_relics_num"]
+                )
             return quantity_remaining <= 0
 
         while not should_stop():

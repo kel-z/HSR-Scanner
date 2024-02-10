@@ -317,9 +317,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # recent relics scan options
         config["recent_relics_num"] = self.spinBoxRecentRelics.value()
-        config["recent_relics_five_star"] = (
-            self.checkBoxRecentRelicsFiveStar.isChecked()
-        )
+        config[
+            "recent_relics_five_star"
+        ] = self.checkBoxRecentRelicsFiveStar.isChecked()
 
         # filters
         config["filters"] = {
