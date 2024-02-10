@@ -442,7 +442,7 @@ class Ui_MainWindow(object):
         self.groupBox_5.setTitle(_translate("MainWindow", "Log"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Scan), _translate("MainWindow", "Scan"))
         self.formGroupBox_2.setTitle(_translate("MainWindow", "Scan most recent relics"))
-        self.checkBoxRecentRelicsFiveStar.setText(_translate("MainWindow", "Only include 5-star relics"))
+        self.checkBoxRecentRelicsFiveStar.setText(_translate("MainWindow", "Only count 5-star relics"))
         self.label_15.setText(_translate("MainWindow", "Number of relics:"))
         self.pushButtonStartScanRecentRelics.setText(_translate("MainWindow", "Scan"))
         self.groupBox_10.setTitle(_translate("MainWindow", "Info"))
@@ -453,8 +453,7 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">This tab will contain partial scan options for cases where scanning the entire account again isn\'t ideal.</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">SCAN MOST RECENT RELICS</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Use for newly acquired relics.</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Useful for exporting only newly acquired relics without needing to do a full relic scan.</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Extra), _translate("MainWindow", "Extra"))
         self.groupBox_6.setTitle(_translate("MainWindow", "Hotkeys"))

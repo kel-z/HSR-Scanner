@@ -209,7 +209,7 @@ class HSRScanner(QtCore.QObject):
 
         if optimal_sort_method != current_sort_method:
             self.log_signal.emit(
-                f"Sorting by {optimal_sort_method}... (was {current_sort_method})"
+                f"Sorting by {optimal_sort_method} (was {current_sort_method})."
             )
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
             time.sleep(0.05)
