@@ -361,7 +361,7 @@ class HSRScanner(QtCore.QObject):
         )
         try:
             self.log_signal.emit(f"Character total: {character_total}.")
-            character_total, _ = character_total.split("/")
+            character_total = character_total.split("/")[0]
             character_count = character_total = int(character_total)
         except ValueError:
             raise ValueError(
@@ -386,6 +386,7 @@ class HSRScanner(QtCore.QObject):
         self._nav_sleep(1)
 
         tasks = set()
+        characters_seen = set()
         while character_count > 0:
             if self._interrupt_event.is_set():
                 return tasks
@@ -437,7 +438,9 @@ class HSRScanner(QtCore.QObject):
                 max_retry = 5
                 retry = 0
                 character_name = ""
-                while retry < max_retry and not character_name:
+                while retry < max_retry and (
+                    not character_name or character_name in characters_seen
+                ):
                     try:
                         character_name_img = (
                             self._screenshot.screenshot_character_name()
@@ -454,15 +457,30 @@ class HSRScanner(QtCore.QObject):
                         character_name, path = char_parser.get_closest_name_and_path(
                             character_name, path, character_img
                         )
-                    except Exception as e:
-                        retry += 1
-                        self._scan_sleep(0.1)
+
+                        if character_name in characters_seen:
+                            self.log_signal.emit(
+                                f"Parsed duplicate character '{path} / {character_name}'. Retrying... ({retry + 1}/{max_retry})"
+                            )
+                            self._scan_sleep(1)
+                    except Exception:
+                        self.log_signal.emit(
+                            f"Failed to parse character name. Retrying... ({retry + 1}/{max_retry})"
+                        )
+                        self._scan_sleep(1)
+                    retry += 1
 
                 if not character_name:
                     self.log_signal.emit(
                         f"Failed to parse character name. Got '{character_name}' instead. Ending scan early."
                     )
                     return tasks
+
+                if character_name in characters_seen:
+                    self.log_signal.emit(
+                        f"WARNING: Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway."
+                    )
+                characters_seen.add(character_name)
 
                 curr_page_res[i] = {
                     "name": character_name,
@@ -471,6 +489,10 @@ class HSRScanner(QtCore.QObject):
                     "level": self._screenshot.screenshot_character_level(),
                 }
                 i += 1
+
+            self.log_signal.emit(
+                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res])}"
+            )
 
             # Traces tab
             i = 0
@@ -492,6 +514,7 @@ class HSRScanner(QtCore.QObject):
                     "unlocks": {},
                 }
                 for k, v in nav_data["traces"][path_key].items():
+                    # Trace is unlocked if pixel is white
                     pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
                     dist = min(
                         sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
