@@ -143,7 +143,7 @@ class CharacterParser:
                 character_name
             )
 
-            if min_dist > 3:
+            if min_dist > 5:
                 raise Exception(
                     f'Failed to get a character name: got "{character_name}".'
                 )
@@ -152,6 +152,8 @@ class CharacterParser:
 
     def _is_trailblazer(self, character_img: Image) -> bool:
         """Check if the character is Trailblazer
+
+        Side effect: Sets the is_stelle QSetting
 
         :param character_img: The character image
         :return: True if the character is Trailblazer, False otherwise

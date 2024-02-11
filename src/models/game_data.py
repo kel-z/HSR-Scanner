@@ -136,7 +136,7 @@ class GameData:
     def get_equipped_character(self, equipped_avatar_img: Image) -> str:
         """Get equipped character from equipped avatar image
 
-        Side-effect: Sets the is_stelle QSetting
+        Side effect: Sets the is_stelle QSetting
 
         :param equipped_avatar_img: The equipped avatar image
         :return: The character name
@@ -257,9 +257,8 @@ class GameData:
             if dist < min_dist:
                 min_dist = dist
                 min_name = t
-        name = min_name
 
-        return name, min_dist
+        return min_name, min_dist
 
     def _get_character_keys(self) -> list:
         """Get character keys

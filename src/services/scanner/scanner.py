@@ -467,13 +467,13 @@ class HSRScanner(QObject):
                     not character_name or character_name in characters_seen
                 ):
                     try:
-                        self._scan_sleep(0.5) if prev_trailblazer else None
+                        self._scan_sleep(0.7) if prev_trailblazer else None
                         character_name_img = (
                             self._screenshot.screenshot_character_name()
                         )
                         character_name = image_to_string(
                             character_name_img,
-                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7.&",
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7&",
                             7,
                         )
                         path, character_name = map(
@@ -493,6 +493,7 @@ class HSRScanner(QObject):
                         self.log_signal.emit(
                             f"Failed to parse character name. Retrying... ({retry + 1}/{max_retry})"
                         )
+                        character_name = ""
                         self._scan_sleep(1)
                     retry += 1
 
