@@ -143,7 +143,7 @@ class CharacterParser:
                 character_name
             )
 
-            if min_dist > 5:
+            if min_dist > 3:
                 raise Exception(
                     f'Failed to get a character name: got "{character_name}".'
                 )

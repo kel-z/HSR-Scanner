@@ -433,6 +433,7 @@ class HSRScanner(QObject):
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(0.5)
+            prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
@@ -458,19 +459,21 @@ class HSRScanner(QObject):
                         ascension_pos[1],
                     )
 
+                character_name = ""
+
                 max_retry = 5
                 retry = 0
-                character_name = ""
                 while retry < max_retry and (
                     not character_name or character_name in characters_seen
                 ):
                     try:
+                        self._scan_sleep(0.5) if prev_trailblazer else None
                         character_name_img = (
                             self._screenshot.screenshot_character_name()
                         )
                         character_name = image_to_string(
                             character_name_img,
-                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7",
+                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7.&",
                             7,
                         )
                         path, character_name = map(
@@ -483,7 +486,7 @@ class HSRScanner(QObject):
 
                         if character_name in characters_seen:
                             self.log_signal.emit(
-                                f"Parsed duplicate character '{path} / {character_name}'. Retrying... ({retry + 1}/{max_retry})"
+                                f"Parsed duplicate character '{character_name}'. Retrying... ({retry + 1}/{max_retry})"
                             )
                             self._scan_sleep(1)
                     except Exception:
@@ -504,6 +507,8 @@ class HSRScanner(QObject):
                         f"WARNING: Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway."
                     )
                 characters_seen.add(character_name)
+                if character_name.startswith("Trailblazer"):
+                    prev_trailblazer = True
 
                 curr_page_res[i] = {
                     "name": character_name,
