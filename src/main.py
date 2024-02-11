@@ -4,7 +4,8 @@ import sys
 
 import pytesseract
 from pynput.keyboard import Key, Listener
-from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtGui, QtWidgets
+from PyQt6.QtCore import QSettings, QThread, QUrl, pyqtSignal
 
 from enums.increment_type import IncrementType
 from enums.scan_mode import ScanMode
@@ -12,8 +13,7 @@ from models.game_data import GameData
 from services.scanner.scanner import HSRScanner
 from ui.hsr_scanner import Ui_MainWindow
 from utils.conversion import convert_to_sro
-from utils.data import (create_debug_folder, executable_path, resource_path,
-                        save_to_json)
+from utils.data import create_debug_folder, executable_path, resource_path, save_to_json
 
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
@@ -28,7 +28,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         super().__init__()
         self._scanner_thread = None
         self._listener = InterruptListener()
-        self.settings = QtCore.QSettings("kel-z", "HSRScanner")
+        self.settings = QSettings("kel-z", "HSRScanner")
 
         # fetch game data
         self._fetch_game_data_thread = FetchGameDataThread()
@@ -111,9 +111,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         output_location = self.lineEditOutputLocation.text()
         if output_location:
             try:
-                QtGui.QDesktopServices.openUrl(
-                    QtCore.QUrl.fromLocalFile(output_location)
-                )
+                QtGui.QDesktopServices.openUrl(QUrl.fromLocalFile(output_location))
             except Exception as e:
                 self.log(f"Error opening output location: {e}")
 
@@ -449,11 +447,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
 
-class FetchGameDataThread(QtCore.QThread):
+class FetchGameDataThread(QThread):
     """FetchGameDataThread class handles fetching the game data in a separate thread"""
 
-    result_signal = QtCore.pyqtSignal(object)
-    error_signal = QtCore.pyqtSignal(object)
+    result_signal = pyqtSignal(object)
+    error_signal = pyqtSignal(object)
 
     def __init__(self) -> None:
         """Constructor"""
@@ -468,10 +466,10 @@ class FetchGameDataThread(QtCore.QThread):
             self.error_signal.emit(e)
 
 
-class InterruptListener(QtCore.QThread):
+class InterruptListener(QThread):
     """InterruptListener class listens for the enter key to interrupt the scan"""
 
-    interrupt_signal = QtCore.pyqtSignal()
+    interrupt_signal = pyqtSignal()
 
     def __init__(self):
         """Constructor"""
@@ -499,12 +497,12 @@ class InterruptListener(QtCore.QThread):
             self.interrupt_signal.emit()
 
 
-class ScannerThread(QtCore.QThread):
+class ScannerThread(QThread):
     """ScannerThread class handles the scanning in a separate thread"""
 
-    result_signal = QtCore.pyqtSignal(object)
-    error_signal = QtCore.pyqtSignal(object)
-    log_signal = QtCore.pyqtSignal(str)
+    result_signal = pyqtSignal(object)
+    error_signal = pyqtSignal(object)
+    log_signal = pyqtSignal(str)
 
     def __init__(self, scanner: HSRScanner) -> None:
         """Constructor
