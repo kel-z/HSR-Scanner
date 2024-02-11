@@ -48,6 +48,8 @@ The output is loosely based off of Genshin's `.GOOD` export format. I don't expe
 
 ### Notes
 
+- UID will not be included by default. This can be changed in the configure tab.
+- If the Trailblazer variant cannot be determined during the scan, it will default to `Stelle`.
 - SPD substats have a hidden decimal place that the scanner cannot directly parse. As a result, reproducing your character's stats (such as on optimizer websites) will most likely have a lower SPD stat than what it displays in-game. This is not an issue with the scanner, but rather a limitation when obtaining substats through OCR.
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
@@ -64,6 +66,10 @@ Current output sample:
 {
     "source": "HSR-Scanner",
     "version": 3,
+    "metadata": {
+        "uid": 601869216,
+        "trailblazer": "Stelle"
+    },
     "light_cones": [
         {
             "key": "Cruising in the Stellar Sea",

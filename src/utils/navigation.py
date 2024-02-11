@@ -110,10 +110,10 @@ class Navigation:
     ) -> None:
         """Drag scroll from start coordinates to end coordinates
 
-        :param start_x: The start x coordinate
-        :param start_y: The start y coordinate
-        :param end_x: The end x coordinate
-        :param end_y: The end y coordinate
+        :param start_x: The start x percent coordinate
+        :param start_y: The start y percent coordinate
+        :param end_x: The end x percent coordinate
+        :param end_y: The end y percent coordinate
         """
         start_x = self._left + int(self._width * start_x)
         start_y = self._top + int(self._height * start_y)

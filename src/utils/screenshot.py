@@ -174,13 +174,20 @@ class Screenshot:
         """
         return self._screenshot_traces(key)
 
+    def screenshot_uid(self) -> Image:
+        """Takes a screenshot of the UID from the ESC menu
+
+        :return: The screenshot
+        """
+        return self._take_screenshot(*SCREENSHOT_COORDS[self._aspect_ratio]["uid"])
+
     def _take_screenshot(
         self, x: float, y: float, width: float, height: float, do_not_save: bool = False
     ) -> Image:
         """Takes a screenshot of the game window
 
-        :param x: The x coordinate of the top left corner of the screenshot
-        :param y: The y coordinate of the top left corner of the screenshot
+        :param x: The x percent coordinate of the top left corner of the screenshot
+        :param y: The y percent coordinate of the top left corner of the screenshot
         :param width: The width of the screenshot
         :param height: The height of the screenshot
         :return: The screenshot normalized to 1920x1080

@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image as PILImage
 from PIL.Image import Image
 from pyautogui import locate
-from PyQt6.QtCore import pyqtBoundSignal
+from PyQt6.QtCore import QSettings, pyqtBoundSignal
 
 from enums.increment_type import IncrementType
 from models.game_data import GameData
@@ -156,10 +156,10 @@ class CharacterParser:
         :param character_img: The character image
         :return: True if the character is Trailblazer, False otherwise
         """
-        for gender, trailblazer_img in self._trailblazer_imgs.items():
+        for k, trailblazer_img in self._trailblazer_imgs.items():
             trailblazer_img = trailblazer_img.resize(character_img.size)
             if locate(character_img, trailblazer_img, confidence=0.8) is not None:
-                self._game_data.is_trailblazer_female = gender == "F"
+                QSettings("kel-z", "HSR-Scanner").setValue("is_stelle", k == "F")
                 return True
 
         return False

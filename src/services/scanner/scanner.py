@@ -5,7 +5,7 @@ import pyautogui
 import win32gui
 from PIL import Image as PILImage
 from pynput.keyboard import Key
-from PyQt6 import QtCore
+from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
 from enums.increment_type import IncrementType
@@ -13,7 +13,7 @@ from enums.scan_mode import ScanMode
 from models.game_data import GameData
 from utils.data import resource_path
 from utils.navigation import Navigation
-from utils.ocr import image_to_string, preprocess_char_count_img
+from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
 from utils.screenshot import Screenshot
 
 from .parsers.character_parser import CharacterParser
@@ -23,12 +23,12 @@ from .parsers.relic_strategy import RelicStrategy
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
 
-class HSRScanner(QtCore.QObject):
+class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
-    update_signal = QtCore.pyqtSignal(int)
-    log_signal = QtCore.pyqtSignal(str)
-    complete_signal = QtCore.pyqtSignal()
+    update_signal = pyqtSignal(int)
+    log_signal = pyqtSignal(str)
+    complete_signal = pyqtSignal()
 
     def __init__(self, config: dict, game_data: GameData, scan_mode: int = 0):
         """Constructor
@@ -91,6 +91,21 @@ class HSRScanner(QtCore.QObject):
             )
         self._nav.bring_window_to_foreground()
 
+        uid = None
+        if self._config["include_uid"] and not self._interrupt_event.is_set():
+            self._nav_sleep(1)
+            uid_img = self._screenshot.screenshot_uid()
+            uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)
+            if len(uid) != 9:
+                uid = image_to_string(
+                    uid_img, "0123456789", 7, True, preprocess_uid_img
+                )
+            if len(uid) != 9:
+                self.log_signal.emit(f"Failed to parse UID. Got '{uid}' instead.")
+                uid = None
+            else:
+                self.log_signal.emit(f"UID: {uid}.")
+
         light_cones = []
         if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
             self.log_signal.emit("Scanning light cones...")
@@ -145,6 +160,14 @@ class HSRScanner(QtCore.QObject):
         return {
             "source": "HSR-Scanner",
             "version": 3,
+            "metadata": {
+                "uid": int(uid) if uid else None,
+                "trailblazer": (
+                    "Stelle"
+                    if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True)
+                    else "Caelus"
+                ),
+            },
             "light_cones": await asyncio.gather(*light_cones),
             "relics": await asyncio.gather(*relics),
             "characters": await asyncio.gather(*characters),

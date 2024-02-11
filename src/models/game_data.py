@@ -7,6 +7,7 @@ import numpy as np
 import requests
 from PIL import Image as PILImage
 from PIL.Image import Image
+from PyQt6.QtCore import QSettings
 
 GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
@@ -59,7 +60,6 @@ PATHS = {
 class GameData:
     """GameData class for storing and accessing game data"""
 
-    is_trailblazer_female = True
     sro_mappings = None
 
     def __init__(self) -> None:
@@ -68,6 +68,8 @@ class GameData:
             data = response.json()
         except requests.exceptions.RequestException:
             raise Exception("Failed to fetch game data from " + GAME_DATA_URL)
+
+        self.settings = QSettings("kel-z", "HSR-Scanner")
 
         self.version = data["version"]
         self.RELIC_META_DATA = data["relics"]
@@ -134,6 +136,8 @@ class GameData:
     def get_equipped_character(self, equipped_avatar_img: Image) -> str:
         """Get equipped character from equipped avatar image
 
+        Side-effect: Sets the is_stelle QSetting
+
         :param equipped_avatar_img: The equipped avatar image
         :return: The character name
         """
@@ -166,6 +170,8 @@ class GameData:
                 max_conf = conf
                 character = c
 
+        if character.startswith("Trailblazer"):
+            self.settings.setValue("is_stelle", character.split("#")[1] == "F")
         return character.split("#")[0]
 
     def get_closest_relic_name(self, name: str) -> str:

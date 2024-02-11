@@ -266,7 +266,7 @@ class Ui_MainWindow(object):
         self.Configure = QtWidgets.QWidget()
         self.Configure.setObjectName("Configure")
         self.groupBox_6 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_6.setGeometry(QtCore.QRect(10, 10, 171, 81))
+        self.groupBox_6.setGeometry(QtCore.QRect(10, 90, 171, 81))
         self.groupBox_6.setObjectName("groupBox_6")
         self.formLayoutWidget_4 = QtWidgets.QWidget(parent=self.groupBox_6)
         self.formLayoutWidget_4.setGeometry(QtCore.QRect(10, 20, 151, 51))
@@ -292,16 +292,25 @@ class Ui_MainWindow(object):
         self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
         self.groupBox_7 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_7.setGeometry(QtCore.QRect(10, 280, 131, 61))
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 10, 181, 71))
         self.groupBox_7.setObjectName("groupBox_7")
-        self.pushButtonRestoreDefaults = QtWidgets.QPushButton(parent=self.groupBox_7)
-        self.pushButtonRestoreDefaults.setGeometry(QtCore.QRect(10, 20, 111, 31))
-        self.pushButtonRestoreDefaults.setObjectName("pushButtonRestoreDefaults")
+        self.verticalLayoutWidget_2 = QtWidgets.QWidget(parent=self.groupBox_7)
+        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 160, 42))
+        self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.checkBoxIncludeUid = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget_2)
+        self.checkBoxIncludeUid.setObjectName("checkBoxIncludeUid")
+        self.verticalLayout_4.addWidget(self.checkBoxIncludeUid)
+        self.checkBoxSroFormat = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget_2)
+        self.checkBoxSroFormat.setObjectName("checkBoxSroFormat")
+        self.verticalLayout_4.addWidget(self.checkBoxSroFormat)
         self.groupBox_8 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_8.setGeometry(QtCore.QRect(10, 200, 201, 71))
+        self.groupBox_8.setGeometry(QtCore.QRect(10, 280, 201, 51))
         self.groupBox_8.setObjectName("groupBox_8")
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.groupBox_8)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 181, 42))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 181, 21))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -309,11 +318,8 @@ class Ui_MainWindow(object):
         self.checkBoxDebugMode = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
         self.checkBoxDebugMode.setObjectName("checkBoxDebugMode")
         self.verticalLayout_2.addWidget(self.checkBoxDebugMode)
-        self.checkBoxSroFormat = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
-        self.checkBoxSroFormat.setObjectName("checkBoxSroFormat")
-        self.verticalLayout_2.addWidget(self.checkBoxSroFormat)
         self.groupBox_9 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_9.setGeometry(QtCore.QRect(10, 100, 411, 91))
+        self.groupBox_9.setGeometry(QtCore.QRect(10, 180, 411, 91))
         self.groupBox_9.setObjectName("groupBox_9")
         self.gridLayoutWidget_2 = QtWidgets.QWidget(parent=self.groupBox_9)
         self.gridLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 391, 61))
@@ -378,6 +384,9 @@ class Ui_MainWindow(object):
         self.textEdit_3.setGeometry(QtCore.QRect(10, 20, 211, 351))
         self.textEdit_3.setReadOnly(True)
         self.textEdit_3.setObjectName("textEdit_3")
+        self.pushButtonRestoreDefaults = QtWidgets.QPushButton(parent=self.Configure)
+        self.pushButtonRestoreDefaults.setGeometry(QtCore.QRect(10, 350, 111, 41))
+        self.pushButtonRestoreDefaults.setObjectName("pushButtonRestoreDefaults")
         self.tabWidget.addTab(self.Configure, "")
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -461,13 +470,13 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "Characters key:"))
         self.lineEditCharactersKey.setText(_translate("MainWindow", "c"))
         self.lineEditInventoryKey.setText(_translate("MainWindow", "b"))
-        self.groupBox_7.setTitle(_translate("MainWindow", "Scanner"))
-        self.pushButtonRestoreDefaults.setText(_translate("MainWindow", "Restore Defaults"))
+        self.groupBox_7.setTitle(_translate("MainWindow", "Output"))
+        self.checkBoxIncludeUid.setText(_translate("MainWindow", "Include UID"))
+        self.checkBoxSroFormat.setToolTip(_translate("MainWindow", "Star Rail Optimizer"))
+        self.checkBoxSroFormat.setText(_translate("MainWindow", "Also export in SRO format"))
         self.groupBox_8.setTitle(_translate("MainWindow", "Developer"))
         self.checkBoxDebugMode.setToolTip(_translate("MainWindow", "Saves ALL screenshots"))
         self.checkBoxDebugMode.setText(_translate("MainWindow", "Debug mode"))
-        self.checkBoxSroFormat.setToolTip(_translate("MainWindow", "Star Rail Optimizer"))
-        self.checkBoxSroFormat.setText(_translate("MainWindow", "Also export in SRO format"))
         self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay (for slow computers)"))
         self.label_11.setToolTip(_translate("MainWindow", "Navigating between different pages (inventory, character details, etc.)"))
         self.label_11.setText(_translate("MainWindow", "Navigation speed (ms):"))
@@ -480,9 +489,6 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOTKEYS</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Change these to the shortcuts used to open the inventory and character screens.</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">ADDITIONAL DELAY</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If Star Rail lags during the scan process, the scanner might produce inaccurate output or fail entirely. To compensate, there are two types of delay that can be increased accordingly to your system:</p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">- Navigation delay for navigating between different pages (inventory, character details, etc.)</span></p>\n"
@@ -490,4 +496,5 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">DEBUG MODE</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.</p></body></html>"))
+        self.pushButtonRestoreDefaults.setText(_translate("MainWindow", "Restore Defaults"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Configure), _translate("MainWindow", "Configure"))

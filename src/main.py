@@ -12,7 +12,8 @@ from models.game_data import GameData
 from services.scanner.scanner import HSRScanner
 from ui.hsr_scanner import Ui_MainWindow
 from utils.conversion import convert_to_sro
-from utils.data import create_debug_folder, executable_path, resource_path, save_to_json
+from utils.data import (create_debug_folder, executable_path, resource_path,
+                        save_to_json)
 
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
@@ -152,6 +153,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxRecentRelicsFiveStar.setChecked(
             self.settings.value("recent_relics_five_star", False) == "true"
         )
+        self.checkBoxIncludeUid.setChecked(
+            self.settings.value("include_uid", False) == "true"
+        )
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
@@ -179,6 +183,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue(
             "recent_relics_five_star", self.checkBoxRecentRelicsFiveStar.isChecked()
         )
+        self.settings.setValue("include_uid", self.checkBoxIncludeUid.isChecked())
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
@@ -197,6 +202,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue("scan_delay", 0)
         self.settings.setValue("recent_relics_num", 8)
         self.settings.setValue("recent_relics_five_star", True)
+        self.settings.setValue("debug_mode", False)
+        self.settings.setValue("include_uid", False)
         self.load_settings()
 
     def reset_fields(self) -> None:
@@ -311,6 +318,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         # scan options
         config = {}
+        config["include_uid"] = self.checkBoxIncludeUid.isChecked()
         config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
         config["scan_relics"] = self.checkBoxScanRelics.isChecked()
         config["scan_characters"] = self.checkBoxScanChars.isChecked()

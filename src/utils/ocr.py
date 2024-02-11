@@ -127,6 +127,16 @@ def preprocess_superimposition_img(img: Image) -> Image:
     return img
 
 
+def preprocess_uid_img(img: Image) -> Image:
+    """Preprocess UID image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    img = _preprocess_img_by_colour_filter(img, (180, 180, 180), 80)
+    return img
+
+
 def _preprocess_img_by_colour_filter(
     img: Image, colour: tuple | list[tuple], variance: int | list[int]
 ) -> Image:
