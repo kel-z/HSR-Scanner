@@ -507,8 +507,7 @@ class HSRScanner(QObject):
                         f"WARNING: Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway."
                     )
                 characters_seen.add(character_name)
-                if character_name.startswith("Trailblazer"):
-                    prev_trailblazer = True
+                prev_trailblazer = character_name.startswith("Trailblazer")
 
                 curr_page_res[i] = {
                     "name": character_name,
