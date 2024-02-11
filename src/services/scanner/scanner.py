@@ -165,6 +165,7 @@ class HSRScanner(QObject):
                 "trailblazer": (
                     "Stelle"
                     if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True)
+                    == "true"
                     else "Caelus"
                 ),
             },
