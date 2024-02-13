@@ -62,7 +62,9 @@ def convert_to_sro(data: dict, game_data: GameData) -> dict:
 
     sro_mappings = game_data.get_sro_mappings()
     trailblazer_suffix = (
-        "F" if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True) else "M"
+        "F"
+        if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True) == "true"
+        else "M"
     )
     get_sro_character_key = lambda key: _get_sro_character_key(
         key, sro_mappings, trailblazer_suffix
