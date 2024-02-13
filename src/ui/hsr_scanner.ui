@@ -582,12 +582,12 @@ p, li { white-space: pre-wrap; }
       </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="Extra">
+    <widget class="QWidget" name="Advanced">
      <property name="enabled">
       <bool>true</bool>
      </property>
      <attribute name="title">
-      <string>Extra</string>
+      <string>Advanced</string>
      </attribute>
      <widget class="QGroupBox" name="formGroupBox_2">
       <property name="geometry">

@@ -471,7 +471,7 @@ class HSRScanner(QObject):
                         (
                             self._scan_sleep(0.7)
                             if prev_trailblazer
-                            else self._scan_sleep(0)
+                            else None
                         )
                         character_name = self._get_character_name() # this has a small delay, can basically be treated as a sleep
                         character_img = self._screenshot.screenshot_character()
