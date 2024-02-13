@@ -468,21 +468,27 @@ class HSRScanner(QObject):
                     not character_name or character_name in characters_seen
                 ):
                     try:
-                        self._scan_sleep(0.7) if prev_trailblazer else None
-                        character_name_img = (
-                            self._screenshot.screenshot_character_name()
+                        (
+                            self._scan_sleep(0.7)
+                            if prev_trailblazer
+                            else self._scan_sleep(0)
                         )
-                        character_name = image_to_string(
-                            character_name_img,
-                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7&",
-                            7,
-                        )
+                        character_name = self._get_character_name() # this has a small delay, can basically be treated as a sleep
+                        character_img = self._screenshot.screenshot_character()
+
+                        # Trailblazer is the most prone to errors, need to ensure
+                        # that all the elements have loaded before taking screenshots
+                        # at the cost of small delay on Trailblazer
+                        is_trailblazer = char_parser.is_trailblazer(character_img)
+                        if char_parser.is_trailblazer(character_img):
+                            self._scan_sleep(0.7)
+                            character_name = self._get_character_name()
+
                         path, character_name = map(
                             str.strip, character_name.split("/")[:2]
                         )
-                        character_img = self._screenshot.screenshot_character()
                         character_name, path = char_parser.get_closest_name_and_path(
-                            character_name, path, character_img
+                            character_name, path, is_trailblazer
                         )
 
                         if character_name in characters_seen:
@@ -595,6 +601,18 @@ class HSRScanner(QObject):
         self._nav_sleep(1.5)
         self._nav.key_press(Key.esc)
         return tasks
+
+    def _get_character_name(self) -> str:
+        """Gets the character name
+
+        :return: The character name
+        """
+        character_name_img = self._screenshot.screenshot_character_name()
+        return image_to_string(
+            character_name_img,
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7&",
+            7,
+        )
 
     def _nav_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with navigation delay

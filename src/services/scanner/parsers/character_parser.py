@@ -113,19 +113,19 @@ class CharacterParser:
         return character
 
     def get_closest_name_and_path(
-        self, character_name: str, path: str, character_img: Image
+        self, character_name: str, path: str, is_trailblazer: bool
     ) -> tuple[str, str]:
         """Get the closest name and path
 
         :param character_name: The character name
         :param path: The path
-        :param character_img: The character image
+        :param is_trailblazer: Whether the character is Trailblazer
         :raises Exception: If the character is not found in the database
         :return: The closest name and path
         """
         path, _ = self._game_data.get_closest_path_name(path)
 
-        if self._is_trailblazer(character_img):
+        if is_trailblazer:
             if self._is_trailblazer_scanned:
                 (
                     self._log_signal.emit(
@@ -150,7 +150,7 @@ class CharacterParser:
 
             return character_name, path
 
-    def _is_trailblazer(self, character_img: Image) -> bool:
+    def is_trailblazer(self, character_img: Image) -> bool:
         """Check if the character is Trailblazer
 
         Side effect: Sets the is_stelle QSetting
