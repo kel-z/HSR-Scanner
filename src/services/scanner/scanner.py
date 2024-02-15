@@ -379,19 +379,34 @@ class HSRScanner(QObject):
         self._nav_sleep(1)
 
         # Get character count
-        character_total = self._screenshot.screenshot_character_count()
-        character_total = image_to_string(
-            character_total, "0123456789/", 7, True, preprocess_char_count_img
-        )
-        try:
-            self.log_signal.emit(f"Character total: {character_total}.")
-            character_total = character_total.split("/")[0]
-            character_count = character_total = int(character_total)
-        except ValueError:
-            raise ValueError(
-                "Failed to parse character count from Data Bank screen."
-                + (f' Got "{character_total}" instead.' if character_total else "")
+        max_retry = 5
+        retry = 0
+        while True:
+            character_total = self._screenshot.screenshot_character_count()
+            character_total = image_to_string(
+                character_total, "0123456789/", 7, True, preprocess_char_count_img
             )
+            try:
+                self.log_signal.emit(f"Character total: {character_total}.")
+                character_total = character_total.split("/")[0]
+                character_count = character_total = int(character_total)
+                break
+            except ValueError:
+                retry += 1
+                if retry > max_retry:
+                    raise ValueError(
+                        "Failed to parse character count from Data Bank screen."
+                        + (
+                            f' Got "{character_total}" instead.'
+                            if character_total
+                            else ""
+                        )
+                    )
+                else:
+                    self.log_signal.emit(
+                        f"Failed to parse character count. Retrying... ({max_retry}/5)"
+                    )
+                self._nav_sleep(1)
 
         # Update UI count
         for _ in range(character_count):
