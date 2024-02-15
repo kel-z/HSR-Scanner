@@ -727,12 +727,12 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="lineEditCharactersKey">
+         <widget class="KeyCaptureLineEdit" name="lineEditCharactersKey">
           <property name="text">
-           <string>c</string>
+           <string>C</string>
           </property>
           <property name="maxLength">
-           <number>1</number>
+           <number>999</number>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -740,12 +740,12 @@ p, li { white-space: pre-wrap; }
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEditInventoryKey">
+         <widget class="KeyCaptureLineEdit" name="lineEditInventoryKey">
           <property name="text">
-           <string>b</string>
+           <string>B</string>
           </property>
           <property name="maxLength">
-           <number>1</number>
+           <number>999</number>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1060,6 +1060,13 @@ p, li { white-space: pre-wrap; }
    </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KeyCaptureLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>ui.key_capture_line_edit</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

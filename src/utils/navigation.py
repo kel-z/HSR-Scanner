@@ -80,11 +80,25 @@ class Navigation:
 
         self.move_cursor_to(*pos)
 
-    def key_press(self, key: keyboard.Key) -> None:
-        """Press a key
+    def key_tap(self, key: keyboard.Key | str) -> None:
+        """Tap a key
 
-        :param key: The key to press
+        :param key: The key to tap
         """
+        # already a Key, tap it
+        if isinstance(key, keyboard.Key):
+            self._keyboard.tap(key)
+            return
+
+        # key is a string
+        key = key.lower()
+
+        # if it's a special key, retrieve it from the keyboard module
+        if len(key) > 1:
+            self._keyboard.tap(getattr(keyboard.Key, key))
+            return
+
+        # otherwise just pass in the character string
         self._keyboard.tap(key)
 
     def key_hold(self, key: keyboard.Key) -> None:

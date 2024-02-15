@@ -191,11 +191,11 @@ class HSRScanner(QObject):
 
         # Navigate to correct tab from cellphone menu
         self._nav_sleep(1)
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1.5)
         if self._interrupt_event.is_set():
             return []
-        self._nav.key_press(self._config["inventory_key"])
+        self._nav.key_tap(self._config["inventory_key"])
         self._nav_sleep(1)
         if self._interrupt_event.is_set():
             return []
@@ -342,9 +342,9 @@ class HSRScanner(QObject):
 
             self._scan_sleep(0.5)
 
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1.5)
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         return tasks
 
     def scan_characters(self) -> set[asyncio.Task]:
@@ -398,15 +398,15 @@ class HSRScanner(QObject):
             self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
 
         # Navigate to characters menu
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1)
         if self._interrupt_event.is_set():
             return []
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1.5)
-        self._nav.key_press("1")
+        self._nav.key_tap("1")
         self._nav_sleep(0.2)
-        self._nav.key_press(self._config["characters_key"])
+        self._nav.key_tap(self._config["characters_key"])
         self._nav_sleep(1)
 
         tasks = set()
@@ -468,12 +468,11 @@ class HSRScanner(QObject):
                     not character_name or character_name in characters_seen
                 ):
                     try:
-                        (
-                            self._scan_sleep(0.7)
-                            if prev_trailblazer
-                            else None
+                        (self._scan_sleep(0.7) if prev_trailblazer else None)
+                        character_name = (
+                            # this has a small delay, can basically be treated as a sleep
+                            self._get_character_name()
                         )
-                        character_name = self._get_character_name() # this has a small delay, can basically be treated as a sleep
                         character_img = self._screenshot.screenshot_character()
 
                         # Trailblazer is the most prone to errors, need to ensure
@@ -597,9 +596,9 @@ class HSRScanner(QObject):
                 )
 
         self._nav_sleep(1)
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1.5)
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         return tasks
 
     def _get_character_name(self) -> str:

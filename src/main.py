@@ -120,8 +120,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.lineEditOutputLocation.setText(
             self.settings.value("output_location", executable_path("StarRailData"))
         )
-        self.lineEditInventoryKey.setText(self.settings.value("inventory_key", "b"))
-        self.lineEditCharactersKey.setText(self.settings.value("characters_key", "c"))
+        self.lineEditInventoryKey.setText(
+            self.settings.value("inventory_key", "b").upper()
+        )
+        self.lineEditCharactersKey.setText(
+            self.settings.value("characters_key", "c").upper()
+        )
         self.spinBoxLightConeMinLevel.setValue(
             self.settings.value("min_light_cone_level", 1)
         )
