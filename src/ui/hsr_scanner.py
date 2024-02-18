@@ -281,11 +281,13 @@ class Ui_MainWindow(object):
         self.label_10.setObjectName("label_10")
         self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_10)
         self.lineEditCharactersKey = KeyCaptureLineEdit(parent=self.formLayoutWidget_4)
+        self.lineEditCharactersKey.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
         self.lineEditCharactersKey.setMaxLength(999)
         self.lineEditCharactersKey.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lineEditCharactersKey.setObjectName("lineEditCharactersKey")
         self.formLayout_5.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditCharactersKey)
         self.lineEditInventoryKey = KeyCaptureLineEdit(parent=self.formLayoutWidget_4)
+        self.lineEditInventoryKey.setFocusPolicy(QtCore.Qt.FocusPolicy.ClickFocus)
         self.lineEditInventoryKey.setMaxLength(999)
         self.lineEditInventoryKey.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lineEditInventoryKey.setClearButtonEnabled(False)
@@ -437,10 +439,11 @@ class Ui_MainWindow(object):
 "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.2</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">1. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">2. Open cellphone menu (ESC)</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">3. Press the start scan button</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">4. Don\'t move mouse during the scan process</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1. Set text language to English</p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">2. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">3. Open cellphone menu (ESC)</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">4. Press the start scan button</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">5. Don\'t move mouse during the scan process</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">NOTES</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600; color:#ff0000;\">- </span><span style=\" font-size:8pt; color:#ff0000;\">The inventory screen is translucent and overall accuracy can be influenced by poor text contrast. </span><span style=\" font-size:8pt; font-weight:600; color:#ff0000;\">Make sure the item details and quantity number have a dark background before starting the scan.</span></p>\n"
