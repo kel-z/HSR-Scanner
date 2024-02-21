@@ -192,11 +192,11 @@ class HSRScanner(QObject):
         # Navigate to correct tab from cellphone menu
         self._nav_sleep(1)
         self._nav.key_tap(Key.esc)
-        self._nav_sleep(1.5)
+        self._nav_sleep(2)
         if self._interrupt_event.is_set():
             return []
         self._nav.key_tap(self._config["inventory_key"])
-        self._nav_sleep(1)
+        self._nav_sleep(1.5)
         if self._interrupt_event.is_set():
             return []
         self._nav.move_cursor_to(*nav_data["inv_tab"])
@@ -429,17 +429,13 @@ class HSRScanner(QObject):
         while character_count > 0:
             if self._interrupt_event.is_set():
                 return tasks
+            
+            if character_count > nav_data["chars_per_scan"]:
+                character_x, character_y = nav_data["char_start"]
+            else:
+                character_x, character_y = nav_data["char_end"]
+                character_x -= nav_data["offset_x"] * (character_count - 1)
 
-            character_x, character_y = (
-                nav_data["char_start"]
-                if character_count > nav_data["chars_per_scan"]
-                else nav_data["char_end"]
-            )
-            offset_x = (
-                nav_data["offset_x"]
-                if character_count > nav_data["chars_per_scan"]
-                else -nav_data["offset_x"]
-            )
             i_stop = min(character_count, nav_data["chars_per_scan"])
             curr_page_res = [{} for _ in range(i_stop)]
 
@@ -453,7 +449,7 @@ class HSRScanner(QObject):
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
-                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                self._nav.move_cursor_to(character_x + i * nav_data["offset_x"], character_y)
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.3)
@@ -552,7 +548,7 @@ class HSRScanner(QObject):
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
-                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                self._nav.move_cursor_to(character_x + i * nav_data["offset_x"], character_y)
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.6)
@@ -581,7 +577,7 @@ class HSRScanner(QObject):
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
-                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                self._nav.move_cursor_to(character_x + i * nav_data["offset_x"], character_y)
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.5)
