@@ -13,7 +13,13 @@ from models.game_data import GameData
 from services.scanner.scanner import HSRScanner
 from ui.hsr_scanner import Ui_MainWindow
 from utils.conversion import convert_to_sro
-from utils.data import create_debug_folder, executable_path, resource_path, save_to_json
+from utils.data import (
+    create_debug_folder,
+    executable_path,
+    resource_path,
+    save_to_json,
+    save_to_txt,
+)
 
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
@@ -246,7 +252,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             return
 
         self.log("Starting scan...")
-        self.to_scanner_thread(scanner)
+        self.to_scanner_thread(
+            scanner, config["debug_output_location"] if config["debug"] else None
+        )
 
     def start_scan_recent_relics(self) -> None:
         """Starts the scan for recent relics"""
@@ -280,12 +288,17 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.log(
             f"Starting recent relics scan for {config['recent_relics_num']} relics..."
         )
-        self.to_scanner_thread(scanner)
+        self.to_scanner_thread(
+            scanner, config["debug_output_location"] if config["debug"] else None
+        )
 
-    def to_scanner_thread(self, scanner: HSRScanner) -> None:
+    def to_scanner_thread(
+        self, scanner: HSRScanner, debug_output_location: str = None
+    ) -> None:
         """Starts the scanner thread
 
         :param scanner: The HSRScanner class instance
+        :param debug_output_location: The debug output location
         """
         self.disable_start_scan_button()
 
@@ -298,7 +311,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread = ScannerThread(scanner)
         self._scanner_thread.log_signal.connect(self.log)
 
-        self._scanner_thread.result_signal.connect(self.handle_result)
+        self._scanner_thread.result_signal.connect(
+            lambda data: self.handle_result(data, debug_output_location)
+        )
         self._scanner_thread.result_signal.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result_signal.connect(self.enable_start_scan_button)
 
@@ -316,6 +331,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def get_config(self) -> dict:
         """Gets the configuration for the scan
 
+        Side effect: Creates a debug folder if debug mode is enabled
+
         :return: The configuration for the scan
         """
         # scan options
@@ -327,9 +344,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # recent relics scan options
         config["recent_relics_num"] = self.spinBoxRecentRelics.value()
-        config[
-            "recent_relics_five_star"
-        ] = self.checkBoxRecentRelicsFiveStar.isChecked()
+        config["recent_relics_five_star"] = (
+            self.checkBoxRecentRelicsFiveStar.isChecked()
+        )
 
         # filters
         config["filters"] = {
@@ -370,10 +387,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         return config
 
-    def handle_result(self, data: dict) -> None:
+    def handle_result(self, data: dict, debug_output_location: str = None) -> None:
         """Handles the result of the scan
 
         :param data: The data from the scan
+        :param debug_output_location: The debug output location
         """
         output_location = self.lineEditOutputLocation.text()
         file_name = (
@@ -391,6 +409,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             except Exception as e:
                 self.log("Failed to convert to SRO format: " + str(e))
         self.log("Scan complete. Data saved to " + output_location)
+
+        if debug_output_location:
+            save_to_txt(
+                self.textEditLog.toPlainText(), debug_output_location, "log.txt"
+            )
 
     def increment_progress(self, enum: IncrementType) -> None:
         """Increments the number on the UI based on the enum

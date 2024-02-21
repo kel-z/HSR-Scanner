@@ -429,7 +429,7 @@ class HSRScanner(QObject):
         while character_count > 0:
             if self._interrupt_event.is_set():
                 return tasks
-            
+
             if character_count > nav_data["chars_per_scan"]:
                 character_x, character_y = nav_data["char_start"]
             else:
@@ -449,7 +449,9 @@ class HSRScanner(QObject):
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
-                self._nav.move_cursor_to(character_x + i * nav_data["offset_x"], character_y)
+                self._nav.move_cursor_to(
+                    character_x + i * nav_data["offset_x"], character_y
+                )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.3)
@@ -548,7 +550,9 @@ class HSRScanner(QObject):
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
-                self._nav.move_cursor_to(character_x + i * nav_data["offset_x"], character_y)
+                self._nav.move_cursor_to(
+                    character_x + i * nav_data["offset_x"], character_y
+                )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.6)
@@ -577,7 +581,9 @@ class HSRScanner(QObject):
             while i < i_stop:
                 if self._interrupt_event.is_set():
                     return tasks
-                self._nav.move_cursor_to(character_x + i * nav_data["offset_x"], character_y)
+                self._nav.move_cursor_to(
+                    character_x + i * nav_data["offset_x"], character_y
+                )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.5)

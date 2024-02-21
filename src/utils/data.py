@@ -57,6 +57,20 @@ def save_to_json(data: dict, output_location: str, file_name: str) -> None:
         json.dump(data, outfile, indent=4)
 
 
+def save_to_txt(content: str, output_location: str, file_name: str) -> None:
+    """Save content to text file
+
+    :param content: The content to save
+    :param output_location: The output location
+    :param file_name: The file name
+    """
+    if not os.path.exists(output_location):
+        os.makedirs(output_location)
+
+    with open(os.path.join(output_location, file_name), "w") as file:
+        file.write(content)
+
+
 def get_json_data(file_path: str) -> dict:
     """Get json data from file
 
