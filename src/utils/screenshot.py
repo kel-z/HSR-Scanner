@@ -11,6 +11,7 @@ from PyQt6.QtCore import pyqtBoundSignal
 
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
+from enums.log_level import LogLevel
 
 
 class Screenshot:
@@ -167,7 +168,7 @@ class Screenshot:
         return res
 
     def screenshot_character_traces(self, key: str) -> dict:
-        """Takes a screenshot of the character hunt trace levels
+        """Takes a screenshot of the character trace levels
 
         :param key: The key of the traces to screenshot
         :return: A dict of the traces with the key being the trace name and the value being the screenshot
@@ -271,4 +272,4 @@ class Screenshot:
         file_name = f"{datetime.datetime.now().strftime('%H%M%S%f')}.png"
         output_location = os.path.join(self._debug_output_location, file_name)
         img.save(output_location)
-        self._log_signal.emit(f"[DEBUG] Saving {file_name}.")
+        self._log_signal.emit((f"Saving {file_name}."))

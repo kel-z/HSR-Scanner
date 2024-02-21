@@ -9,6 +9,7 @@ from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
 from enums.increment_type import IncrementType
+from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
 from models.game_data import GameData
 from utils.data import resource_path
@@ -27,7 +28,7 @@ class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
     update_signal = pyqtSignal(int)
-    log_signal = pyqtSignal(str)
+    log_signal = pyqtSignal(object)
     complete_signal = pyqtSignal()
 
     def __init__(self, config: dict, game_data: GameData, scan_mode: int = 0):
@@ -85,9 +86,12 @@ class HSRScanner(QObject):
 
         :return: The scan results
         """
+        self._log("Config: " + str(self._config), LogLevel.DEBUG)
+
         if not self._is_en:
-            self.log_signal.emit(
-                "WARNING: Non-English game name detected. The scanner only works with English text."
+            self._log(
+                "Non-English game name detected. The scanner only works with English text.",
+                LogLevel.WARNING,
             )
         self._nav.bring_window_to_foreground()
 
@@ -101,51 +105,53 @@ class HSRScanner(QObject):
                     uid_img, "0123456789", 7, True, preprocess_uid_img
                 )
             if len(uid) != 9:
-                self.log_signal.emit(f"Failed to parse UID. Got '{uid}' instead.")
+                self._log(f"Failed to parse UID. Got '{uid}' instead.", LogLevel.ERROR)
                 uid = None
             else:
-                self.log_signal.emit(f"UID: {uid}.")
+                self._log(f"UID: {uid}.")
 
         light_cones = []
         if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
-            self.log_signal.emit("Scanning light cones...")
+            self._log("Scanning light cones...")
             light_cones = self.scan_inventory(
                 LightConeStrategy(
                     self._game_data,
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
+                    self._config["debug"],
                 )
             )
             (
-                self.log_signal.emit("Finished scanning light cones.")
+                self._log("Finished scanning light cones.")
                 if not self._interrupt_event.is_set()
                 else None
             )
 
         relics = []
         if self._config["scan_relics"] and not self._interrupt_event.is_set():
-            self.log_signal.emit("Scanning relics...")
+            self._log("Scanning relics...")
             relics = self.scan_inventory(
                 RelicStrategy(
                     self._game_data,
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
+                    self._config["debug"],
                 )
             )
             (
-                self.log_signal.emit("Finished scanning relics.")
+                self._log("Finished scanning relics.")
                 if not self._interrupt_event.is_set()
                 else None
             )
 
         characters = []
         if self._config["scan_characters"] and not self._interrupt_event.is_set():
-            self.log_signal.emit("Scanning characters...")
+            self._log("Scanning characters...")
             characters = self.scan_characters()
             (
-                self.log_signal.emit("Finished scanning characters.")
+                self._log("Finished scanning characters.")
                 if not self._interrupt_event.is_set()
                 else None
             )
@@ -155,7 +161,7 @@ class HSRScanner(QObject):
             return
 
         self.complete_signal.emit()
-        self.log_signal.emit("Starting OCR process. Please wait...")
+        self._log("Starting OCR process. Please wait...")
 
         return {
             "source": "HSR-Scanner",
@@ -213,7 +219,7 @@ class HSRScanner(QObject):
         quantity = image_to_string(quantity, "0123456789/", 7)
 
         try:
-            self.log_signal.emit(f"Quantity: {quantity}.")
+            self._log(f"Quantity: {quantity}.")
             quantity = quantity_remaining = int(quantity.split("/")[0])
         except ValueError:
             raise ValueError(
@@ -232,9 +238,7 @@ class HSRScanner(QObject):
             )
 
         if optimal_sort_method != current_sort_method:
-            self.log_signal.emit(
-                f"Sorting by {optimal_sort_method} (was {current_sort_method})."
-            )
+            self._log(f"Sorting by {optimal_sort_method} (was {current_sort_method}).")
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
             time.sleep(0.05)
             self._nav.click()
@@ -268,8 +272,8 @@ class HSRScanner(QObject):
             else:
                 x, y = nav_data["row_start_top"]
 
-            for r in range(nav_data["rows"]):
-                for c in range(nav_data["cols"]):
+            for _ in range(nav_data["rows"]):
+                for _ in range(nav_data["cols"]):
                     if should_stop():
                         break
 
@@ -301,7 +305,7 @@ class HSRScanner(QObject):
                             and not filter_results["min_level"]
                         ):
                             quantity_remaining = 0
-                            self.log_signal.emit(
+                            self._log(
                                 f"Reached minimum level filter (got level {stats_dict['level']})."
                             )
                             break
@@ -311,12 +315,13 @@ class HSRScanner(QObject):
                             and not filter_results["min_rarity"]
                         ):
                             quantity_remaining = 0
-                            self.log_signal.emit(
+                            self._log(
                                 f"Reached minimum rarity filter (got rarity {stats_dict['rarity']})."
                             )
                             break
                         if (
-                            current_sort_method == "Date obtained"
+                            self._scan_mode == ScanMode.RECENT_RELICS.value
+                            and current_sort_method == "Date obtained"
                             and "min_rarity" in filter_results
                             and filter_results["min_rarity"]
                         ):
@@ -339,6 +344,9 @@ class HSRScanner(QObject):
 
             self._nav.scroll_page_down(num_times_scrolled)
             num_times_scrolled += 1
+            self._log(
+                f"Scrolling inventory, page {num_times_scrolled + 1}.", LogLevel.TRACE
+            )
 
             self._scan_sleep(0.5)
 
@@ -354,7 +362,11 @@ class HSRScanner(QObject):
         :return: The tasks to await
         """
         char_parser = CharacterParser(
-            self._game_data, self.log_signal, self.update_signal, self._interrupt_event
+            self._game_data,
+            self.log_signal,
+            self.update_signal,
+            self._interrupt_event,
+            self._config["debug"],
         )
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
@@ -365,6 +377,7 @@ class HSRScanner(QObject):
             return []
 
         # Locate and click databank button
+        self._log("Locating Data Bank button...", LogLevel.DEBUG)
         haystack = self._screenshot.screenshot_screen()
         needle = self._databank_img.resize(
             # Scale image to match capture size
@@ -374,6 +387,10 @@ class HSRScanner(QObject):
             )
         )
         self._nav.move_cursor_to_image(haystack, needle)
+        self._log(
+            f"Data Bank button found at {self._nav.get_mouse_position()}.",
+            LogLevel.DEBUG,
+        )
         time.sleep(0.05)
         self._nav.click()
         self._nav_sleep(1)
@@ -387,7 +404,7 @@ class HSRScanner(QObject):
                 character_total, "0123456789/", 7, True, preprocess_char_count_img
             )
             try:
-                self.log_signal.emit(f"Character total: {character_total}.")
+                self._log(f"Character total: {character_total}.")
                 character_total = character_total.split("/")[0]
                 character_count = character_total = int(character_total)
                 break
@@ -403,8 +420,9 @@ class HSRScanner(QObject):
                         )
                     )
                 else:
-                    self.log_signal.emit(
-                        f"Failed to parse character count. Retrying... ({max_retry}/5)"
+                    self._log(
+                        f"Failed to parse character count. Retrying... ({retry}/{max_retry})",
+                        LogLevel.WARNING,
                     )
                 self._nav_sleep(1)
 
@@ -492,7 +510,7 @@ class HSRScanner(QObject):
                         # that all the elements have loaded before taking screenshots
                         # at the cost of small delay on Trailblazer
                         is_trailblazer = char_parser.is_trailblazer(character_img)
-                        if char_parser.is_trailblazer(character_img):
+                        if is_trailblazer:
                             self._scan_sleep(0.7)
                             character_name = self._get_character_name()
 
@@ -504,29 +522,37 @@ class HSRScanner(QObject):
                         )
 
                         if character_name in characters_seen:
-                            self.log_signal.emit(
-                                f"Parsed duplicate character '{character_name}'. Retrying... ({retry + 1}/{max_retry})"
+                            self._log(
+                                f"Parsed duplicate character '{character_name}'. Retrying... ({retry + 1}/{max_retry})",
+                                LogLevel.WARNING,
                             )
                             self._scan_sleep(1)
-                    except Exception:
-                        self.log_signal.emit(
-                            f"Failed to parse character name. Retrying... ({retry + 1}/{max_retry})"
+                    except Exception as e:
+                        self._log(
+                            f"Failed to parse character name. Got error: {e}. Retrying... ({retry + 1}/{max_retry})",
+                            LogLevel.WARNING,
                         )
                         character_name = ""
                         self._scan_sleep(1)
                     retry += 1
 
                 if not character_name:
-                    self.log_signal.emit(
-                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early."
+                    self._log(
+                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early.",
+                        LogLevel.ERROR,
                     )
                     return tasks
 
                 if character_name in characters_seen:
-                    self.log_signal.emit(
-                        f"WARNING: Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway."
+                    self._log(
+                        f"Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway.",
+                        LogLevel.ERROR,
                     )
-                characters_seen.add(character_name)
+                else:
+                    characters_seen.add(character_name)
+                    self._log(
+                        f"Character {i + 1}: {path} / {character_name}", LogLevel.TRACE
+                    )
                 prev_trailblazer = character_name.startswith("Trailblazer")
 
                 curr_page_res[i] = {
@@ -537,8 +563,9 @@ class HSRScanner(QObject):
                 }
                 i += 1
 
-            self.log_signal.emit(
-                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res])}"
+            self._log(
+                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res])}",
+                LogLevel.TRACE,
             )
 
             # Traces tab
@@ -617,6 +644,15 @@ class HSRScanner(QObject):
         self._nav_sleep(1.5)
         self._nav.key_tap(Key.esc)
         return tasks
+
+    def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
+        """Logs a message
+
+        :param msg: The message to log
+        :param level: The log level
+        """
+        if level == LogLevel.INFO or self._config["debug"]:
+            self.log_signal.emit((msg, level))
 
     def _get_character_name(self) -> str:
         """Gets the character name

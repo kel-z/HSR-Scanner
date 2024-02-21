@@ -8,6 +8,7 @@ from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import QSettings, QThread, QUrl, pyqtSignal
 
 from enums.increment_type import IncrementType
+from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
 from models.game_data import GameData
 from services.scanner.scanner import HSRScanner
@@ -73,7 +74,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         :param e: The error
         """
-        self.log(str(e))
+        self.log((f"Failed to load game data: {e}", LogLevel.ERROR))
 
         try:
             self.pushButtonStartScan.clicked.disconnect()
@@ -119,7 +120,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 QtGui.QDesktopServices.openUrl(QUrl.fromLocalFile(output_location))
             except Exception as e:
-                self.log(f"Error opening output location: {e}")
+                self.log((f"Failed to open output location: {e}", LogLevel.ERROR))
 
     def load_settings(self) -> None:
         """Loads the settings for the scan"""
@@ -248,7 +249,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 raise Exception("No scan options selected. Please select at least one.")
             scanner = HSRScanner(config, self.game_data)
         except Exception as e:
-            self.log(e)
+            self.log((e, LogLevel.ERROR))
             return
 
         self.log("Starting scan...")
@@ -282,7 +283,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 config, self.game_data, scan_mode=ScanMode.RECENT_RELICS.value
             )
         except Exception as e:
-            self.log(e)
+            self.log((e, LogLevel.ERROR))
             return
 
         self.log(
@@ -317,7 +318,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread.result_signal.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.result_signal.connect(self.enable_start_scan_button)
 
-        self._scanner_thread.error_signal.connect(self.log)
+        self._scanner_thread.error_signal.connect(
+            lambda msg: self.handle_error(msg, debug_output_location)
+        )
         self._scanner_thread.error_signal.connect(self._scanner_thread.deleteLater)
         self._scanner_thread.error_signal.connect(self.enable_start_scan_button)
         self._scanner_thread.error_signal.connect(self._listener.stop)
@@ -381,7 +384,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.lineEditOutputLocation.text()
             )
             self.log(
-                "[DEBUG] Debug mode enabled. Debug output will be saved to "
+                "Debug mode enabled. Debug output will be saved to "
                 + config["debug_output_location"]
             )
 
@@ -407,10 +410,24 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     convert_to_sro(data, self.game_data), output_location, file_name
                 )
             except Exception as e:
-                self.log("Failed to convert to SRO format: " + str(e))
+                self.log(("Failed to convert to SRO format: " + str(e), LogLevel.ERROR))
         self.log("Scan complete. Data saved to " + output_location)
 
         if debug_output_location:
+            self.log(f"Saving log to {debug_output_location}.")
+            save_to_txt(
+                self.textEditLog.toPlainText(), debug_output_location, "log.txt"
+            )
+
+    def handle_error(self, msg: str, debug_output_location: str = None) -> None:
+        """Post-scan error operations
+
+        :param msg: The error message
+        :param debug_output_location: The debug output location
+        """
+        self.log((msg, LogLevel.FATAL))
+        if debug_output_location:
+            self.log(f"Saving log to {debug_output_location}.")
             save_to_txt(
                 self.textEditLog.toPlainText(), debug_output_location, "log.txt"
             )
@@ -464,13 +481,19 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonStartScanRecentRelics.setText("Scan")
         self.pushButtonStartScanRecentRelics.setEnabled(True)
 
-    def log(self, message: str) -> None:
+    def log(self, log: tuple[str, LogLevel] | str) -> None:
         """Logs a message to the log box
 
-        :param message: The message to log
+        :param log: The log message and log level
         """
+        if isinstance(log, tuple):
+            message, log_level = log
+        else:
+            message = log
+            log_level = LogLevel.INFO
+
         self.textEditLog.appendPlainText(
-            f"[{datetime.datetime.now().strftime('%H:%M:%S')}] > {str(message)}"
+            f"[{datetime.datetime.now().strftime('%H:%M:%S')}] [{log_level.value}] > {str(message)}"
         )
 
 
@@ -528,8 +551,8 @@ class ScannerThread(QThread):
     """ScannerThread class handles the scanning in a separate thread"""
 
     result_signal = pyqtSignal(object)
-    error_signal = pyqtSignal(object)
-    log_signal = pyqtSignal(str)
+    error_signal = pyqtSignal(str)
+    log_signal = pyqtSignal(object)
 
     def __init__(self, scanner: HSRScanner) -> None:
         """Constructor
@@ -545,7 +568,7 @@ class ScannerThread(QThread):
         try:
             res = asyncio.run(self._scanner.start_scan())
             if self._interrupt_requested:
-                self.error_signal.emit("Scan interrupted")
+                self.error_signal.emit("Scan cancelled.")
             else:
                 self.result_signal.emit(res)
         except Exception as e:

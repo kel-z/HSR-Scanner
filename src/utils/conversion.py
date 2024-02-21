@@ -217,7 +217,7 @@ def _get_sro_character_key(
     if not key:
         return ""
     sro_key = sro_mappings["characters"][key]
-    if "Trailblazer" in key:
+    if key.startswith("Trailblazer"):
         sro_key += trailblazer_suffix
 
     return sro_key

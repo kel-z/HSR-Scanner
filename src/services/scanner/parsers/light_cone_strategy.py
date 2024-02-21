@@ -7,8 +7,9 @@ from PyQt6.QtCore import pyqtBoundSignal
 
 from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
+from enums.log_level import LogLevel
 from models.game_data import GameData
-from utils.data import resource_path
+from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
     image_to_string,
     preprocess_equipped_img,
@@ -29,6 +30,7 @@ class LightConeStrategy:
         log_signal: pyqtBoundSignal,
         update_signal: pyqtBoundSignal,
         interrupt_event: Event,
+        debug: bool = False,
     ) -> None:
         """Constructor
 
@@ -41,6 +43,7 @@ class LightConeStrategy:
         self._log_signal = log_signal
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
+        self._debug = debug
         self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
 
     def get_optimal_sort_method(self, filters: dict) -> str:
@@ -99,8 +102,9 @@ class LightConeStrategy:
                         "level", stats_dict["level"]
                     )
                     if not stats_dict["level"]:
-                        self._log_signal.emit(
-                            f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1."
+                        self._log(
+                            f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1.",
+                            LogLevel.ERROR,
                         )
                         stats_dict["level"] = "1/20"
                         filter_results[key] = True
@@ -165,6 +169,15 @@ class LightConeStrategy:
             if isinstance(stats_dict[key], Image):
                 stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
+        (
+            self._log(
+                f"Light Cone ID {lc_id}: Raw data: {filter_images_from_dict(stats_dict)}",
+                LogLevel.DEBUG,
+            )
+            if self._debug
+            else None
+        )
+
         name = stats_dict["name"]
         level = stats_dict["level"]
         superimposition = stats_dict["superimposition"]
@@ -177,8 +190,9 @@ class LightConeStrategy:
             level = int(level)
             max_level = int(max_level)
         except ValueError:
-            self._log_signal.emit(
-                f"Light Cone ID {lc_id}: Error parsing level, setting to 1."
+            self._log(
+                f"Light Cone ID {lc_id}: Error parsing level, setting to 1.",
+                LogLevel.ERROR,
             )
             level = 1
             max_level = 20
@@ -188,8 +202,9 @@ class LightConeStrategy:
         try:
             superimposition = int(superimposition)
         except ValueError:
-            self._log_signal.emit(
-                f"Light Cone ID {lc_id}: Error parsing superimposition, setting to 1."
+            self._log(
+                f"Light Cone ID {lc_id}: Error parsing superimposition, setting to 1.",
+                LogLevel.ERROR,
             )
             superimposition = 1
 
@@ -202,7 +217,6 @@ class LightConeStrategy:
         location = ""
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
-
             location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
@@ -218,3 +232,12 @@ class LightConeStrategy:
         self._update_signal.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
 
         return result
+
+    def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
+        """Logs a message
+
+        :param msg: The message to log
+        :param level: The log level
+        """
+        if level == LogLevel.INFO or self._debug:
+            self._log_signal.emit((msg, level))

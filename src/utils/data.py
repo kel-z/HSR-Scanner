@@ -3,6 +3,8 @@ import os
 import sys
 from datetime import datetime
 
+from PIL.Image import Image
+
 
 def resource_path(relative_path: str) -> str:
     """Get resource path for PyInstaller
@@ -79,3 +81,12 @@ def get_json_data(file_path: str) -> dict:
     """
     with open(file_path) as json_file:
         return json.load(json_file)
+
+
+def filter_images_from_dict(d):
+    """Filter images from dictionary
+
+    :param d: The dictionary
+    :return: The dictionary with images filtered out
+    """
+    return {k: v for k, v in d.items() if not isinstance(v, Image)}

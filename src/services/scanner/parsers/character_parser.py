@@ -8,6 +8,7 @@ from pyautogui import locate
 from PyQt6.QtCore import QSettings, pyqtBoundSignal
 
 from enums.increment_type import IncrementType
+from enums.log_level import LogLevel
 from models.game_data import GameData
 from utils.data import resource_path
 from utils.ocr import image_to_string, preprocess_trace_img
@@ -22,6 +23,7 @@ class CharacterParser:
         log_signal: pyqtBoundSignal,
         update_signal: pyqtBoundSignal,
         interrupt_event: Event,
+        debug: bool = False,
     ) -> None:
         """Constructor
 
@@ -29,11 +31,13 @@ class CharacterParser:
         :param log_signal: The log signal
         :param update_signal: The update signal
         :param interrupt_event: The interrupt event
+        :param debug: Whether to run in debug mode, defaults to False
         """
         self._game_data = game_data
         self._log_signal = log_signal
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
+        self._debug = debug
         self._trailblazer_imgs = {
             "M": PILImage.open(resource_path("assets/images/trailblazerm.png")),
             "F": PILImage.open(resource_path("assets/images/trailblazerf.png")),
@@ -73,9 +77,10 @@ class CharacterParser:
         try:
             character["level"] = int(level)
         except ValueError:
-            self._log_signal.emit(
+            self._log(
                 f"{character['key']}: Failed to parse level."
-                + (f' Got "{level}" instead.' if level else "")
+                + (f' Got "{level}" instead.' if level else ""),
+                LogLevel.ERROR,
             )
 
         for eidolon in (5, 3):
@@ -99,10 +104,11 @@ class CharacterParser:
                 if not 1 <= character["skills"][k] <= (6 if k == "basic" else 10):
                     raise ValueError
             except ValueError:
-                self._log_signal.emit(
+                self._log(
                     f"{character['key']}: Failed to parse '{k}' level. "
                     + (f"Got '{res}' instead. " if res else "")
-                    + "Setting to 1."
+                    + "Setting to 1.",
+                    LogLevel.ERROR,
                 )
                 character["skills"][k] = 1
 
@@ -113,34 +119,33 @@ class CharacterParser:
         return character
 
     def get_closest_name_and_path(
-        self, character_name: str, path: str, is_trailblazer: bool
+        self, name: str, path: str, is_trailblazer: bool
     ) -> tuple[str, str]:
         """Get the closest name and path
 
-        :param character_name: The character name
+        :param name: The parsed name
         :param path: The path
         :param is_trailblazer: Whether the character is Trailblazer
         :raises Exception: If the character is not found in the database
-        :return: The closest name and path
+        :return: The closest character name and path
         """
         path, _ = self._game_data.get_closest_path_name(path)
 
         if is_trailblazer:
             if self._is_trailblazer_scanned:
-                (
-                    self._log_signal.emit(
-                        "WARNING: Parsed more than one Trailblazer. Please review JSON output."
-                    )
-                    if self._log_signal
-                    else None
+                self._log(
+                    "Parsed more than one Trailblazer. Please review JSON output.",
+                    LogLevel.ERROR,
                 )
             else:
                 self._is_trailblazer_scanned = True
 
             return "Trailblazer" + path.split(" ")[-1], path
         else:
-            character_name, min_dist = self._game_data.get_closest_character_name(
-                character_name
+            character_name, min_dist = self._game_data.get_closest_character_name(name)
+            self._log(
+                f'Got character name "{character_name}" for string "{name}" with distance {min_dist} out of max 5.',
+                LogLevel.TRACE,
             )
 
             if min_dist > 5:
@@ -162,6 +167,9 @@ class CharacterParser:
             trailblazer_img = trailblazer_img.resize(character_img.size)
             if locate(character_img, trailblazer_img, confidence=0.8) is not None:
                 QSettings("kel-z", "HSR-Scanner").setValue("is_stelle", k == "F")
+                self._log(
+                    f'{"Stelle" if k == "F" else "Caelus"} detected.', LogLevel.DEBUG
+                )
                 return True
 
         return False
@@ -176,15 +184,15 @@ class CharacterParser:
         upper_orange = np.array([210, 175, 100])
 
         eidolon = 0
-        for img_np in eidolon_images:
-            img_bw = cv2.cvtColor(img_np, cv2.COLOR_BGR2GRAY)
+        for img in eidolon_images:
+            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             white = cv2.Laplacian(img_bw, cv2.CV_64F).var()
 
             # Eidolon is locked if the image is too dark
             if white < 10000:
                 break
 
-            mask = cv2.inRange(img_np, lower_orange, upper_orange)
+            mask = cv2.inRange(img, lower_orange, upper_orange)
             orange = cv2.countNonZero(mask)
 
             # Eidolon is unlocked but not activated if the image is too orange
@@ -194,3 +202,12 @@ class CharacterParser:
             eidolon += 1
 
         return eidolon
+
+    def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
+        """Logs a message
+
+        :param msg: The message to log
+        :param level: The log level
+        """
+        if level == LogLevel.INFO or self._debug:
+            self._log_signal.emit((msg, level))
