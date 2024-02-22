@@ -24,6 +24,12 @@ from .parsers.relic_strategy import RelicStrategy
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
 
+class InterruptedScanException(Exception):
+    """Exception raised when the scan is interrupted"""
+
+    pass
+
+
 class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
@@ -84,6 +90,7 @@ class HSRScanner(QObject):
     async def start_scan(self) -> dict:
         """Starts the scan
 
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         :return: The scan results
         """
         self._log("Config: " + str(self._config), LogLevel.DEBUG)
@@ -190,6 +197,7 @@ class HSRScanner(QObject):
         """Scans the inventory for light cones or relics
 
         :param strategy: The strategy to use
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         :raises ValueError: Thrown if the quantity could not be parsed
         :return: The tasks to await
         """
@@ -199,33 +207,43 @@ class HSRScanner(QObject):
         self._nav_sleep(1)
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
-        if self._interrupt_event.is_set():
-            return []
         self._nav.key_tap(self._config["inventory_key"])
         self._nav_sleep(1.5)
-        if self._interrupt_event.is_set():
-            return []
-        self._nav.move_cursor_to(*nav_data["inv_tab"])
-        time.sleep(0.05)
-        self._nav.click()
-        self._nav_sleep(1.5)
 
-        # TODO: using quantity to know when to scan the bottom row is not ideal
-        #       because it will not work for tabs that do not have a quantity
-        #       (i.e. materials).
-        #
-        #       for now, it will work for light cones and relics.
-        quantity = self._screenshot.screenshot_quantity()
-        quantity = image_to_string(quantity, "0123456789/", 7)
+        # Get quantity
+        max_retry = 5
+        retry = 0
+        while True:
+            self._nav.move_cursor_to(*nav_data["inv_tab"])
+            time.sleep(0.05)
+            self._nav.click()
+            self._nav_sleep(1.5)
 
-        try:
-            self._log(f"Quantity: {quantity}.")
-            quantity = quantity_remaining = int(quantity.split("/")[0])
-        except ValueError:
-            raise ValueError(
-                "Failed to parse quantity."
-                + (f' Got "{quantity}" instead.' if quantity else "")
-            )
+            # TODO: using quantity to know when to scan the bottom row is not ideal
+            #       because it will not work for tabs that do not have a quantity
+            #       (i.e. materials).
+            #
+            #       for now, it will work for light cones and relics.
+            quantity = self._screenshot.screenshot_quantity()
+            quantity = image_to_string(quantity, "0123456789/", 7)
+
+            try:
+                self._log(f"Quantity: {quantity}.")
+                quantity = quantity_remaining = int(quantity.split("/")[0])
+                break
+            except ValueError:
+                retry += 1
+                if retry > max_retry:
+                    raise ValueError(
+                        "Failed to parse quantity from inventory screen."
+                        + (f' Got "{quantity}" instead.' if quantity else "")
+                    )
+                else:
+                    self._log(
+                        f"Failed to parse quantity. Retrying... ({retry}/{max_retry})",
+                        LogLevel.WARNING,
+                    )
+                self._nav_sleep(1)
 
         current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
         current_sort_method = image_to_string(
@@ -276,9 +294,6 @@ class HSRScanner(QObject):
                 for _ in range(nav_data["cols"]):
                     if should_stop():
                         break
-
-                    if self._interrupt_event.is_set():
-                        return tasks
 
                     # Next item
                     self._nav.move_cursor_to(x, y)
@@ -358,6 +373,7 @@ class HSRScanner(QObject):
     def scan_characters(self) -> set[asyncio.Task]:
         """Scans the characters
 
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         :raises ValueError: Thrown if the character count could not be parsed
         :return: The tasks to await
         """
@@ -373,8 +389,6 @@ class HSRScanner(QObject):
         # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
         self._nav_sleep(1)
-        if self._interrupt_event.is_set():
-            return []
 
         # Locate and click databank button
         self._log("Locating Data Bank button...", LogLevel.DEBUG)
@@ -433,8 +447,6 @@ class HSRScanner(QObject):
         # Navigate to characters menu
         self._nav.key_tap(Key.esc)
         self._nav_sleep(1)
-        if self._interrupt_event.is_set():
-            return []
         self._nav.key_tap(Key.esc)
         self._nav_sleep(1.5)
         self._nav.key_tap("1")
@@ -445,9 +457,6 @@ class HSRScanner(QObject):
         tasks = set()
         characters_seen = set()
         while character_count > 0:
-            if self._interrupt_event.is_set():
-                return tasks
-
             if character_count > nav_data["chars_per_scan"]:
                 character_x, character_y = nav_data["char_start"]
             else:
@@ -465,8 +474,6 @@ class HSRScanner(QObject):
             self._nav_sleep(0.5)
             prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
             while i < i_stop:
-                if self._interrupt_event.is_set():
-                    return tasks
                 self._nav.move_cursor_to(
                     character_x + i * nav_data["offset_x"], character_y
                 )
@@ -575,8 +582,6 @@ class HSRScanner(QObject):
             self._nav.click()
             self._nav_sleep(0.4)
             while i < i_stop:
-                if self._interrupt_event.is_set():
-                    return tasks
                 self._nav.move_cursor_to(
                     character_x + i * nav_data["offset_x"], character_y
                 )
@@ -606,8 +611,6 @@ class HSRScanner(QObject):
             self._nav.click()
             self._nav_sleep(1.5 if character_total == character_count else 0.9)
             while i < i_stop:
-                if self._interrupt_event.is_set():
-                    return tasks
                 self._nav.move_cursor_to(
                     character_x + i * nav_data["offset_x"], character_y
                 )
@@ -670,15 +673,21 @@ class HSRScanner(QObject):
         """Sleeps for the specified amount of time with navigation delay
 
         :param seconds: The amount of time to sleep
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         """
         time.sleep(seconds + self._config["nav_delay"])
+        if self._interrupt_event.is_set():
+            raise InterruptedScanException()
 
     def _scan_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with scan delay
 
         :param seconds: The amount of time to sleep
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         """
         time.sleep(seconds + self._config["scan_delay"])
+        if self._interrupt_event.is_set():
+            raise InterruptedScanException()
 
     def _ceildiv(self, a, b) -> int:
         """Divides a by b and rounds up

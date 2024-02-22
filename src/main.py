@@ -11,7 +11,7 @@ from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
 from models.game_data import GameData
-from services.scanner.scanner import HSRScanner
+from services.scanner.scanner import HSRScanner, InterruptedScanException
 from ui.hsr_scanner import Ui_MainWindow
 from utils.conversion import convert_to_sro
 from utils.data import (
@@ -571,6 +571,8 @@ class ScannerThread(QThread):
                 self.error_signal.emit("Scan cancelled.")
             else:
                 self.result_signal.emit(res)
+        except InterruptedScanException:
+            self.error_signal.emit("Scan cancelled.")
         except Exception as e:
             self.error_signal.emit(
                 f"Scan aborted with error {e.__class__.__name__}: {e} (Try increasing nav/scan delay in the scanner settings, or scan with a different in-game background, window resolution, or fullscreen/windowed mode.)"
