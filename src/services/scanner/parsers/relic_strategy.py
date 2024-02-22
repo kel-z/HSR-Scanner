@@ -387,5 +387,5 @@ class RelicStrategy:
         :param msg: The message to log
         :param level: The log level
         """
-        if level == LogLevel.INFO or self._debug:
+        if self._debug or level in [LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR]:
             self._log_signal.emit((msg, level))

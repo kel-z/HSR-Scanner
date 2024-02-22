@@ -654,7 +654,7 @@ class HSRScanner(QObject):
         :param msg: The message to log
         :param level: The log level
         """
-        if level == LogLevel.INFO or self._config["debug"]:
+        if self._config["debug"] or level in [LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR]:
             self.log_signal.emit((msg, level))
 
     def _get_character_name(self) -> str:
