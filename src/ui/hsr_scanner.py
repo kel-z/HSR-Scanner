@@ -402,7 +402,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.2"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.7.0"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -436,7 +436,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.2</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.7.0</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1. Set text language to English</p>\n"
@@ -480,7 +480,7 @@ class Ui_MainWindow(object):
         self.groupBox_8.setTitle(_translate("MainWindow", "Developer"))
         self.checkBoxDebugMode.setToolTip(_translate("MainWindow", "Saves ALL screenshots"))
         self.checkBoxDebugMode.setText(_translate("MainWindow", "Debug mode"))
-        self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay (for slow computers)"))
+        self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay"))
         self.label_11.setToolTip(_translate("MainWindow", "Navigating between different pages (inventory, character details, etc.)"))
         self.label_11.setText(_translate("MainWindow", "Navigation speed (ms):"))
         self.label_13.setToolTip(_translate("MainWindow", "Clicking between each individual item (relics, light cones, and characters)"))

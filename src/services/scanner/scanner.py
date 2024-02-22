@@ -481,25 +481,8 @@ class HSRScanner(QObject):
                 self._nav.click()
                 self._scan_sleep(0.3)
 
-                # Get ascension by counting ascension stars
-                ascension_pos = nav_data["ascension_start"]
-                ascension = 0
-                for _ in range(6):
-                    pixel = pyautogui.pixel(
-                        *self._nav.translate_percent_to_coords(*ascension_pos)
-                    )
-                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
-                    if dist > 100:
-                        break
-
-                    ascension += 1
-                    ascension_pos = (
-                        ascension_pos[0] + nav_data["ascension_offset_x"],
-                        ascension_pos[1],
-                    )
-
+                # Get name and path
                 character_name = ""
-
                 max_retry = 5
                 retry = 0
                 while retry < max_retry and (
@@ -561,6 +544,23 @@ class HSRScanner(QObject):
                         f"Character {i + 1}: {path} / {character_name}", LogLevel.TRACE
                     )
                 prev_trailblazer = character_name.startswith("Trailblazer")
+
+                # Get ascension by counting ascension stars
+                ascension_pos = nav_data["ascension_start"]
+                ascension = 0
+                for _ in range(6):
+                    pixel = pyautogui.pixel(
+                        *self._nav.translate_percent_to_coords(*ascension_pos)
+                    )
+                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
+                    if dist > 100:
+                        break
+
+                    ascension += 1
+                    ascension_pos = (
+                        ascension_pos[0] + nav_data["ascension_offset_x"],
+                        ascension_pos[1],
+                    )
 
                 curr_page_res[i] = {
                     "name": character_name,
@@ -654,7 +654,11 @@ class HSRScanner(QObject):
         :param msg: The message to log
         :param level: The log level
         """
-        if self._config["debug"] or level in [LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR]:
+        if self._config["debug"] or level in [
+            LogLevel.INFO,
+            LogLevel.WARNING,
+            LogLevel.ERROR,
+        ]:
             self.log_signal.emit((msg, level))
 
     def _get_character_name(self) -> str:

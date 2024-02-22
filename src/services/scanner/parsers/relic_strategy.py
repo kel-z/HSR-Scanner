@@ -356,7 +356,7 @@ class RelicStrategy:
         for substat in substats:
             if not self._validate_substat(substat, rarity):
                 self._log(
-                    f'Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}".',
+                    f'Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}" for rarity {rarity}.',
                     LogLevel.ERROR,
                 )
                 return
