@@ -113,7 +113,7 @@ def preprocess_sub_stat_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    img = _preprocess_img_by_colour_filter(img, (255, 255, 255), 120)
+    img = _preprocess_img_by_colour_filter(img, (255, 255, 255), 130)
     return img
 
 

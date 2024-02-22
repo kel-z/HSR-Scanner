@@ -83,8 +83,8 @@ SCREENSHOT_COORDS = {
             "equipped": (0.45, 0.935, 0.67, 0.965),
             "equipped_avatar": (0.3525, 0.918, 0.4375, 0.966675),
             "mainStatKey": (0.115, 0.358, 0.7, 0.4),
-            "substat_names": (0.115, 0.41, 0.5, 0.6),
-            "substat_vals": (0.775, 0.41, 0.975, 0.6),
+            "substat_names": (0.115, 0.4, 0.5, 0.6),
+            "substat_vals": (0.775, 0.4, 0.975, 0.6),
         },
     }
 }
