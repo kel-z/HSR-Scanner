@@ -86,6 +86,14 @@ class LightConeStrategy:
                     stats_dict["name"] = self.extract_stats_data(
                         "name", stats_dict["name"]
                     )
+                    if not stats_dict["name"]:
+                        self._log(
+                            f'Light Cone ID {lc_id}: Failed to parse name. Setting to "Void".',
+                            LogLevel.ERROR,
+                        )
+                        stats_dict["name"] = "Void"
+                        filter_results[key] = True
+                        continue
                     stats_dict["name"], _ = self._game_data.get_closest_light_cone_name(
                         stats_dict["name"]
                     )
@@ -183,6 +191,13 @@ class LightConeStrategy:
         superimposition = stats_dict["superimposition"]
         lock = stats_dict["lock"]
         equipped = stats_dict["equipped"]
+
+        if not name:
+            self._log(
+                f'Light Cone ID {lc_id}: Failed to parse name. Setting to "Void".',
+                LogLevel.ERROR,
+            )
+            name = "Void"
 
         # Parse level, ascension, superimposition
         try:

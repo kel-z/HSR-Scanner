@@ -155,9 +155,13 @@ class RelicStrategy:
                     False,
                 )
             case "substat_vals":
-                return image_to_string(
-                    img, "0123456789S.%", 6, True, preprocess_sub_stat_img, False
-                ).replace("S", "5")
+                return (
+                    image_to_string(
+                        img, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
+                    )
+                    .replace("S", "5")
+                    .replace(",", ".")
+                )
             case _:
                 return img
 
@@ -204,6 +208,12 @@ class RelicStrategy:
             )
             level = 0
         level = int(level)
+        if not name:
+            self._log(
+                f'Relic ID {relic_id}: Failed to extract name. Defaulting to "Musketeer\'s Wild Wheat Felt Hat".',
+                LogLevel.ERROR,
+            )
+            name = "Musketeer's Wild Wheat Felt Hat"
 
         # Substats
         while "\n\n" in substat_names:
@@ -220,6 +230,16 @@ class RelicStrategy:
         metadata = self._game_data.get_relic_meta_data(name)
         set_key = metadata["set"]
         slot_key = metadata["slot"]
+        if slot_key == "Hands":
+            main_stat_key = "ATK"
+        elif slot_key == "Head":
+            main_stat_key = "HP"
+        elif not main_stat_key:
+            self._log(
+                f"Relic ID {relic_id}: Failed to extract main stat. Defaulting to ATK.",
+                LogLevel.ERROR,
+            )
+            main_stat_key = "ATK"
 
         # Check if locked/discarded by image matching
         min_dim = min(lock.size)
@@ -270,7 +290,7 @@ class RelicStrategy:
         for i in range(len(names)):
             name = names[i]
             if not name:
-                continue
+                break
 
             name, dist = self._game_data.get_closest_relic_sub_stat(name)
             if dist > 3:
@@ -339,6 +359,8 @@ class RelicStrategy:
         :param level: The level of the relic
         :param relic_id: The relic ID
         """
+        seen_substats = set()
+
         # check valid number of substats
         substats_len = len(substats)
         min_substats = min(rarity - 2 + int(level / 3), 4)
@@ -354,6 +376,12 @@ class RelicStrategy:
         max_roll_value = round(rarity - 1 + int(level / 3), 1)
         total = 0
         for substat in substats:
+            if substat["key"] in seen_substats:
+                self._log(
+                    f"Relic ID {relic_id}: More than one substat with key {substat['key']} parsed.",
+                    LogLevel.ERROR,
+                )
+                return
             if not self._validate_substat(substat, rarity):
                 self._log(
                     f'Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}" for rarity {rarity}.',

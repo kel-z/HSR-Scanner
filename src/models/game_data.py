@@ -253,7 +253,7 @@ class GameData:
             to_compare = t
             if "#" in t:
                 to_compare = t.split("#")[1]
-            dist = Levenshtein.distance(name, to_compare)
+            dist = Levenshtein.distance(name, to_compare, weights=(1, 1, 2))
             if dist < min_dist:
                 min_dist = dist
                 min_name = t

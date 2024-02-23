@@ -106,7 +106,9 @@ class HSRScanner(QObject):
         if self._config["include_uid"] and not self._interrupt_event.is_set():
             self._nav_sleep(1)
             uid_img = self._screenshot.screenshot_uid()
-            uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[:9]
+            uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
+                :9
+            ]
             if len(uid) != 9:
                 uid = image_to_string(
                     uid_img, "0123456789", 7, True, preprocess_uid_img

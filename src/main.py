@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import sys
+import traceback
 
 import pytesseract
 from pynput.keyboard import Key, Listener
@@ -568,14 +569,14 @@ class ScannerThread(QThread):
         try:
             res = asyncio.run(self._scanner.start_scan())
             if self._interrupt_requested:
-                self.error_signal.emit("Scan cancelled.")
+                self.error_signal.emit("Scan cancelled by user.")
             else:
                 self.result_signal.emit(res)
         except InterruptedScanException:
-            self.error_signal.emit("Scan cancelled.")
+            self.error_signal.emit("Scan cancelled by user.")
         except Exception as e:
             self.error_signal.emit(
-                f"Scan aborted with error {e.__class__.__name__}: {e} (Try increasing nav/scan delay in the scanner settings, or scan with a different in-game background, window resolution, or fullscreen/windowed mode.)"
+                f'Scan aborted with error {e.__class__.__name__}: {e}\nStack trace: "{traceback.format_exc()}" (Try increasing nav/scan delay in the scanner settings, or scan with a different in-game background, window resolution, or fullscreen/windowed mode.)'
             )
 
     def interrupt_scan(self) -> None:
