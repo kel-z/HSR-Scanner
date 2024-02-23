@@ -29,14 +29,13 @@ pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesserac
 class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     """HSRScannerUI handles the UI for the HSR Scanner application"""
 
-    is_scanning = False
-
     def __init__(self) -> None:
         """Constructor"""
         super().__init__()
         self._scanner_thread = None
         self._listener = InterruptListener()
-        self.settings = QSettings("kel-z", "HSRScanner")
+        self._is_running = False
+        self._settings = QSettings("kel-z", "HSRScanner")
 
         # fetch game data
         self._fetch_game_data_thread = FetchGameDataThread()
@@ -129,94 +128,94 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def load_settings(self) -> None:
         """Loads the settings for the scan"""
         self.lineEditOutputLocation.setText(
-            self.settings.value("output_location", executable_path("StarRailData"))
+            self._settings.value("output_location", executable_path("StarRailData"))
         )
         self.lineEditInventoryKey.setText(
-            self.settings.value("inventory_key", "b").upper()
+            self._settings.value("inventory_key", "b").upper()
         )
         self.lineEditCharactersKey.setText(
-            self.settings.value("characters_key", "c").upper()
+            self._settings.value("characters_key", "c").upper()
         )
         self.spinBoxLightConeMinLevel.setValue(
-            self.settings.value("min_light_cone_level", 1)
+            self._settings.value("min_light_cone_level", 1)
         )
         self.spinBoxLightConeMinRarity.setValue(
-            self.settings.value("min_light_cone_rarity", 3)
+            self._settings.value("min_light_cone_rarity", 3)
         )
-        self.spinBoxRelicMinLevel.setValue(self.settings.value("min_relic_level", 0))
-        self.spinBoxRelicMinRarity.setValue(self.settings.value("min_relic_rarity", 2))
+        self.spinBoxRelicMinLevel.setValue(self._settings.value("min_relic_level", 0))
+        self.spinBoxRelicMinRarity.setValue(self._settings.value("min_relic_rarity", 2))
         self.checkBoxScanLightCones.setChecked(
-            self.settings.value("scan_light_cones", False) == "true"
+            self._settings.value("scan_light_cones", False) == "true"
         )
         self.checkBoxScanRelics.setChecked(
-            self.settings.value("scan_relics", False) == "true"
+            self._settings.value("scan_relics", False) == "true"
         )
         self.checkBoxScanChars.setChecked(
-            self.settings.value("scan_characters", False) == "true"
+            self._settings.value("scan_characters", False) == "true"
         )
         self.checkBoxSroFormat.setChecked(
-            self.settings.value("sro_format", False) == "true"
+            self._settings.value("sro_format", False) == "true"
         )
         self.checkBoxDebugMode.setChecked(
-            self.settings.value("debug_mode", False) == "true"
+            self._settings.value("debug_mode", False) == "true"
         )
-        self.spinBoxNavDelay.setValue(self.settings.value("nav_delay", 0))
-        self.spinBoxScanDelay.setValue(self.settings.value("scan_delay", 0))
-        self.spinBoxRecentRelics.setValue(self.settings.value("recent_relics_num", 5))
+        self.spinBoxNavDelay.setValue(self._settings.value("nav_delay", 0))
+        self.spinBoxScanDelay.setValue(self._settings.value("scan_delay", 0))
+        self.spinBoxRecentRelics.setValue(self._settings.value("recent_relics_num", 5))
         self.checkBoxRecentRelicsFiveStar.setChecked(
-            self.settings.value("recent_relics_five_star", False) == "true"
+            self._settings.value("recent_relics_five_star", False) == "true"
         )
         self.checkBoxIncludeUid.setChecked(
-            self.settings.value("include_uid", False) == "true"
+            self._settings.value("include_uid", False) == "true"
         )
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
-        self.settings.setValue("output_location", self.lineEditOutputLocation.text())
-        self.settings.setValue("inventory_key", self.lineEditInventoryKey.text())
-        self.settings.setValue("characters_key", self.lineEditCharactersKey.text())
-        self.settings.setValue(
+        self._settings.setValue("output_location", self.lineEditOutputLocation.text())
+        self._settings.setValue("inventory_key", self.lineEditInventoryKey.text())
+        self._settings.setValue("characters_key", self.lineEditCharactersKey.text())
+        self._settings.setValue(
             "min_light_cone_level", self.spinBoxLightConeMinLevel.value()
         )
-        self.settings.setValue(
+        self._settings.setValue(
             "min_light_cone_rarity", self.spinBoxLightConeMinRarity.value()
         )
-        self.settings.setValue("min_relic_level", self.spinBoxRelicMinLevel.value())
-        self.settings.setValue("min_relic_rarity", self.spinBoxRelicMinRarity.value())
-        self.settings.setValue(
+        self._settings.setValue("min_relic_level", self.spinBoxRelicMinLevel.value())
+        self._settings.setValue("min_relic_rarity", self.spinBoxRelicMinRarity.value())
+        self._settings.setValue(
             "scan_light_cones", self.checkBoxScanLightCones.isChecked()
         )
-        self.settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
-        self.settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
-        self.settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
-        self.settings.setValue("debug_mode", self.checkBoxDebugMode.isChecked())
-        self.settings.setValue("nav_delay", self.spinBoxNavDelay.value())
-        self.settings.setValue("scan_delay", self.spinBoxScanDelay.value())
-        self.settings.setValue("recent_relics_num", self.spinBoxRecentRelics.value())
-        self.settings.setValue(
+        self._settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
+        self._settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
+        self._settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
+        self._settings.setValue("debug_mode", self.checkBoxDebugMode.isChecked())
+        self._settings.setValue("nav_delay", self.spinBoxNavDelay.value())
+        self._settings.setValue("scan_delay", self.spinBoxScanDelay.value())
+        self._settings.setValue("recent_relics_num", self.spinBoxRecentRelics.value())
+        self._settings.setValue(
             "recent_relics_five_star", self.checkBoxRecentRelicsFiveStar.isChecked()
         )
-        self.settings.setValue("include_uid", self.checkBoxIncludeUid.isChecked())
+        self._settings.setValue("include_uid", self.checkBoxIncludeUid.isChecked())
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
-        self.settings.setValue("output_location", executable_path("StarRailData"))
-        self.settings.setValue("inventory_key", "b")
-        self.settings.setValue("characters_key", "c")
-        self.settings.setValue("min_light_cone_level", 1)
-        self.settings.setValue("min_light_cone_rarity", 3)
-        self.settings.setValue("min_relic_level", 0)
-        self.settings.setValue("min_relic_rarity", 2)
-        self.settings.setValue("scan_light_cones", False)
-        self.settings.setValue("scan_relics", False)
-        self.settings.setValue("scan_characters", False)
-        self.settings.setValue("sro_format", False)
-        self.settings.setValue("nav_delay", 0)
-        self.settings.setValue("scan_delay", 0)
-        self.settings.setValue("recent_relics_num", 8)
-        self.settings.setValue("recent_relics_five_star", True)
-        self.settings.setValue("debug_mode", False)
-        self.settings.setValue("include_uid", False)
+        self._settings.setValue("output_location", executable_path("StarRailData"))
+        self._settings.setValue("inventory_key", "b")
+        self._settings.setValue("characters_key", "c")
+        self._settings.setValue("min_light_cone_level", 1)
+        self._settings.setValue("min_light_cone_rarity", 3)
+        self._settings.setValue("min_relic_level", 0)
+        self._settings.setValue("min_relic_rarity", 2)
+        self._settings.setValue("scan_light_cones", False)
+        self._settings.setValue("scan_relics", False)
+        self._settings.setValue("scan_characters", False)
+        self._settings.setValue("sro_format", False)
+        self._settings.setValue("nav_delay", 0)
+        self._settings.setValue("scan_delay", 0)
+        self._settings.setValue("recent_relics_num", 8)
+        self._settings.setValue("recent_relics_five_star", True)
+        self._settings.setValue("debug_mode", False)
+        self._settings.setValue("include_uid", False)
         self.load_settings()
 
     def reset_fields(self) -> None:
@@ -234,7 +233,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def start_scan(self) -> None:
         """Starts the scan"""
-        if self.is_scanning:
+        if self._is_running:
             return
         self.save_settings()
         self.reset_fields()
@@ -257,13 +256,14 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             return
 
         self.log("Starting scan...")
+
         self.to_scanner_thread(
             scanner, config["debug_output_location"] if config["debug"] else None
         )
 
     def start_scan_recent_relics(self) -> None:
         """Starts the scan for recent relics"""
-        if self.is_scanning:
+        if self._is_running:
             return
         self.save_settings()
         self.reset_fields()
@@ -467,7 +467,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def disable_start_scan_button(self) -> None:
         """Disables the start scan button and sets the text to Processing"""
-        self.is_scanning = True
+        self._is_running = True
 
         self.pushButtonStartScan.setText("Processing...")
         self.pushButtonStartScan.setEnabled(False)
@@ -477,7 +477,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def enable_start_scan_button(self) -> None:
         """Enables the start scan button and sets the text to Start Scan"""
-        self.is_scanning = False
+        self._is_running = False
 
         self.pushButtonStartScan.setText("Start Scan")
         self.pushButtonStartScan.setEnabled(True)
@@ -498,6 +498,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.textEditLog.appendPlainText(
             f"[{datetime.datetime.now().strftime('%H:%M:%S')}] [{log_level.value}] > {str(message)}"
+        )
+        self.textEditLog.verticalScrollBar().setValue(
+            self.textEditLog.verticalScrollBar().maximum()
         )
 
 
@@ -528,18 +531,18 @@ class InterruptListener(QThread):
     def __init__(self):
         """Constructor"""
         super().__init__()
-        self.listener = None
+        self._listener = None
 
     def run(self):
         """Runs the listener"""
         with Listener(on_press=self.on_press) as listener:
-            self.listener = listener
+            self._listener = listener
             listener.join()
 
     def stop(self):
         """Stops the listener"""
-        if self.listener:
-            self.listener.stop()
+        if self._listener:
+            self._listener.stop()
 
     def on_press(self, key: Key) -> None:
         """Handles the key press. If the key is enter, emit the interrupt signal
