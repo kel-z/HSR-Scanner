@@ -368,7 +368,7 @@ class HSRScanner(QObject):
             self._scan_sleep(0.5)
 
         self._nav.key_tap(Key.esc)
-        self._nav_sleep(1.5)
+        self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
         return tasks
 
@@ -646,7 +646,7 @@ class HSRScanner(QObject):
 
         self._nav_sleep(1)
         self._nav.key_tap(Key.esc)
-        self._nav_sleep(1.5)
+        self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
         return tasks
 

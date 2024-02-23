@@ -161,6 +161,7 @@ class RelicStrategy:
                     )
                     .replace("S", "5")
                     .replace(",", ".")
+                    .replace("..", ".")
                 )
             case _:
                 return img
