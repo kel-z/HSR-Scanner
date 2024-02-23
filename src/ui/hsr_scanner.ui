@@ -35,7 +35,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>HSR Scanner beta v0.7.0</string>
+   <string>HSR Scanner beta v0.6.2</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="enabled">
@@ -521,7 +521,7 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; text-decoration: underline;&quot;&gt;HSR SCANNER v0.7.0&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; text-decoration: underline;&quot;&gt;HSR SCANNER v0.6.2&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;HOW TO RUN&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;1. Set text language to English&lt;/p&gt;
@@ -695,7 +695,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>90</y>
+        <y>70</y>
         <width>171</width>
         <height>81</height>
        </rect>
@@ -771,7 +771,7 @@ p, li { white-space: pre-wrap; }
         <x>10</x>
         <y>10</y>
         <width>181</width>
-        <height>71</height>
+        <height>51</height>
        </rect>
       </property>
       <property name="title">
@@ -783,7 +783,7 @@ p, li { white-space: pre-wrap; }
          <x>10</x>
          <y>20</y>
          <width>160</width>
-         <height>42</height>
+         <height>21</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -791,6 +791,41 @@ p, li { white-space: pre-wrap; }
          <widget class="QCheckBox" name="checkBoxIncludeUid">
           <property name="text">
            <string>Include UID</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>260</y>
+        <width>201</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Developer</string>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>181</width>
+         <height>42</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QCheckBox" name="checkBoxDebugMode">
+          <property name="toolTip">
+           <string>Saves ALL screenshots</string>
+          </property>
+          <property name="text">
+           <string>Debug mode</string>
           </property>
          </widget>
         </item>
@@ -807,46 +842,11 @@ p, li { white-space: pre-wrap; }
        </layout>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_8">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>280</y>
-        <width>201</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Developer</string>
-      </property>
-      <widget class="QWidget" name="verticalLayoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>181</width>
-         <height>21</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="checkBoxDebugMode">
-          <property name="toolTip">
-           <string>Saves ALL screenshots</string>
-          </property>
-          <property name="text">
-           <string>Debug mode</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
      <widget class="QGroupBox" name="groupBox_9">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>180</y>
+        <y>160</y>
         <width>411</width>
         <height>91</height>
        </rect>
@@ -1054,9 +1054,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>350</y>
-        <width>111</width>
-        <height>41</height>
+        <y>340</y>
+        <width>101</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
