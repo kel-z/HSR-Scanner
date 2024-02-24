@@ -93,6 +93,7 @@ class GameData:
             decoded_image = base64.b64decode(base64_string)
             img = PILImage.open(BytesIO(decoded_image))
             img = np.array(img)
+            img = cv2.GaussianBlur(img, (5, 5), 0)
             self.EQUIPPED_ICONS[key] = img
 
     def get_sro_mappings(self) -> dict:
