@@ -5,14 +5,16 @@ import pyautogui
 import win32gui
 from PIL import Image as PILImage
 from pynput.keyboard import Key
-from PyQt6 import QtCore
+from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
 from enums.increment_type import IncrementType
+from enums.log_level import LogLevel
+from enums.scan_mode import ScanMode
 from models.game_data import GameData
 from utils.data import resource_path
 from utils.navigation import Navigation
-from utils.ocr import image_to_string, preprocess_char_count_img
+from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
 from utils.screenshot import Screenshot
 
 from .parsers.character_parser import CharacterParser
@@ -22,14 +24,20 @@ from .parsers.relic_strategy import RelicStrategy
 SUPPORTED_ASPECT_RATIOS = ["16:9"]
 
 
-class HSRScanner(QtCore.QObject):
+class InterruptedScanException(Exception):
+    """Exception raised when the scan is interrupted"""
+
+    pass
+
+
+class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
-    update_signal = QtCore.pyqtSignal(int)
-    log_signal = QtCore.pyqtSignal(str)
-    complete_signal = QtCore.pyqtSignal()
+    update_signal = pyqtSignal(int)
+    log_signal = pyqtSignal(object)
+    complete_signal = pyqtSignal()
 
-    def __init__(self, config: dict, game_data: GameData) -> None:
+    def __init__(self, config: dict, game_data: GameData, scan_mode: int = 0):
         """Constructor
 
         :param config: The config dict
@@ -56,8 +64,10 @@ class HSRScanner(QtCore.QObject):
             raise Exception(
                 "Honkai: Star Rail not found. Please open the game and try again."
             )
-        self._game_data = game_data
         self._config = config
+        self._game_data = game_data
+        self._scan_mode = scan_mode
+
         self._nav = Navigation(self._hwnd)
 
         self._aspect_ratio = self._nav.get_aspect_ratio()
@@ -80,54 +90,77 @@ class HSRScanner(QtCore.QObject):
     async def start_scan(self) -> dict:
         """Starts the scan
 
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         :return: The scan results
         """
+        self._log("Config: " + str(self._config), LogLevel.DEBUG)
+
         if not self._is_en:
-            self.log_signal.emit(
-                "WARNING: Non-English game name detected. The scanner only works with English text."
+            self._log(
+                "Non-English game name detected. The scanner only works with English text.",
+                LogLevel.WARNING,
             )
         self._nav.bring_window_to_foreground()
 
+        uid = None
+        if self._config["include_uid"] and not self._interrupt_event.is_set():
+            self._nav_sleep(1)
+            uid_img = self._screenshot.screenshot_uid()
+            uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
+                :9
+            ]
+            if len(uid) != 9:
+                uid = image_to_string(
+                    uid_img, "0123456789", 7, True, preprocess_uid_img
+                )[:9]
+            if len(uid) != 9:
+                self._log(f"Failed to parse UID. Got '{uid}' instead.", LogLevel.ERROR)
+                uid = None
+            else:
+                self._log(f"UID: {uid}.")
+
         light_cones = []
         if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
-            self.log_signal.emit("Scanning light cones...")
+            self._log("Scanning light cones...")
             light_cones = self.scan_inventory(
                 LightConeStrategy(
                     self._game_data,
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
+                    self._config["debug"],
                 )
             )
             (
-                self.log_signal.emit("Finished scanning light cones.")
+                self._log("Finished scanning light cones.")
                 if not self._interrupt_event.is_set()
                 else None
             )
 
         relics = []
         if self._config["scan_relics"] and not self._interrupt_event.is_set():
-            self.log_signal.emit("Scanning relics...")
+            self._log("Scanning relics...")
             relics = self.scan_inventory(
                 RelicStrategy(
                     self._game_data,
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
+                    self._config["debug"],
                 )
             )
             (
-                self.log_signal.emit("Finished scanning relics.")
+                self._log("Finished scanning relics.")
                 if not self._interrupt_event.is_set()
                 else None
             )
 
         characters = []
         if self._config["scan_characters"] and not self._interrupt_event.is_set():
-            self.log_signal.emit("Scanning characters...")
+            self._log("Scanning characters...")
             characters = self.scan_characters()
             (
-                self.log_signal.emit("Finished scanning characters.")
+                self._log("Finished scanning characters.")
                 if not self._interrupt_event.is_set()
                 else None
             )
@@ -137,11 +170,21 @@ class HSRScanner(QtCore.QObject):
             return
 
         self.complete_signal.emit()
-        self.log_signal.emit("Starting OCR process. Please wait...")
+        self._log("Starting OCR process. Please wait...")
 
         return {
             "source": "HSR-Scanner",
+            "build": "v0.6.2",
             "version": 3,
+            "metadata": {
+                "uid": int(uid) if uid else None,
+                "trailblazer": (
+                    "Stelle"
+                    if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True)
+                    == "true"
+                    else "Caelus"
+                ),
+            },
             "light_cones": await asyncio.gather(*light_cones),
             "relics": await asyncio.gather(*relics),
             "characters": await asyncio.gather(*characters),
@@ -157,6 +200,7 @@ class HSRScanner(QtCore.QObject):
         """Scans the inventory for light cones or relics
 
         :param strategy: The strategy to use
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         :raises ValueError: Thrown if the quantity could not be parsed
         :return: The tasks to await
         """
@@ -164,44 +208,58 @@ class HSRScanner(QtCore.QObject):
 
         # Navigate to correct tab from cellphone menu
         self._nav_sleep(1)
-        self._nav.key_press(Key.esc)
-        self._nav_sleep(1.5)
-        if self._interrupt_event.is_set():
-            return []
-        self._nav.key_press(self._config["inventory_key"])
-        self._nav_sleep(1)
-        if self._interrupt_event.is_set():
-            return []
-        self._nav.move_cursor_to(*nav_data["inv_tab"])
-        time.sleep(0.05)
-        self._nav.click()
+        self._nav.key_tap(Key.esc)
+        self._nav_sleep(2)
+        self._nav.key_tap(self._config["inventory_key"])
         self._nav_sleep(1.5)
 
-        # TODO: using quantity to know when to scan the bottom row is not ideal
-        #       because it will not work for tabs that do not have a quantity
-        #       (i.e. materials).
-        #
-        #       for now, it will work for light cones and relics.
-        quantity = self._screenshot.screenshot_quantity()
-        quantity = image_to_string(quantity, "0123456789/", 7)
+        # Get quantity
+        max_retry = 5
+        retry = 0
+        while True:
+            self._nav.move_cursor_to(*nav_data["inv_tab"])
+            time.sleep(0.05)
+            self._nav.click()
+            self._nav_sleep(1.5)
 
-        try:
-            self.log_signal.emit(f"Quantity: {quantity}.")
-            quantity = quantity_remaining = int(quantity.split("/")[0])
-        except ValueError:
-            raise ValueError(
-                "Failed to parse quantity."
-                + (f' Got "{quantity}" instead.' if quantity else "")
-            )
+            # TODO: using quantity to know when to scan the bottom row is not ideal
+            #       because it will not work for tabs that do not have a quantity
+            #       (i.e. materials).
+            #
+            #       for now, it will work for light cones and relics.
+            quantity = self._screenshot.screenshot_quantity()
+            quantity = image_to_string(quantity, "0123456789/", 7)
+
+            try:
+                self._log(f"Quantity: {quantity}.")
+                quantity = quantity_remaining = int(quantity.split("/")[0])
+                break
+            except ValueError:
+                retry += 1
+                if retry > max_retry:
+                    raise ValueError(
+                        "Failed to parse quantity from inventory screen."
+                        + (f' Got "{quantity}" instead.' if quantity else "")
+                    )
+                else:
+                    self._log(
+                        f"Failed to parse quantity. Retrying... ({retry}/{max_retry})",
+                        LogLevel.WARNING,
+                    )
+                self._nav_sleep(1)
 
         current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
-        current_sort_method = image_to_string(current_sort_method, "RarityLv", 7)
-        optimal_sort_method = strategy.get_optimal_sort_method(self._config["filters"])
+        current_sort_method = image_to_string(
+            current_sort_method, "RarityLvDate obtained", 7
+        )
+        optimal_sort_method = "Date obtained"
+        if self._scan_mode != ScanMode.RECENT_RELICS.value:
+            optimal_sort_method = strategy.get_optimal_sort_method(
+                self._config["filters"]
+            )
 
         if optimal_sort_method != current_sort_method:
-            self.log_signal.emit(
-                f"Sorting by {optimal_sort_method}... (was {current_sort_method})"
-            )
+            self._log(f"Sorting by {optimal_sort_method} (was {current_sort_method}).")
             self._nav.move_cursor_to(*nav_data["sort"]["button"])
             time.sleep(0.05)
             self._nav.click()
@@ -214,7 +272,17 @@ class HSRScanner(QtCore.QObject):
         tasks = set()
         scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
         num_times_scrolled = 0
-        while quantity_remaining > 0:
+        scanned = 0
+
+        def should_stop():
+            if self._scan_mode == ScanMode.RECENT_RELICS.value:
+                return (
+                    quantity_remaining <= 0
+                    or scanned >= self._config["recent_relics_num"]
+                )
+            return quantity_remaining <= 0
+
+        while not should_stop():
             if (
                 quantity_remaining <= scanned_per_scroll
                 and not quantity <= scanned_per_scroll
@@ -225,13 +293,10 @@ class HSRScanner(QtCore.QObject):
             else:
                 x, y = nav_data["row_start_top"]
 
-            for r in range(nav_data["rows"]):
-                for c in range(nav_data["cols"]):
-                    if quantity_remaining <= 0:
+            for _ in range(nav_data["rows"]):
+                for _ in range(nav_data["cols"]):
+                    if should_stop():
                         break
-
-                    if self._interrupt_event.is_set():
-                        return tasks
 
                     # Next item
                     self._nav.move_cursor_to(x, y)
@@ -246,7 +311,7 @@ class HSRScanner(QtCore.QObject):
                     x += nav_data["offset_x"]
 
                     # Check if item satisfies filters
-                    if self._config["filters"]:
+                    if "filters" in self._config:
                         filter_results, stats_dict = strategy.check_filters(
                             stats_dict,
                             self._config["filters"],
@@ -254,22 +319,31 @@ class HSRScanner(QtCore.QObject):
                         )
                         if (
                             current_sort_method == "Lv"
+                            and "min_level" in filter_results
                             and not filter_results["min_level"]
                         ):
                             quantity_remaining = 0
-                            self.log_signal.emit(
+                            self._log(
                                 f"Reached minimum level filter (got level {stats_dict['level']})."
                             )
                             break
                         if (
                             current_sort_method == "Rarity"
+                            and "min_rarity" in filter_results
                             and not filter_results["min_rarity"]
                         ):
                             quantity_remaining = 0
-                            self.log_signal.emit(
+                            self._log(
                                 f"Reached minimum rarity filter (got rarity {stats_dict['rarity']})."
                             )
                             break
+                        if (
+                            self._scan_mode == ScanMode.RECENT_RELICS.value
+                            and current_sort_method == "Date obtained"
+                            and "min_rarity" in filter_results
+                            and filter_results["min_rarity"]
+                        ):
+                            scanned += 1
                         if not all(filter_results.values()):
                             continue
 
@@ -283,37 +357,44 @@ class HSRScanner(QtCore.QObject):
                 x = nav_data["row_start_top"][0]
                 y += nav_data["offset_y"]
 
-            if quantity_remaining <= 0:
+            if should_stop():
                 break
 
             self._nav.scroll_page_down(num_times_scrolled)
             num_times_scrolled += 1
+            self._log(
+                f"Scrolling inventory, page {num_times_scrolled + 1}.", LogLevel.TRACE
+            )
 
             self._scan_sleep(0.5)
 
-        self._nav.key_press(Key.esc)
-        self._nav_sleep(1.5)
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
+        self._nav_sleep(2)
+        self._nav.key_tap(Key.esc)
         return tasks
 
     def scan_characters(self) -> set[asyncio.Task]:
         """Scans the characters
 
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         :raises ValueError: Thrown if the character count could not be parsed
         :return: The tasks to await
         """
         char_parser = CharacterParser(
-            self._game_data, self.log_signal, self.update_signal, self._interrupt_event
+            self._game_data,
+            self.log_signal,
+            self.update_signal,
+            self._interrupt_event,
+            self._config["debug"],
         )
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
         # Assume ESC menu is open
         self._nav.bring_window_to_foreground()
         self._nav_sleep(1)
-        if self._interrupt_event.is_set():
-            return []
 
         # Locate and click databank button
+        self._log("Locating Data Bank button...", LogLevel.DEBUG)
         haystack = self._screenshot.screenshot_screen()
         needle = self._databank_img.resize(
             # Scale image to match capture size
@@ -323,56 +404,68 @@ class HSRScanner(QtCore.QObject):
             )
         )
         self._nav.move_cursor_to_image(haystack, needle)
+        self._log(
+            f"Data Bank button found at {self._nav.get_mouse_position()}.",
+            LogLevel.DEBUG,
+        )
         time.sleep(0.05)
         self._nav.click()
         self._nav_sleep(1)
 
         # Get character count
-        character_total = self._screenshot.screenshot_character_count()
-        character_total = image_to_string(
-            character_total, "0123456789/", 7, True, preprocess_char_count_img
-        )
-        try:
-            self.log_signal.emit(f"Character total: {character_total}.")
-            character_total, _ = character_total.split("/")
-            character_count = character_total = int(character_total)
-        except ValueError:
-            raise ValueError(
-                "Failed to parse character count from Data Bank screen."
-                + (f' Got "{character_total}" instead.' if character_total else "")
+        max_retry = 5
+        retry = 0
+        while True:
+            character_total = self._screenshot.screenshot_character_count()
+            character_total = image_to_string(
+                character_total, "0123456789/", 7, True, preprocess_char_count_img
             )
+            try:
+                self._log(f"Character total: {character_total}.")
+                character_total = character_total.split("/")[0]
+                character_count = character_total = int(character_total)
+                break
+            except ValueError:
+                retry += 1
+                if retry > max_retry:
+                    raise ValueError(
+                        "Failed to parse character count from Data Bank screen."
+                        + (
+                            f' Got "{character_total}" instead.'
+                            if character_total
+                            else ""
+                        )
+                    )
+                else:
+                    self._log(
+                        f"Failed to parse character count. Retrying... ({retry}/{max_retry})",
+                        LogLevel.WARNING,
+                    )
+                self._nav_sleep(1)
 
         # Update UI count
         for _ in range(character_count):
             self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
 
         # Navigate to characters menu
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1)
-        if self._interrupt_event.is_set():
-            return []
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
         self._nav_sleep(1.5)
-        self._nav.key_press("1")
+        self._nav.key_tap("1")
         self._nav_sleep(0.2)
-        self._nav.key_press(self._config["characters_key"])
+        self._nav.key_tap(self._config["characters_key"])
         self._nav_sleep(1)
 
         tasks = set()
+        characters_seen = set()
         while character_count > 0:
-            if self._interrupt_event.is_set():
-                return tasks
+            if character_count > nav_data["chars_per_scan"]:
+                character_x, character_y = nav_data["char_start"]
+            else:
+                character_x, character_y = nav_data["char_end"]
+                character_x -= nav_data["offset_x"] * (character_count - 1)
 
-            character_x, character_y = (
-                nav_data["char_start"]
-                if character_count > nav_data["chars_per_scan"]
-                else nav_data["char_end"]
-            )
-            offset_x = (
-                nav_data["offset_x"]
-                if character_count > nav_data["chars_per_scan"]
-                else -nav_data["offset_x"]
-            )
             i_stop = min(character_count, nav_data["chars_per_scan"])
             curr_page_res = [{} for _ in range(i_stop)]
 
@@ -382,13 +475,78 @@ class HSRScanner(QtCore.QObject):
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(0.5)
+            prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
             while i < i_stop:
-                if self._interrupt_event.is_set():
-                    return tasks
-                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                self._nav.move_cursor_to(
+                    character_x + i * nav_data["offset_x"], character_y
+                )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.3)
+
+                # Get name and path
+                character_name = ""
+                max_retry = 5
+                retry = 0
+                while retry < max_retry and (
+                    not character_name or character_name in characters_seen
+                ):
+                    try:
+                        (self._scan_sleep(0.7) if prev_trailblazer else None)
+                        character_name = (
+                            # this has a small delay, can basically be treated as a sleep
+                            self._get_character_name()
+                        )
+                        character_img = self._screenshot.screenshot_character()
+
+                        # Trailblazer is the most prone to errors, need to ensure
+                        # that all the elements have loaded before taking screenshots
+                        # at the cost of small delay on Trailblazer
+                        is_trailblazer = char_parser.is_trailblazer(character_img)
+                        if is_trailblazer:
+                            self._scan_sleep(0.7)
+                            character_name = self._get_character_name()
+
+                        path, character_name = map(
+                            str.strip, character_name.split("/")[:2]
+                        )
+                        character_name, path = char_parser.get_closest_name_and_path(
+                            character_name, path, is_trailblazer
+                        )
+
+                        if character_name in characters_seen:
+                            self._log(
+                                f"Parsed duplicate character '{character_name}'. Retrying... ({retry + 1}/{max_retry})",
+                                LogLevel.WARNING,
+                            )
+                            self._scan_sleep(1)
+                    except Exception as e:
+                        self._log(
+                            f"Failed to parse character name. Got error: {e}. Retrying... ({retry + 1}/{max_retry})",
+                            LogLevel.WARNING,
+                        )
+                        character_name = ""
+                        self._scan_sleep(1)
+                    retry += 1
+
+                if not character_name:
+                    self._log(
+                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early.",
+                        LogLevel.ERROR,
+                    )
+                    return tasks
+
+                if character_name in characters_seen:
+                    self._log(
+                        f"Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway.",
+                        LogLevel.ERROR,
+                    )
+                else:
+                    characters_seen.add(character_name)
+                    self._log(
+                        f"Character {i + 1}: {path} / {character_name}", LogLevel.TRACE
+                    )
+                prev_trailblazer = character_name.startswith("Trailblazer")
 
                 # Get ascension by counting ascension stars
                 ascension_pos = nav_data["ascension_start"]
@@ -407,36 +565,6 @@ class HSRScanner(QtCore.QObject):
                         ascension_pos[1],
                     )
 
-                max_retry = 5
-                retry = 0
-                character_name = ""
-                while retry < max_retry and not character_name:
-                    try:
-                        character_name_img = (
-                            self._screenshot.screenshot_character_name()
-                        )
-                        character_name = image_to_string(
-                            character_name_img,
-                            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7",
-                            7,
-                        )
-                        path, character_name = map(
-                            str.strip, character_name.split("/")[:2]
-                        )
-                        character_img = self._screenshot.screenshot_character()
-                        character_name, path = char_parser.get_closest_name_and_path(
-                            character_name, path, character_img
-                        )
-                    except Exception as e:
-                        retry += 1
-                        self._scan_sleep(0.1)
-
-                if not character_name:
-                    self.log_signal.emit(
-                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early."
-                    )
-                    return tasks
-
                 curr_page_res[i] = {
                     "name": character_name,
                     "ascension": ascension,
@@ -445,6 +573,11 @@ class HSRScanner(QtCore.QObject):
                 }
                 i += 1
 
+            self._log(
+                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res])}",
+                LogLevel.TRACE,
+            )
+
             # Traces tab
             i = 0
             self._nav.move_cursor_to(*nav_data["traces_button"])
@@ -452,9 +585,9 @@ class HSRScanner(QtCore.QObject):
             self._nav.click()
             self._nav_sleep(0.4)
             while i < i_stop:
-                if self._interrupt_event.is_set():
-                    return tasks
-                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                self._nav.move_cursor_to(
+                    character_x + i * nav_data["offset_x"], character_y
+                )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.6)
@@ -465,6 +598,7 @@ class HSRScanner(QtCore.QObject):
                     "unlocks": {},
                 }
                 for k, v in nav_data["traces"][path_key].items():
+                    # Trace is unlocked if pixel is white
                     pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
                     dist = min(
                         sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
@@ -480,9 +614,9 @@ class HSRScanner(QtCore.QObject):
             self._nav.click()
             self._nav_sleep(1.5 if character_total == character_count else 0.9)
             while i < i_stop:
-                if self._interrupt_event.is_set():
-                    return tasks
-                self._nav.move_cursor_to(character_x + i * offset_x, character_y)
+                self._nav.move_cursor_to(
+                    character_x + i * nav_data["offset_x"], character_y
+                )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.5)
@@ -512,24 +646,55 @@ class HSRScanner(QtCore.QObject):
                 )
 
         self._nav_sleep(1)
-        self._nav.key_press(Key.esc)
-        self._nav_sleep(1.5)
-        self._nav.key_press(Key.esc)
+        self._nav.key_tap(Key.esc)
+        self._nav_sleep(2)
+        self._nav.key_tap(Key.esc)
         return tasks
+
+    def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
+        """Logs a message
+
+        :param msg: The message to log
+        :param level: The log level
+        """
+        if self._config["debug"] or level in [
+            LogLevel.INFO,
+            LogLevel.WARNING,
+            LogLevel.ERROR,
+        ]:
+            self.log_signal.emit((msg, level))
+
+    def _get_character_name(self) -> str:
+        """Gets the character name
+
+        :return: The character name
+        """
+        character_name_img = self._screenshot.screenshot_character_name()
+        return image_to_string(
+            character_name_img,
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7&",
+            7,
+        )
 
     def _nav_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with navigation delay
 
         :param seconds: The amount of time to sleep
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         """
         time.sleep(seconds + self._config["nav_delay"])
+        if self._interrupt_event.is_set():
+            raise InterruptedScanException()
 
     def _scan_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with scan delay
 
         :param seconds: The amount of time to sleep
+        :raises InterruptedScanException: Thrown if the scan is interrupted
         """
         time.sleep(seconds + self._config["scan_delay"])
+        if self._interrupt_event.is_set():
+            raise InterruptedScanException()
 
     def _ceildiv(self, a, b) -> int:
         """Divides a by b and rounds up

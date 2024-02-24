@@ -15,14 +15,15 @@ The resulting output can be used in various community-made optimization tools in
 
 ## Instructions
 
-1. Set in-game resolution to one that has an aspect ratio of 16:9 (e.g. 1920x1080, 1280x720).
-2. **In Star Rail, look away from any bright colours.** _Yes, really._ The inventory screen is translucent and bright colours can bleed through to make the text harder to accurately detect and recognize. Looking towards the ground usually works in most cases, as long as the right side of the screen is relatively dark. (Double-check by opening the inventory page and see if the item info on the right contrasts well with the background.) You can skip this step if you're only scanning characters.
-![Dark background example](./example.png)
-3. Open the cellphone menu (ESC menu).
-4. Configure the necessary [scanner settings](#scanner-settings-and-configurations) in HSR Scanner.
-5. Start the scan.
-6. Do not move your mouse during the scan process.
-7. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
+1. Set text language to English.
+2. Set in-game resolution to one that has an aspect ratio of 16:9 (e.g. 1920x1080, 1280x720).
+3. **In Star Rail, look away from any bright colours.** _Yes, really._ The inventory screen is translucent and bright colours can bleed through to make the text harder to accurately detect and recognize. Looking towards the ground usually works in most cases, as long as the right side of the screen is relatively dark. (Double-check by opening the inventory page and see if the item info on the right contrasts well with the background.) You can skip this step if you're only scanning characters.
+   ![Dark background example](./example.png)
+4. Open the cellphone menu (ESC menu).
+5. Configure the necessary [scanner settings](#scanner-settings-and-configurations) in HSR Scanner.
+6. Start the scan.
+7. Do not move your mouse during the scan process.
+8. Once the scan is complete, some additional time may be required to process the data before generating the final JSON file output.
 
 As of `v0.3.0`, the app's database is [updated separately](https://github.com/kel-z/HSR-Data) from this repo. If the database version doesn't match the latest game version, then the database hasn't been updated yet.
 
@@ -35,6 +36,7 @@ HSR Scanner has the following scan options:
 - Filter light cones and relics based on a minimum rarity or level threshhold.
 
 For slower systems, the scanner might perform its inputs too fast for the game to respond or render in time. To work around this, there are two types of delays that can be increased in the configure tab:
+
 - Navigation delay for navigating between different pages (inventory, character details, etc.)
 - Scan delay for clicking between individual items (relics, light cones, and characters).
 
@@ -49,6 +51,8 @@ The output is loosely based off of Genshin's `.GOOD` export format. I don't expe
 ### Notes
 
 - SPD substats have a hidden decimal place that the scanner cannot directly parse. As a result, reproducing your character's stats (such as on optimizer websites) will most likely have a lower SPD stat than what it displays in-game. This is not an issue with the scanner, but rather a limitation when obtaining substats through OCR.
+- UID will not be included by default. This can be changed in the configure tab.
+- If the Trailblazer variant cannot be determined during the scan, it will default to `Stelle`.
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
@@ -63,7 +67,12 @@ Current output sample:
 ```JSON
 {
     "source": "HSR-Scanner",
+    "build": "v0.6.2",
     "version": 3,
+    "metadata": {
+        "uid": 601869216,
+        "trailblazer": "Stelle"
+    },
     "light_cones": [
         {
             "key": "Cruising in the Stellar Sea",

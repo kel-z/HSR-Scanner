@@ -1,3 +1,5 @@
+from PyQt6.QtCore import QSettings
+
 from models.game_data import GameData
 
 SRO_SLOT_MAP = {
@@ -59,7 +61,11 @@ def convert_to_sro(data: dict, game_data: GameData) -> dict:
     }
 
     sro_mappings = game_data.get_sro_mappings()
-    trailblazer_suffix = "F" if game_data.is_trailblazer_female else "M"
+    trailblazer_suffix = (
+        "F"
+        if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True) == "true"
+        else "M"
+    )
     get_sro_character_key = lambda key: _get_sro_character_key(
         key, sro_mappings, trailblazer_suffix
     )
@@ -211,7 +217,7 @@ def _get_sro_character_key(
     if not key:
         return ""
     sro_key = sro_mappings["characters"][key]
-    if "Trailblazer" in key:
+    if key.startswith("Trailblazer"):
         sro_key += trailblazer_suffix
 
     return sro_key
