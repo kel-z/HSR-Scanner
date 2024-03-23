@@ -16,6 +16,7 @@ from utils.data import resource_path
 from utils.navigation import Navigation
 from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
 from utils.screenshot import Screenshot
+from utils.window import bring_window_to_foreground
 
 from .parsers.character_parser import CharacterParser
 from .parsers.light_cone_strategy import LightConeStrategy
@@ -100,7 +101,7 @@ class HSRScanner(QObject):
                 "Non-English game name detected. The scanner only works with English text.",
                 LogLevel.WARNING,
             )
-        self._nav.bring_window_to_foreground()
+        bring_window_to_foreground(self._hwnd)
 
         uid = None
         if self._config["include_uid"] and not self._interrupt_event.is_set():
@@ -371,6 +372,7 @@ class HSRScanner(QObject):
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
+        self._nav_sleep(1)
         return tasks
 
     def scan_characters(self) -> set[asyncio.Task]:
@@ -390,7 +392,7 @@ class HSRScanner(QObject):
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
         # Assume ESC menu is open
-        self._nav.bring_window_to_foreground()
+        bring_window_to_foreground(self._hwnd)
         self._nav_sleep(1)
 
         # Locate and click databank button
@@ -649,6 +651,7 @@ class HSRScanner(QObject):
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
+        self._nav_sleep(1)
         return tasks
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:

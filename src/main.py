@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import sys
 import traceback
+import winsound
 
 import pytesseract
 from pynput.keyboard import Key, Listener
@@ -22,6 +23,7 @@ from utils.data import (
     save_to_json,
     save_to_txt,
 )
+from utils.window import bring_window_to_foreground, flash_window
 
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
@@ -32,6 +34,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self) -> None:
         """Constructor"""
         super().__init__()
+        self._hwnd = None
         self._scanner_thread = None
         self._listener = InterruptListener()
         self._is_running = False
@@ -104,6 +107,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         super().setupUi(MainWindow)
 
+        self._hwnd = MainWindow.winId().__int__()
         self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
         self.pushButtonRestoreDefaults.clicked.connect(self.reset_settings)
@@ -173,6 +177,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxIncludeUid.setChecked(
             self._settings.value("include_uid", False) == "true"
         )
+        self.checkBoxPlaySound.setChecked(
+            self._settings.value("play_sound", True) == "true"
+        )
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
@@ -201,6 +208,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             "recent_relics_five_star", self.checkBoxRecentRelicsFiveStar.isChecked()
         )
         self._settings.setValue("include_uid", self.checkBoxIncludeUid.isChecked())
+        self._settings.setValue("play_sound", self.checkBoxPlaySound.isChecked())
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
@@ -221,6 +229,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue("recent_relics_five_star", True)
         self._settings.setValue("debug_mode", False)
         self._settings.setValue("include_uid", False)
+        self._settings.setValue("play_sound", True)
         self.load_settings()
 
     def reset_fields(self) -> None:
@@ -316,6 +325,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         scanner.log_signal.connect(self.log)
         scanner.update_signal.connect(self.increment_progress)
         scanner.complete_signal.connect(self._listener.stop)
+        scanner.complete_signal.connect(lambda: bring_window_to_foreground(self._hwnd))
 
         # initialize thread
         self._scanner_thread = ScannerThread(scanner)
@@ -356,9 +366,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # recent relics scan options
         config["recent_relics_num"] = self.spinBoxRecentRelics.value()
-        config["recent_relics_five_star"] = (
-            self.checkBoxRecentRelicsFiveStar.isChecked()
-        )
+        config[
+            "recent_relics_five_star"
+        ] = self.checkBoxRecentRelicsFiveStar.isChecked()
 
         # filters
         config["filters"] = {
@@ -427,6 +437,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             save_to_txt(
                 self.textEditLog.toPlainText(), debug_output_location, "log.txt"
             )
+        self.notify()
 
     def handle_error(self, msg: str, debug_output_location: str = None) -> None:
         """Post-scan error operations
@@ -440,6 +451,15 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             save_to_txt(
                 self.textEditLog.toPlainText(), debug_output_location, "log.txt"
             )
+        self.notify()
+        bring_window_to_foreground(self._hwnd)
+
+    def notify(self) -> None:
+        """Flashes the taskbar icon and plays a sound to notify the user"""
+
+        flash_window(self._hwnd)
+        if self.checkBoxPlaySound.isChecked():
+            winsound.MessageBeep()
 
     def increment_progress(self, enum: IncrementType) -> None:
         """Increments the number on the UI based on the enum
