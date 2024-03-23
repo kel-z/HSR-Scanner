@@ -356,9 +356,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # recent relics scan options
         config["recent_relics_num"] = self.spinBoxRecentRelics.value()
-        config[
-            "recent_relics_five_star"
-        ] = self.checkBoxRecentRelicsFiveStar.isChecked()
+        config["recent_relics_five_star"] = (
+            self.checkBoxRecentRelicsFiveStar.isChecked()
+        )
 
         # filters
         config["filters"] = {
@@ -596,9 +596,7 @@ class ScannerThread(QThread):
         self._scanner.stop_scan()
 
 
-if __name__ == "__main__":
-    import sys
-
+def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(resource_path("assets/images/app.ico")))
     MainWindow = QtWidgets.QMainWindow()
@@ -606,3 +604,7 @@ if __name__ == "__main__":
     ui.setup_ui(MainWindow)
     MainWindow.show()
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

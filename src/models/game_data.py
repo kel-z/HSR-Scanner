@@ -233,7 +233,9 @@ class GameData:
 
         return int(np.argmin(distances)) + 1
 
-    def _get_closest_match(self, name, targets: set | dict) -> str:
+    def _get_closest_match(
+        self, name: str, targets: set[str] | dict[str, dict] | list[str]
+    ) -> tuple[str, int]:
         """Get closest match from name
 
         :param name: The name to get the closest match from

@@ -226,6 +226,7 @@ class RelicStrategy:
 
         substats_res = self._parse_substats(substat_names, substat_vals, relic_id)
         self._validate_substats(substats_res, rarity, level, relic_id)
+        self._sort_substats(substats_res, relic_id)
 
         # Set and slot
         metadata = self._game_data.get_relic_meta_data(name)
@@ -394,20 +395,49 @@ class RelicStrategy:
                 str(substat["value"])
             ]
             if isinstance(roll_value, list):
-                # assume maxed
-                roll_value = roll_value[-1]
+                # assume minimum
+                roll_value = roll_value[0]
             total += roll_value
 
         total = round(total, 1)
         if total < min_roll_value:
             self._log(
                 f"Relic ID {relic_id} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}.",
-                LogLevel.ERROR,
+                LogLevel.WARNING,
             )
         elif total > max_roll_value:
             self._log(
                 f"Relic ID {relic_id} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
-                LogLevel.ERROR,
+                LogLevel.WARNING,
+            )
+
+    def _sort_substats(
+        self, substats: list[dict[str, int | float]], relic_id: int
+    ) -> None:
+        """Sorts the substats
+
+        :param substats: The substats
+        :param relic_id: The relic ID
+        """
+        SORT_ORDER = [
+            "HP",
+            "ATK",
+            "DEF",
+            "HP_",
+            "ATK_",
+            "DEF_",
+            "SPD",
+            "CRIT Rate_",
+            "CRIT DMG_",
+            "Effect Hit Rate_",
+            "Effect RES_",
+            "Break Effect_",
+        ]
+        original = substats.copy()
+        substats.sort(key=lambda x: SORT_ORDER.index(x["key"]))
+        if original != substats:
+            self._log(
+                f"Relic ID {relic_id}: Newly upgraded relic detected. Substats have been sorted.",
             )
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:

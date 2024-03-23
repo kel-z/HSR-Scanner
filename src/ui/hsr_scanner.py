@@ -210,9 +210,16 @@ class Ui_MainWindow(object):
         self.groupBox_4.setGeometry(QtCore.QRect(430, 10, 231, 381))
         self.groupBox_4.setObjectName("groupBox_4")
         self.textEdit = QtWidgets.QTextEdit(parent=self.groupBox_4)
-        self.textEdit.setGeometry(QtCore.QRect(10, 20, 211, 351))
+        self.textEdit.setGeometry(QtCore.QRect(10, 20, 211, 321))
+        self.textEdit.setDocumentTitle("")
         self.textEdit.setReadOnly(True)
+        self.textEdit.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextBrowserInteraction)
         self.textEdit.setObjectName("textEdit")
+        self.label_18 = QtWidgets.QLabel(parent=self.groupBox_4)
+        self.label_18.setGeometry(QtCore.QRect(10, 350, 71, 21))
+        self.label_18.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        self.label_18.setOpenExternalLinks(True)
+        self.label_18.setObjectName("label_18")
         self.label = QtWidgets.QLabel(parent=self.Scan)
         self.label.setGeometry(QtCore.QRect(140, 360, 161, 16))
         font = QtGui.QFont()
@@ -259,9 +266,14 @@ class Ui_MainWindow(object):
         self.groupBox_10.setGeometry(QtCore.QRect(430, 10, 231, 381))
         self.groupBox_10.setObjectName("groupBox_10")
         self.textEdit_2 = QtWidgets.QTextEdit(parent=self.groupBox_10)
-        self.textEdit_2.setGeometry(QtCore.QRect(10, 20, 211, 351))
+        self.textEdit_2.setGeometry(QtCore.QRect(10, 20, 211, 321))
         self.textEdit_2.setReadOnly(True)
         self.textEdit_2.setObjectName("textEdit_2")
+        self.label_17 = QtWidgets.QLabel(parent=self.groupBox_10)
+        self.label_17.setGeometry(QtCore.QRect(10, 350, 71, 21))
+        self.label_17.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        self.label_17.setOpenExternalLinks(True)
+        self.label_17.setObjectName("label_17")
         self.tabWidget.addTab(self.Advanced, "")
         self.Configure = QtWidgets.QWidget()
         self.Configure.setObjectName("Configure")
@@ -294,10 +306,10 @@ class Ui_MainWindow(object):
         self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
         self.groupBox_7 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_7.setGeometry(QtCore.QRect(10, 10, 181, 51))
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 10, 171, 51))
         self.groupBox_7.setObjectName("groupBox_7")
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(parent=self.groupBox_7)
-        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 160, 21))
+        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 151, 21))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -383,9 +395,14 @@ class Ui_MainWindow(object):
         self.groupBox_11.setGeometry(QtCore.QRect(430, 10, 231, 381))
         self.groupBox_11.setObjectName("groupBox_11")
         self.textEdit_3 = QtWidgets.QTextEdit(parent=self.groupBox_11)
-        self.textEdit_3.setGeometry(QtCore.QRect(10, 20, 211, 351))
+        self.textEdit_3.setGeometry(QtCore.QRect(10, 20, 211, 321))
         self.textEdit_3.setReadOnly(True)
         self.textEdit_3.setObjectName("textEdit_3")
+        self.label_16 = QtWidgets.QLabel(parent=self.groupBox_11)
+        self.label_16.setGeometry(QtCore.QRect(10, 350, 71, 21))
+        self.label_16.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        self.label_16.setOpenExternalLinks(True)
+        self.label_16.setObjectName("label_16")
         self.pushButtonRestoreDefaults = QtWidgets.QPushButton(parent=self.Configure)
         self.pushButtonRestoreDefaults.setGeometry(QtCore.QRect(10, 340, 101, 31))
         self.pushButtonRestoreDefaults.setObjectName("pushButtonRestoreDefaults")
@@ -402,7 +419,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner beta v0.6.2"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.0.0"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -436,7 +453,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v0.6.2</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.0.0</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1. Set text language to English</p>\n"
@@ -450,6 +467,7 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">- Database is updated separately from this app. If the database version doesn\'t match the latest game version, then the database hasn\'t been updated yet. You will need to check again later.</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.</p></body></html>"))
+        self.label_18.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/kel-z/HSR-Scanner/tree/main\"><span style=\" text-decoration: underline; color:#0000ff;\">GitHub</span></a></p></body></html>"))
         self.label.setText(_translate("MainWindow", "Press ENTER to cancel"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Log"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Scan), _translate("MainWindow", "Scan"))
@@ -467,13 +485,14 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">SCAN MOST RECENT RELICS</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Useful for exporting only newly acquired relics without needing to do a full relic scan.</p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.label_17.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/kel-z/HSR-Scanner/tree/main\"><span style=\" text-decoration: underline; color:#0000ff;\">GitHub</span></a></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Advanced), _translate("MainWindow", "Advanced"))
         self.groupBox_6.setTitle(_translate("MainWindow", "Hotkeys"))
         self.label_9.setText(_translate("MainWindow", "Inventory key:"))
         self.label_10.setText(_translate("MainWindow", "Characters key:"))
         self.lineEditCharactersKey.setText(_translate("MainWindow", "C"))
         self.lineEditInventoryKey.setText(_translate("MainWindow", "B"))
-        self.groupBox_7.setTitle(_translate("MainWindow", "Output"))
+        self.groupBox_7.setTitle(_translate("MainWindow", "Scan"))
         self.checkBoxIncludeUid.setText(_translate("MainWindow", "Include UID"))
         self.groupBox_8.setTitle(_translate("MainWindow", "Developer"))
         self.checkBoxDebugMode.setToolTip(_translate("MainWindow", "Saves ALL screenshots"))
@@ -499,6 +518,7 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">DEBUG MODE</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.</p></body></html>"))
+        self.label_16.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/kel-z/HSR-Scanner/tree/main\"><span style=\" text-decoration: underline; color:#0000ff;\">GitHub</span></a></p></body></html>"))
         self.pushButtonRestoreDefaults.setText(_translate("MainWindow", "Restore Defaults"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Configure), _translate("MainWindow", "Configure"))
 from ui.key_capture_line_edit import KeyCaptureLineEdit
