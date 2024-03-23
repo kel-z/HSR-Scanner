@@ -153,6 +153,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.spinBoxRelicMinLevel.setValue(self._settings.value("min_relic_level", 0))
         self.spinBoxRelicMinRarity.setValue(self._settings.value("min_relic_rarity", 2))
+        self.spinBoxCharacterMinLevel.setValue(
+            self._settings.value("min_character_level", 1)
+        )
         self.checkBoxScanLightCones.setChecked(
             self._settings.value("scan_light_cones", False) == "true"
         )
@@ -197,6 +200,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(
             "scan_light_cones", self.checkBoxScanLightCones.isChecked()
         )
+        self._settings.setValue(
+            "min_character_level", self.spinBoxCharacterMinLevel.value()
+        )
         self._settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
         self._settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
         self._settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
@@ -219,6 +225,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue("min_light_cone_rarity", 3)
         self._settings.setValue("min_relic_level", 0)
         self._settings.setValue("min_relic_rarity", 2)
+        self._settings.setValue("min_character_level", 1)
         self._settings.setValue("scan_light_cones", False)
         self._settings.setValue("scan_relics", False)
         self._settings.setValue("scan_characters", False)
@@ -366,9 +373,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # recent relics scan options
         config["recent_relics_num"] = self.spinBoxRecentRelics.value()
-        config[
-            "recent_relics_five_star"
-        ] = self.checkBoxRecentRelicsFiveStar.isChecked()
+        config["recent_relics_five_star"] = (
+            self.checkBoxRecentRelicsFiveStar.isChecked()
+        )
 
         # filters
         config["filters"] = {
@@ -379,6 +386,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             "relic": {
                 "min_level": self.spinBoxRelicMinLevel.value(),
                 "min_rarity": self.spinBoxRelicMinRarity.value(),
+            },
+            "character": {
+                "min_level": self.spinBoxCharacterMinLevel.value(),
             },
         }
 

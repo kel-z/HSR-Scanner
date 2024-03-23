@@ -466,13 +466,13 @@
            <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
           </property>
           <property name="minimum">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="maximum">
-           <number>15</number>
+           <number>80</number>
           </property>
           <property name="value">
-           <number>0</number>
+           <number>1</number>
           </property>
          </widget>
         </item>

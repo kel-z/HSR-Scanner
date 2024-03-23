@@ -69,13 +69,8 @@ class CharacterParser:
         }
 
         level = stats_dict["level"]
-        res = image_to_string(level, "0123456789", 7, True)
-        if not res:
-            res = image_to_string(level, "0123456789", 6, True)
-        level = res
-
         try:
-            character["level"] = int(level)
+            character["level"] = self.get_level(level)
         except ValueError:
             self._log(
                 f"{character['key']}: Failed to parse level."
@@ -117,6 +112,24 @@ class CharacterParser:
         self._update_signal.emit(IncrementType.CHARACTER_SUCCESS.value)
 
         return character
+
+    def get_level(self, level: Image | str | int) -> int:
+        """Get the level if level is an image, otherwise return the level as is
+
+        :param level: The level image, string, or integer
+        :return: The level
+        """
+        if isinstance(level, int):
+            return level
+
+        res = (
+            image_to_string(level, "0123456789", 7, True)
+            if isinstance(level, Image)
+            else level
+        )
+        if not res or not res.isdigit():
+            res = image_to_string(level, "0123456789", 6, True)
+        return int(res)
 
     def get_closest_name_and_path(
         self, name: str, path: str, is_trailblazer: bool
