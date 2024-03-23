@@ -211,7 +211,7 @@ class RelicStrategy:
         level = int(level)
         if not name:
             self._log(
-                f'Relic ID {relic_id}: Failed to extract name. Defaulting to "Musketeer\'s Wild Wheat Felt Hat".',
+                f'Relic ID {relic_id}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
                 LogLevel.ERROR,
             )
             name = "Musketeer's Wild Wheat Felt Hat"
@@ -238,18 +238,32 @@ class RelicStrategy:
             main_stat_key = "HP"
         elif not main_stat_key:
             self._log(
-                f"Relic ID {relic_id}: Failed to extract main stat. Defaulting to ATK.",
+                f"Relic ID {relic_id}: Failed to extract main stat. Setting to ATK.",
                 LogLevel.ERROR,
             )
             main_stat_key = "ATK"
 
         # Check if locked/discarded by image matching
         min_dim = min(lock.size)
-        lock_img = self._lock_icon.resize((min_dim, min_dim))
-        lock = locate(lock_img, lock, confidence=0.3) is not None
+        try:
+            lock_img = self._lock_icon.resize((min_dim, min_dim))
+            lock = locate(lock_img, lock, confidence=0.3) is not None
+        except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
+            self._log(
+                f"Relic ID {relic_id}: Failed to parse lock. Setting to False.",
+                LogLevel.ERROR,
+            )
+            lock = False
         min_dim = min(discard.size)
-        discard_img = self._discard_icon.resize((min_dim, min_dim))
-        discard = locate(discard_img, discard, confidence=0.3) is not None
+        try:
+            discard_img = self._discard_icon.resize((min_dim, min_dim))
+            discard = locate(discard_img, discard, confidence=0.3) is not None
+        except Exception:
+            self._log(
+                f"Relic ID {relic_id}: Failed to parse discard. Setting to False.",
+                LogLevel.ERROR,
+            )
+            discard = False
 
         location = ""
         if equipped == "Equipped":
@@ -403,12 +417,12 @@ class RelicStrategy:
         if total < min_roll_value:
             self._log(
                 f"Relic ID {relic_id} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}.",
-                LogLevel.WARNING,
+                LogLevel.ERROR,
             )
         elif total > max_roll_value:
             self._log(
                 f"Relic ID {relic_id} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
-                LogLevel.WARNING,
+                LogLevel.ERROR,
             )
 
     def _sort_substats(

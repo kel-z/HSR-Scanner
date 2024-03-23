@@ -206,7 +206,7 @@ class LightConeStrategy:
             max_level = int(max_level)
         except ValueError:
             self._log(
-                f"Light Cone ID {lc_id}: Error parsing level, setting to 1.",
+                f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1.",
                 LogLevel.ERROR,
             )
             level = 1
@@ -218,16 +218,23 @@ class LightConeStrategy:
             superimposition = int(superimposition)
         except ValueError:
             self._log(
-                f"Light Cone ID {lc_id}: Error parsing superimposition, setting to 1.",
+                f"Light Cone ID {lc_id}: Failed to parse superimposition. Setting to 1.",
                 LogLevel.ERROR,
             )
             superimposition = 1
 
         min_dim = min(lock.size)
-        locked = self._lock_icon.resize((min_dim, min_dim))
+        try:
+            locked = self._lock_icon.resize((min_dim, min_dim))
 
-        # Check if locked by image matching
-        lock = locate(locked, lock, confidence=0.1) is not None
+            # Check if locked by image matching
+            lock = locate(locked, lock, confidence=0.1) is not None
+        except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
+            self._log(
+                f"Light Cone ID {lc_id}: Failed to parse lock. Setting to False.",
+                LogLevel.ERROR,
+            )
+            lock = False
 
         location = ""
         if equipped == "Equipped":
