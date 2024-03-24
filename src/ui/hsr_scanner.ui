@@ -304,7 +304,17 @@
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_2">
-        <item row="1" column="0">
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_2">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Light Cone options</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_3">
           <property name="enabled">
            <bool>true</bool>
@@ -314,7 +324,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QSpinBox" name="spinBoxLightConeMinRarity">
           <property name="enabled">
            <bool>true</bool>
@@ -333,7 +343,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="label_4">
           <property name="enabled">
            <bool>true</bool>
@@ -343,7 +353,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <widget class="QSpinBox" name="spinBoxLightConeMinLevel">
           <property name="enabled">
            <bool>true</bool>
@@ -359,16 +369,6 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label_2">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Light Cone options</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="formLayoutWidget_3">
@@ -381,14 +381,21 @@
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_4">
-        <item row="1" column="0">
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Relic options</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
            <string>Min Rarity:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QSpinBox" name="spinBoxRelicMinRarity">
           <property name="correctionMode">
            <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
@@ -404,21 +411,14 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
            <string>Min Level:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>Relic options</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <widget class="QSpinBox" name="spinBoxRelicMinLevel">
           <property name="correctionMode">
            <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
@@ -466,10 +466,10 @@
            <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
           </property>
           <property name="minimum">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="maximum">
-           <number>80</number>
+           <number>15</number>
           </property>
           <property name="value">
            <number>1</number>
