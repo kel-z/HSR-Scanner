@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import os
 import sys
 import traceback
 import winsound
@@ -25,6 +26,8 @@ from utils.data import (
 )
 from utils.window import bring_window_to_foreground, flash_window
 
+# set environment variables for Tesseract
+os.environ["TESSDATA_PREFIX"] = resource_path("assets/tesseract/tessdata")
 pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
 
