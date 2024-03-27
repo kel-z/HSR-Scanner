@@ -249,9 +249,8 @@ class HSRScanner(QObject):
                     )
                 self._nav_sleep(1)
 
-        current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
         current_sort_method = image_to_string(
-            current_sort_method, "RarityLvDate obtained", 7
+            self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
         )
         optimal_sort_method = "Date obtained"
         if self._scan_mode != ScanMode.RECENT_RELICS.value:

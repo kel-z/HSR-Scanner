@@ -201,7 +201,7 @@ class Ui_MainWindow(object):
         self.spinBoxCharacterMinLevel = QtWidgets.QSpinBox(parent=self.formLayoutWidget_5)
         self.spinBoxCharacterMinLevel.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
         self.spinBoxCharacterMinLevel.setMinimum(0)
-        self.spinBoxCharacterMinLevel.setMaximum(15)
+        self.spinBoxCharacterMinLevel.setMaximum(80)
         self.spinBoxCharacterMinLevel.setProperty("value", 1)
         self.spinBoxCharacterMinLevel.setObjectName("spinBoxCharacterMinLevel")
         self.formLayout_7.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.spinBoxCharacterMinLevel)
