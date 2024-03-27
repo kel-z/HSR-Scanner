@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>700</width>
-    <height>450</height>
+    <height>560</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -22,20 +22,20 @@
   <property name="minimumSize">
    <size>
     <width>700</width>
-    <height>450</height>
+    <height>560</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>700</width>
-    <height>450</height>
+    <height>560</height>
    </size>
   </property>
   <property name="mouseTracking">
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>HSR Scanner beta v0.6.2</string>
+   <string>HSR Scanner v1.0.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="enabled">
@@ -50,7 +50,7 @@
       <x>10</x>
       <y>10</y>
       <width>681</width>
-      <height>431</height>
+      <height>541</height>
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -83,7 +83,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>151</width>
+        <width>131</width>
         <height>101</height>
        </rect>
       </property>
@@ -128,7 +128,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>350</y>
+        <y>460</y>
         <width>111</width>
         <height>41</height>
        </rect>
@@ -141,7 +141,7 @@
       <property name="geometry">
        <rect>
         <x>270</x>
-        <y>210</y>
+        <y>320</y>
         <width>151</width>
         <height>91</height>
        </rect>
@@ -285,9 +285,9 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>170</x>
-        <y>10</y>
-        <width>251</width>
+        <x>10</x>
+        <y>120</y>
+        <width>411</width>
         <height>101</height>
        </rect>
       </property>
@@ -304,7 +304,17 @@
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_2">
-        <item row="1" column="0">
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_2">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Light Cone options</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_3">
           <property name="enabled">
            <bool>true</bool>
@@ -314,7 +324,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QSpinBox" name="spinBoxLightConeMinRarity">
           <property name="enabled">
            <bool>true</bool>
@@ -333,7 +343,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="label_4">
           <property name="enabled">
            <bool>true</bool>
@@ -343,7 +353,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <widget class="QSpinBox" name="spinBoxLightConeMinLevel">
           <property name="enabled">
            <bool>true</bool>
@@ -359,36 +369,33 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label_2">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>Light Cone options</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="formLayoutWidget_3">
        <property name="geometry">
         <rect>
-         <x>130</x>
+         <x>150</x>
          <y>20</y>
          <width>111</width>
          <height>71</height>
         </rect>
        </property>
        <layout class="QFormLayout" name="formLayout_4">
-        <item row="1" column="0">
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Relic options</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
            <string>Min Rarity:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QSpinBox" name="spinBoxRelicMinRarity">
           <property name="correctionMode">
            <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
@@ -404,21 +411,14 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="1" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
            <string>Min Level:</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>Relic options</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
+        <item row="1" column="1">
          <widget class="QSpinBox" name="spinBoxRelicMinLevel">
           <property name="correctionMode">
            <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
@@ -436,12 +436,54 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="formLayoutWidget_5">
+       <property name="geometry">
+        <rect>
+         <x>290</x>
+         <y>20</y>
+         <width>111</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <layout class="QFormLayout" name="formLayout_7">
+        <item row="0" column="0" colspan="2">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>Character options</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="text">
+           <string>Min Level:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSpinBox" name="spinBoxCharacterMinLevel">
+          <property name="correctionMode">
+           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>80</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_3">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>120</y>
+        <y>230</y>
         <width>411</width>
         <height>81</height>
        </rect>
@@ -498,7 +540,7 @@
         <x>430</x>
         <y>10</y>
         <width>231</width>
-        <height>381</height>
+        <height>491</height>
        </rect>
       </property>
       <property name="title">
@@ -510,8 +552,11 @@
          <x>10</x>
          <y>20</y>
          <width>211</width>
-         <height>351</height>
+         <height>431</height>
         </rect>
+       </property>
+       <property name="documentTitle">
+        <string/>
        </property>
        <property name="readOnly">
         <bool>true</bool>
@@ -521,7 +566,7 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; text-decoration: underline;&quot;&gt;HSR SCANNER v0.6.2&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; text-decoration: underline;&quot;&gt;HSR SCANNER v1.0.0&lt;/span&gt;&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;HOW TO RUN&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;1. Set text language to English&lt;/p&gt;
@@ -532,9 +577,32 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; text-decoration: underline;&quot;&gt;NOTES&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#ff0000;&quot;&gt;- &lt;/span&gt;&lt;span style=&quot; font-size:8pt; color:#ff0000;&quot;&gt;The inventory screen is translucent and overall accuracy can be influenced by poor text contrast. &lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600; color:#ff0000;&quot;&gt;Make sure the item details and quantity number have a dark background before starting the scan.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- Certain dual monitor configurations can cause screenshots to capture incorrectly. If this is the case, try moving HSR to a different monitor before retrying the scan. HDR should also be off to ensure OCR accuracy.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- Database is updated separately from this app. If the database version doesn't match the latest game version, then the database hasn't been updated yet. You will need to check again later.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextBrowserInteraction</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_18">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>460</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/kel-z/HSR-Scanner/tree/main&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>
@@ -542,7 +610,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>140</x>
-        <y>360</y>
+        <y>470</y>
         <width>161</width>
         <height>16</height>
        </rect>
@@ -560,7 +628,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>210</y>
+        <y>320</y>
         <width>251</width>
         <height>131</height>
        </rect>
@@ -655,7 +723,7 @@ p, li { white-space: pre-wrap; }
         <x>430</x>
         <y>10</y>
         <width>231</width>
-        <height>381</height>
+        <height>491</height>
        </rect>
       </property>
       <property name="title">
@@ -667,7 +735,7 @@ p, li { white-space: pre-wrap; }
          <x>10</x>
          <y>20</y>
          <width>211</width>
-         <height>351</height>
+         <height>431</height>
         </rect>
        </property>
        <property name="readOnly">
@@ -685,6 +753,25 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_17">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>460</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/kel-z/HSR-Scanner/tree/main&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="Configure">
@@ -695,7 +782,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>70</y>
+        <y>90</y>
         <width>171</width>
         <height>81</height>
        </rect>
@@ -771,19 +858,19 @@ p, li { white-space: pre-wrap; }
         <x>10</x>
         <y>10</y>
         <width>181</width>
-        <height>51</height>
+        <height>71</height>
        </rect>
       </property>
       <property name="title">
-       <string>Output</string>
+       <string>Scan</string>
       </property>
       <widget class="QWidget" name="verticalLayoutWidget_2">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>160</width>
-         <height>21</height>
+         <width>161</width>
+         <height>42</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -794,6 +881,13 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxPlaySound">
+          <property name="text">
+           <string>Play sound on completion</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
@@ -801,7 +895,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>260</y>
+        <y>280</y>
         <width>201</width>
         <height>71</height>
        </rect>
@@ -846,7 +940,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>160</y>
+        <y>180</y>
         <width>411</width>
         <height>91</height>
        </rect>
@@ -1017,7 +1111,7 @@ p, li { white-space: pre-wrap; }
         <x>430</x>
         <y>10</y>
         <width>231</width>
-        <height>381</height>
+        <height>491</height>
        </rect>
       </property>
       <property name="title">
@@ -1029,7 +1123,7 @@ p, li { white-space: pre-wrap; }
          <x>10</x>
          <y>20</y>
          <width>211</width>
-         <height>351</height>
+         <height>431</height>
         </rect>
        </property>
        <property name="readOnly">
@@ -1049,12 +1143,31 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
+      <widget class="QLabel" name="label_16">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>460</y>
+         <width>71</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/kel-z/HSR-Scanner/tree/main&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::RichText</enum>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
      <widget class="QPushButton" name="pushButtonRestoreDefaults">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>340</y>
+        <y>360</y>
         <width>101</width>
         <height>31</height>
        </rect>

@@ -211,7 +211,7 @@ class RelicStrategy:
         level = int(level)
         if not name:
             self._log(
-                f'Relic ID {relic_id}: Failed to extract name. Defaulting to "Musketeer\'s Wild Wheat Felt Hat".',
+                f'Relic ID {relic_id}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
                 LogLevel.ERROR,
             )
             name = "Musketeer's Wild Wheat Felt Hat"
@@ -226,6 +226,7 @@ class RelicStrategy:
 
         substats_res = self._parse_substats(substat_names, substat_vals, relic_id)
         self._validate_substats(substats_res, rarity, level, relic_id)
+        self._sort_substats(substats_res, relic_id)
 
         # Set and slot
         metadata = self._game_data.get_relic_meta_data(name)
@@ -237,18 +238,32 @@ class RelicStrategy:
             main_stat_key = "HP"
         elif not main_stat_key:
             self._log(
-                f"Relic ID {relic_id}: Failed to extract main stat. Defaulting to ATK.",
+                f"Relic ID {relic_id}: Failed to extract main stat. Setting to ATK.",
                 LogLevel.ERROR,
             )
             main_stat_key = "ATK"
 
         # Check if locked/discarded by image matching
         min_dim = min(lock.size)
-        lock_img = self._lock_icon.resize((min_dim, min_dim))
-        lock = locate(lock_img, lock, confidence=0.3) is not None
+        try:
+            lock_img = self._lock_icon.resize((min_dim, min_dim))
+            lock = locate(lock_img, lock, confidence=0.3) is not None
+        except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
+            self._log(
+                f"Relic ID {relic_id}: Failed to parse lock. Setting to False.",
+                LogLevel.ERROR,
+            )
+            lock = False
         min_dim = min(discard.size)
-        discard_img = self._discard_icon.resize((min_dim, min_dim))
-        discard = locate(discard_img, discard, confidence=0.3) is not None
+        try:
+            discard_img = self._discard_icon.resize((min_dim, min_dim))
+            discard = locate(discard_img, discard, confidence=0.3) is not None
+        except Exception:
+            self._log(
+                f"Relic ID {relic_id}: Failed to parse discard. Setting to False.",
+                LogLevel.ERROR,
+            )
+            discard = False
 
         location = ""
         if equipped == "Equipped":
@@ -394,8 +409,8 @@ class RelicStrategy:
                 str(substat["value"])
             ]
             if isinstance(roll_value, list):
-                # assume maxed
-                roll_value = roll_value[-1]
+                # assume minimum
+                roll_value = roll_value[0]
             total += roll_value
 
         total = round(total, 1)
@@ -408,6 +423,35 @@ class RelicStrategy:
             self._log(
                 f"Relic ID {relic_id} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
                 LogLevel.ERROR,
+            )
+
+    def _sort_substats(
+        self, substats: list[dict[str, int | float]], relic_id: int
+    ) -> None:
+        """Sorts the substats
+
+        :param substats: The substats
+        :param relic_id: The relic ID
+        """
+        SORT_ORDER = [
+            "HP",
+            "ATK",
+            "DEF",
+            "HP_",
+            "ATK_",
+            "DEF_",
+            "SPD",
+            "CRIT Rate_",
+            "CRIT DMG_",
+            "Effect Hit Rate_",
+            "Effect RES_",
+            "Break Effect_",
+        ]
+        original = substats.copy()
+        substats.sort(key=lambda x: SORT_ORDER.index(x["key"]))
+        if original != substats:
+            self._log(
+                f"Relic ID {relic_id}: Newly upgraded relic detected. Substats have been sorted.",
             )
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:

@@ -67,26 +67,13 @@ class Screenshot:
             case _:
                 raise ValueError(f"Invalid scan type: {scan_type.name}.")
 
-    def screenshot_sort(self, scan_type: IncrementType) -> Image:
+    def screenshot_sort(self) -> Image:
         """Takes a screenshot of the sort button
 
-        :param scan_type: The scan type
-        :raises ValueError: Thrown if the scan type is invalid
         :return: The screenshot
         """
-        match IncrementType(scan_type):
-            case IncrementType.LIGHT_CONE_ADD:
-                return self._take_screenshot(
-                    *SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
-                )
-            case IncrementType.RELIC_ADD:
-                # need to adjust coordinates for relic sort button because it's not in the same place as the light cone sort button
-                coords = SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
-                coords = (coords[0] + 0.035, coords[1], coords[2], coords[3])
-
-                return self._take_screenshot(*coords)
-            case _:
-                raise ValueError(f"Invalid scan type: {scan_type.name}.")
+        coords = SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
+        return self._take_screenshot(*coords)
 
     def screenshot_quantity(self) -> Image:
         """Takes a screenshot of the quantity

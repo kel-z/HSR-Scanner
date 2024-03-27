@@ -16,6 +16,7 @@ from utils.data import resource_path
 from utils.navigation import Navigation
 from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
 from utils.screenshot import Screenshot
+from utils.window import bring_window_to_foreground
 
 from .parsers.character_parser import CharacterParser
 from .parsers.light_cone_strategy import LightConeStrategy
@@ -100,7 +101,7 @@ class HSRScanner(QObject):
                 "Non-English game name detected. The scanner only works with English text.",
                 LogLevel.WARNING,
             )
-        self._nav.bring_window_to_foreground()
+        bring_window_to_foreground(self._hwnd)
 
         uid = None
         if self._config["include_uid"] and not self._interrupt_event.is_set():
@@ -174,7 +175,7 @@ class HSRScanner(QObject):
 
         return {
             "source": "HSR-Scanner",
-            "build": "v0.6.2",
+            "build": "v1.0.0",
             "version": 3,
             "metadata": {
                 "uid": int(uid) if uid else None,
@@ -248,9 +249,8 @@ class HSRScanner(QObject):
                     )
                 self._nav_sleep(1)
 
-        current_sort_method = self._screenshot.screenshot_sort(strategy.SCAN_TYPE)
         current_sort_method = image_to_string(
-            current_sort_method, "RarityLvDate obtained", 7
+            self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
         )
         optimal_sort_method = "Date obtained"
         if self._scan_mode != ScanMode.RECENT_RELICS.value:
@@ -371,6 +371,7 @@ class HSRScanner(QObject):
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
+        self._nav_sleep(1)
         return tasks
 
     def scan_characters(self) -> set[asyncio.Task]:
@@ -390,7 +391,7 @@ class HSRScanner(QObject):
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
         # Assume ESC menu is open
-        self._nav.bring_window_to_foreground()
+        bring_window_to_foreground(self._hwnd)
         self._nav_sleep(1)
 
         # Locate and click databank button
@@ -442,10 +443,6 @@ class HSRScanner(QObject):
                         LogLevel.WARNING,
                     )
                 self._nav_sleep(1)
-
-        # Update UI count
-        for _ in range(character_count):
-            self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
 
         # Navigate to characters menu
         self._nav.key_tap(Key.esc)
@@ -571,10 +568,39 @@ class HSRScanner(QObject):
                     "path": path,
                     "level": self._screenshot.screenshot_character_level(),
                 }
+
+                # Check if character satisfies level filter
+                min_level = self._config["filters"]["character"].get("min_level", 1)
+                if min_level > 1:
+                    curr_page_res[i]["level"] = character_level = char_parser.get_level(
+                        curr_page_res[i]["level"]
+                    )
+                    if (
+                        character_level < min_level
+                        and character_total - character_count < 4
+                    ):
+                        self._log(
+                            f"{character_name} is below minimum level filter (got level {character_level}). Skipping...",
+                            LogLevel.TRACE,
+                        )
+                        curr_page_res[i] = {}
+                        i += 1
+                        continue
+                    elif character_level < min_level:
+                        self._log(
+                            f"Reached minimum level filter (got level {character_level} for {character_name}).",
+                        )
+                        character_count = 0
+                        i_stop = i
+                        curr_page_res = curr_page_res[:i]
+                        break
+
+                # Update UI count
+                self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
                 i += 1
 
             self._log(
-                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res])}",
+                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res if c])}",
                 LogLevel.TRACE,
             )
 
@@ -585,6 +611,9 @@ class HSRScanner(QObject):
             self._nav.click()
             self._nav_sleep(0.4)
             while i < i_stop:
+                if not curr_page_res[i]:
+                    i += 1
+                    continue
                 self._nav.move_cursor_to(
                     character_x + i * nav_data["offset_x"], character_y
                 )
@@ -614,6 +643,9 @@ class HSRScanner(QObject):
             self._nav.click()
             self._nav_sleep(1.5 if character_total == character_count else 0.9)
             while i < i_stop:
+                if not curr_page_res[i]:
+                    i += 1
+                    continue
                 self._nav.move_cursor_to(
                     character_x + i * nav_data["offset_x"], character_y
                 )
@@ -627,6 +659,8 @@ class HSRScanner(QObject):
 
             for stats_dict in curr_page_res:
                 character_count -= 1
+                if not stats_dict:
+                    continue
                 task = asyncio.to_thread(char_parser.parse, stats_dict)
                 tasks.add(task)
 
@@ -649,6 +683,7 @@ class HSRScanner(QObject):
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
+        self._nav_sleep(1)
         return tasks
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:

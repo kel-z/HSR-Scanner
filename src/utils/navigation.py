@@ -7,6 +7,8 @@ import win32gui
 from PIL.Image import Image
 from pynput import keyboard, mouse
 
+from utils.window import bring_window_to_foreground
+
 
 class Navigation:
     """Navigation class for navigating the game window"""
@@ -19,20 +21,12 @@ class Navigation:
         self._hwnd = hwnd
         self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
         if self._width == 0 or self._height == 0:
-            self.bring_window_to_foreground(9)
+            bring_window_to_foreground(hwnd, 9)
             self._width, self._height = win32gui.GetClientRect(self._hwnd)[2:]
         self._left, self._top = win32gui.ClientToScreen(self._hwnd, (0, 0))
 
         self._mouse = mouse.Controller()
         self._keyboard = keyboard.Controller()
-
-    def bring_window_to_foreground(self, cmd_show: int = 5) -> None:
-        """Bring the game window to the foreground
-
-        :param cmd_show: The command to show the window, defaults to 5
-        """
-        win32gui.ShowWindow(self._hwnd, cmd_show)
-        win32gui.SetForegroundWindow(self._hwnd)
 
     def translate_percent_to_coords(
         self, x_percent: float, y_percent: float
@@ -180,6 +174,11 @@ class Navigation:
         :return: The aspect ratio of the game window
         """
         x, y = self._width, self._height
+
+        # handle 1366x768 as a special case since it's an approximation of 16:9 and a common resolution
+        if x == 1366 and y == 768:
+            return "16:9"
+
         gcd = self._gcd(x, y)
         return f"{x // gcd}:{y // gcd}"
 
