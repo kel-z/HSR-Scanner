@@ -115,9 +115,6 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
         self.pushButtonRestoreDefaults.clicked.connect(self.reset_settings)
 
-        # delete the Advanced tab for now
-        self.tabWidget.removeTab(1)
-
         self.load_settings()
 
     def change_output_location(self) -> None:
