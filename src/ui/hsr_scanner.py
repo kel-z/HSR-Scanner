@@ -54,19 +54,21 @@ class Ui_MainWindow(object):
         self.checkBoxScanChars.setEnabled(True)
         self.checkBoxScanChars.setObjectName("checkBoxScanChars")
         self.verticalLayout.addWidget(self.checkBoxScanChars)
-        self.formLayout.setLayout(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.verticalLayout)
+        self.formLayout.setLayout(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.verticalLayout)
         self.pushButtonStartScan = QtWidgets.QPushButton(parent=self.Scan)
         self.pushButtonStartScan.setEnabled(False)
         self.pushButtonStartScan.setGeometry(QtCore.QRect(10, 460, 111, 41))
         self.pushButtonStartScan.setObjectName("pushButtonStartScan")
         self.groupBox = QtWidgets.QGroupBox(parent=self.Scan)
-        self.groupBox.setGeometry(QtCore.QRect(270, 320, 151, 91))
+        self.groupBox.setGeometry(QtCore.QRect(150, 10, 271, 101))
         self.groupBox.setObjectName("groupBox")
         self.formLayoutWidget = QtWidgets.QWidget(parent=self.groupBox)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 20, 131, 61))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 20, 251, 71))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout_3 = QtWidgets.QFormLayout(self.formLayoutWidget)
+        self.formLayout_3.setFormAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.formLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.formLayout_3.setVerticalSpacing(6)
         self.formLayout_3.setObjectName("formLayout_3")
         self.label_23 = QtWidgets.QLabel(parent=self.formLayoutWidget)
         self.label_23.setObjectName("label_23")
@@ -246,10 +248,10 @@ class Ui_MainWindow(object):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.groupBox_5 = QtWidgets.QGroupBox(parent=self.Scan)
-        self.groupBox_5.setGeometry(QtCore.QRect(10, 320, 251, 131))
+        self.groupBox_5.setGeometry(QtCore.QRect(10, 320, 411, 131))
         self.groupBox_5.setObjectName("groupBox_5")
         self.textEditLog = QtWidgets.QPlainTextEdit(parent=self.groupBox_5)
-        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 231, 101))
+        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 391, 101))
         self.textEditLog.setReadOnly(True)
         self.textEditLog.setObjectName("textEditLog")
         self.tabWidget.addTab(self.Scan, "")
@@ -441,7 +443,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.0.0"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.1.0-pre.1"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -477,7 +479,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.0.0</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.1.0-pre.1</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1. Set text language to English</p>\n"
