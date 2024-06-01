@@ -72,6 +72,7 @@ SCREENSHOT_COORDS = {
             "superimposition": (0.53, 0.495, 0.6, 0.55),
             "equipped": (0.45, 0.935, 0.67, 0.965),
             "equipped_avatar": (0.3505, 0.916, 0.4375, 0.966675),
+            "equipped_avatar_trailblazer": (0.3905, 0.916, 0.4775, 0.966675),
             "lock": (0.896, 0.321, 0.97, 0.365),
         },
         "relic": {
@@ -82,6 +83,7 @@ SCREENSHOT_COORDS = {
             "rarity": (0.07, 0.15, 0.2, 0.22),
             "equipped": (0.45, 0.935, 0.67, 0.965),
             "equipped_avatar": (0.3505, 0.916, 0.4375, 0.966675),
+            "equipped_avatar_trailblazer": (0.3905, 0.916, 0.4775, 0.966675),
             "mainStatKey": (0.11, 0.358, 0.7, 0.4),
             "substat_names": (0.11, 0.4, 0.5, 0.6),
             "substat_vals": (0.775, 0.4, 0.975, 0.6),
