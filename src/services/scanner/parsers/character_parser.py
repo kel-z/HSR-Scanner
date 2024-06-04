@@ -91,10 +91,33 @@ class CharacterParser:
         for k, v in traces_dict["levels"].items():
             try:
                 res = image_to_string(v, "0123456789/", 6, True, preprocess_trace_img)
-                if not res or not res.find("/"):
+
+                # If the first OCR attempt failed, try again with different parameters
+                if not res or "/" not in res:
+                    self._log(
+                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
+                        LogLevel.DEBUG,
+                    )
+                    res = image_to_string(
+                        v, "0123456789/", 6, False, preprocess_trace_img
+                    )
+                if not res or "/" not in res:
+                    self._log(
+                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
+                        LogLevel.DEBUG,
+                    )
                     res = image_to_string(
                         v, "0123456789/", 7, True, preprocess_trace_img
                     )
+                if not res or "/" not in res:
+                    self._log(
+                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
+                        LogLevel.DEBUG,
+                    )
+                    res = image_to_string(
+                        v, "0123456789/", 7, False, preprocess_trace_img
+                    )
+
                 character["skills"][k] += int(res.split("/")[0])
                 if not 1 <= character["skills"][k] <= (6 if k == "basic" else 10):
                     raise ValueError

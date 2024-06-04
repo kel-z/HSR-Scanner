@@ -1,11 +1,9 @@
 import asyncio
 import datetime
-import os
 import sys
 import traceback
 import winsound
 
-import pytesseract
 from pynput.keyboard import Key, Listener
 from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import QSettings, QThread, QUrl, pyqtSignal
@@ -25,10 +23,6 @@ from utils.data import (
     save_to_txt,
 )
 from utils.window import bring_window_to_foreground, flash_window
-
-# set environment variables for Tesseract
-os.environ["TESSDATA_PREFIX"] = resource_path("assets/tesseract/tessdata")
-pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
 
 
 class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):

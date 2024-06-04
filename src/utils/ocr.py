@@ -1,12 +1,20 @@
+import os
+
 import cv2
 import numpy as np
 import pytesseract
 from PIL import Image as PILImage
 from PIL.Image import Image
 
+from utils.data import resource_path
+
+# set environment variables for Tesseract
+os.environ["TESSDATA_PREFIX"] = resource_path("assets/tesseract/tessdata")
+pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
+
 
 def preprocess_img(img: Image) -> Image:
-    """Preprocess image
+    """Generic image preprocessing function
 
     :param img: The image to preprocess
     :return: The preprocessed image
@@ -84,7 +92,7 @@ def preprocess_trace_img(img: Image) -> Image:
             (38, 212, 206),
             (14, 77, 82),
             (0, 255, 255),
-            (0, 160, 180)
+            (0, 160, 180),
         ],
         [50, 50, 20, 20, 30, 30, 15, 10, 50, 20],
     )
