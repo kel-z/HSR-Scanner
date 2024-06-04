@@ -269,6 +269,9 @@ class RelicStrategy:
         if equipped == "Equipped":
             equipped_avatar = stats_dict["equipped_avatar"]
             location = self._game_data.get_equipped_character(equipped_avatar)
+        elif equipped == "Equippe":  # https://github.com/kel-z/HSR-Scanner/issues/88
+            equipped_avatar = stats_dict["equipped_avatar_trailblazer"]
+            location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
             "set": set_key,

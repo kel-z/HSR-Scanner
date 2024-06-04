@@ -54,19 +54,21 @@ class Ui_MainWindow(object):
         self.checkBoxScanChars.setEnabled(True)
         self.checkBoxScanChars.setObjectName("checkBoxScanChars")
         self.verticalLayout.addWidget(self.checkBoxScanChars)
-        self.formLayout.setLayout(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.verticalLayout)
+        self.formLayout.setLayout(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.verticalLayout)
         self.pushButtonStartScan = QtWidgets.QPushButton(parent=self.Scan)
         self.pushButtonStartScan.setEnabled(False)
         self.pushButtonStartScan.setGeometry(QtCore.QRect(10, 460, 111, 41))
         self.pushButtonStartScan.setObjectName("pushButtonStartScan")
         self.groupBox = QtWidgets.QGroupBox(parent=self.Scan)
-        self.groupBox.setGeometry(QtCore.QRect(270, 320, 151, 91))
+        self.groupBox.setGeometry(QtCore.QRect(150, 10, 271, 101))
         self.groupBox.setObjectName("groupBox")
         self.formLayoutWidget = QtWidgets.QWidget(parent=self.groupBox)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 20, 131, 61))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 20, 251, 71))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout_3 = QtWidgets.QFormLayout(self.formLayoutWidget)
+        self.formLayout_3.setFormAlignment(QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.formLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.formLayout_3.setVerticalSpacing(6)
         self.formLayout_3.setObjectName("formLayout_3")
         self.label_23 = QtWidgets.QLabel(parent=self.formLayoutWidget)
         self.label_23.setObjectName("label_23")
@@ -125,7 +127,7 @@ class Ui_MainWindow(object):
         self.groupBox_2.setGeometry(QtCore.QRect(10, 120, 411, 101))
         self.groupBox_2.setObjectName("groupBox_2")
         self.formLayoutWidget_2 = QtWidgets.QWidget(parent=self.groupBox_2)
-        self.formLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 111, 71))
+        self.formLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 111, 76))
         self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
         self.formLayout_2 = QtWidgets.QFormLayout(self.formLayoutWidget_2)
         self.formLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -158,7 +160,7 @@ class Ui_MainWindow(object):
         self.spinBoxLightConeMinLevel.setObjectName("spinBoxLightConeMinLevel")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.spinBoxLightConeMinLevel)
         self.formLayoutWidget_3 = QtWidgets.QWidget(parent=self.groupBox_2)
-        self.formLayoutWidget_3.setGeometry(QtCore.QRect(150, 20, 111, 71))
+        self.formLayoutWidget_3.setGeometry(QtCore.QRect(150, 20, 111, 76))
         self.formLayoutWidget_3.setObjectName("formLayoutWidget_3")
         self.formLayout_4 = QtWidgets.QFormLayout(self.formLayoutWidget_3)
         self.formLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -200,7 +202,7 @@ class Ui_MainWindow(object):
         self.formLayout_7.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_20)
         self.spinBoxCharacterMinLevel = QtWidgets.QSpinBox(parent=self.formLayoutWidget_5)
         self.spinBoxCharacterMinLevel.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectionMode.CorrectToNearestValue)
-        self.spinBoxCharacterMinLevel.setMinimum(0)
+        self.spinBoxCharacterMinLevel.setMinimum(1)
         self.spinBoxCharacterMinLevel.setMaximum(80)
         self.spinBoxCharacterMinLevel.setProperty("value", 1)
         self.spinBoxCharacterMinLevel.setObjectName("spinBoxCharacterMinLevel")
@@ -209,7 +211,7 @@ class Ui_MainWindow(object):
         self.groupBox_3.setGeometry(QtCore.QRect(10, 230, 411, 81))
         self.groupBox_3.setObjectName("groupBox_3")
         self.gridLayoutWidget = QtWidgets.QWidget(parent=self.groupBox_3)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 20, 391, 51))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 20, 391, 59))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -246,10 +248,10 @@ class Ui_MainWindow(object):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.groupBox_5 = QtWidgets.QGroupBox(parent=self.Scan)
-        self.groupBox_5.setGeometry(QtCore.QRect(10, 320, 251, 131))
+        self.groupBox_5.setGeometry(QtCore.QRect(10, 320, 411, 131))
         self.groupBox_5.setObjectName("groupBox_5")
         self.textEditLog = QtWidgets.QPlainTextEdit(parent=self.groupBox_5)
-        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 231, 101))
+        self.textEditLog.setGeometry(QtCore.QRect(10, 20, 391, 101))
         self.textEditLog.setReadOnly(True)
         self.textEditLog.setObjectName("textEditLog")
         self.tabWidget.addTab(self.Scan, "")
@@ -297,10 +299,10 @@ class Ui_MainWindow(object):
         self.Configure = QtWidgets.QWidget()
         self.Configure.setObjectName("Configure")
         self.groupBox_6 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_6.setGeometry(QtCore.QRect(10, 90, 171, 81))
+        self.groupBox_6.setGeometry(QtCore.QRect(10, 90, 191, 81))
         self.groupBox_6.setObjectName("groupBox_6")
         self.formLayoutWidget_4 = QtWidgets.QWidget(parent=self.groupBox_6)
-        self.formLayoutWidget_4.setGeometry(QtCore.QRect(10, 20, 151, 51))
+        self.formLayoutWidget_4.setGeometry(QtCore.QRect(10, 20, 171, 53))
         self.formLayoutWidget_4.setObjectName("formLayoutWidget_4")
         self.formLayout_5 = QtWidgets.QFormLayout(self.formLayoutWidget_4)
         self.formLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -325,10 +327,10 @@ class Ui_MainWindow(object):
         self.lineEditInventoryKey.setObjectName("lineEditInventoryKey")
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.lineEditInventoryKey)
         self.groupBox_7 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_7.setGeometry(QtCore.QRect(10, 10, 181, 71))
+        self.groupBox_7.setGeometry(QtCore.QRect(10, 10, 191, 71))
         self.groupBox_7.setObjectName("groupBox_7")
         self.verticalLayoutWidget_2 = QtWidgets.QWidget(parent=self.groupBox_7)
-        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 161, 42))
+        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 20, 171, 49))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -343,7 +345,7 @@ class Ui_MainWindow(object):
         self.groupBox_8.setGeometry(QtCore.QRect(10, 280, 201, 71))
         self.groupBox_8.setObjectName("groupBox_8")
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.groupBox_8)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 181, 42))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 181, 49))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -441,7 +443,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.0.0"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.1.0"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -476,11 +478,11 @@ class Ui_MainWindow(object):
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.0.0</span></p>\n"
-"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">HOW TO RUN</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">1. Set text language to English</p>\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.1.0</span></p>\n"
+"<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8.25pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt; text-decoration: underline;\">HOW TO RUN</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">1. Set text language to English</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">2. Set resolution with aspect ratio 16:9 (such as 1920x1080)</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">3. Open cellphone menu (ESC)</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">4. Press the start scan button</span></p>\n"
@@ -488,10 +490,11 @@ class Ui_MainWindow(object):
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">NOTES</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600; color:#ff0000;\">- </span><span style=\" font-size:8pt; color:#ff0000;\">The inventory screen is translucent and overall accuracy can be influenced by poor text contrast. </span><span style=\" font-size:8pt; font-weight:600; color:#ff0000;\">Make sure the item details and quantity number have a dark background before starting the scan.</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">- Certain dual monitor configurations can cause screenshots to capture incorrectly. If this is the case, try moving HSR to a different monitor before retrying the scan. HDR should also be off to ensure OCR accuracy.</p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">- Database is updated separately from this app. If the database version doesn\'t match the latest game version, then the database hasn\'t been updated yet. You will need to check again later.</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.</p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">- <span style=\" font-size:8.25pt;\">HDR should be off to ensure OCR accuracy.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">- Certain dual monitor configurations can cause screenshots to capture incorrectly. If this is the case, try moving HSR to a different monitor before retrying the scan.</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">- Database is updated separately from this app. If the database version doesn\'t match the latest game version, then the database hasn\'t been updated yet. You will need to check again later.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8.25pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">HSR-Scanner is not affiliated with, endorsed, sponsored, or approved by HoYoverse.</span></p></body></html>"))
         self.label_18.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/kel-z/HSR-Scanner/tree/main\"><span style=\" text-decoration: underline; color:#0000ff;\">GitHub</span></a></p></body></html>"))
         self.label.setText(_translate("MainWindow", "Press ENTER to cancel"))
         self.groupBox_5.setTitle(_translate("MainWindow", "Log"))
@@ -504,12 +507,12 @@ class Ui_MainWindow(object):
         self.textEdit_2.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">This tab will contain partial scan options for cases where scanning the entire account again isn\'t ideal.</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">SCAN MOST RECENT RELICS</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Useful for exporting only newly acquired relics without needing to do a full relic scan.</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">This tab will contain partial scan options for cases where scanning the entire account again isn\'t ideal.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8.25pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt; text-decoration: underline;\">SCAN MOST RECENT RELICS</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">Useful for exporting only newly acquired relics without needing to do a full relic scan.</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8.25pt;\"><br /></p></body></html>"))
         self.label_17.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/kel-z/HSR-Scanner/tree/main\"><span style=\" text-decoration: underline; color:#0000ff;\">GitHub</span></a></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Advanced), _translate("MainWindow", "Advanced"))
         self.groupBox_6.setTitle(_translate("MainWindow", "Hotkeys"))
@@ -536,14 +539,14 @@ class Ui_MainWindow(object):
         self.textEdit_3.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">ADDITIONAL DELAY</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">If Star Rail lags during the scan process, the scanner might produce inaccurate output or fail entirely. To compensate, there are two types of delay that can be increased accordingly to your system:</p>\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt; text-decoration: underline;\">ADDITIONAL DELAY</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">If Star Rail lags during the scan process, the scanner might produce inaccurate output or fail entirely. To compensate, there are two types of delay that can be increased accordingly to your system:</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">- Navigation delay for navigating between different pages (inventory, character details, etc.)</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">- Scan delay for clicking between individual items (relics, light cones, and characters).</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" text-decoration: underline;\">DEBUG MODE</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.</p></body></html>"))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt; text-decoration: underline;\">DEBUG MODE</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.</span></p></body></html>"))
         self.label_16.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/kel-z/HSR-Scanner/tree/main\"><span style=\" text-decoration: underline; color:#0000ff;\">GitHub</span></a></p></body></html>"))
         self.pushButtonRestoreDefaults.setText(_translate("MainWindow", "Restore Defaults"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Configure), _translate("MainWindow", "Configure"))
