@@ -179,6 +179,8 @@ class CharacterParser:
             return "Trailblazer" + path.split(" ")[-1], path
         else:
             character_name, min_dist = self._game_data.get_closest_character_name(name)
+            if character_name == "March 7th":
+                character_name += path.split(" ")[-1]
             self._log(
                 f'Got character name "{character_name}" for string "{name}" with distance {min_dist} out of max 5.',
                 LogLevel.TRACE,

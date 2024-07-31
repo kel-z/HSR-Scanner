@@ -1,4 +1,5 @@
 import base64
+from functools import cached_property
 from io import BytesIO
 
 import cv2
@@ -9,9 +10,9 @@ from PIL import Image as PILImage
 from PIL.Image import Image
 from PyQt6.QtCore import QSettings
 
-GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/game_data_with_icons.json"
+GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v4/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
-    "https://raw.githubusercontent.com/kel-z/HSR-Data/main/output/min/sro_key_map.json"
+    "https://raw.githubusercontent.com/kel-z/HSR-Data/v4/output/min/sro_key_map.json"
 )
 
 RELIC_MAIN_STATS = {
@@ -157,7 +158,7 @@ class GameData:
         character = ""
 
         # Get character with highest confidence
-        for c in self._get_character_keys():
+        for c in self._get_character_keys:
             # Construct key
             key = "".join(filter(lambda char: char.isalnum() or char == "#", c))
 
@@ -213,7 +214,7 @@ class GameData:
         :param name: The name of the character
         :return: The closest character name
         """
-        return self._get_closest_match(name, self.CHARACTER_META_DATA)
+        return self._get_closest_match(name, self._get_character_keys_no_march_path)
 
     def get_closest_path_name(self, name: str) -> str:
         """Get closest path name from name
@@ -263,6 +264,7 @@ class GameData:
 
         return min_name, min_dist
 
+    @cached_property
     def _get_character_keys(self) -> list:
         """Get character keys
 
@@ -275,5 +277,22 @@ class GameData:
                 character_keys.remove(f"Trailblazer{path}")
                 character_keys.append(f"Trailblazer{path}#M")
                 character_keys.append(f"Trailblazer{path}#F")
+
+        return character_keys
+
+    @cached_property
+    def _get_character_keys_no_march_path(self) -> list:
+        """Get character keys without March 7th paths
+
+        (ugly hack for new March 7th path [why hoyoverse...])
+
+        :return: The character keys without March 7th paths
+        """
+        character_keys = list(self.CHARACTER_META_DATA.keys())
+        for path in PATHS:
+            path = path.split(" ")[-1]
+            if f"March 7th{path}" in character_keys:
+                character_keys.remove(f"March 7th{path}")
+        character_keys.append("March 7th")
 
         return character_keys
