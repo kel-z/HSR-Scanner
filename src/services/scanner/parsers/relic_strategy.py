@@ -61,13 +61,13 @@ class RelicStrategy:
             return "Rarity"
 
     def check_filters(
-        self, stats_dict: dict, filters: dict, relic_id: int
+        self, stats_dict: dict, filters: dict, uid: int
     ) -> tuple[dict, dict]:
         """Checks if the relic passes the filters
 
         :param stats_dict: The stats dict
         :param filters: The filters
-        :param relic_id: The relic ID
+        :param uid: The relic UID
         :raises ValueError: Thrown if the filter key does not have an int value
         :return: A tuple of the filter results and the stats dict
         """
@@ -96,7 +96,7 @@ class RelicStrategy:
                     level = self.extract_stats_data("level", stats_dict["level"])
                     if not level:
                         self._log(
-                            f"Relic ID {relic_id}: Failed to parse level. Setting to 0.",
+                            f"Relic UID {uid}: Failed to parse level. Setting to 0.",
                             LogLevel.ERROR,
                         )
                         stats_dict["level"] = 0
@@ -166,11 +166,11 @@ class RelicStrategy:
             case _:
                 return img
 
-    def parse(self, stats_dict: dict, relic_id: int) -> dict:
+    def parse(self, stats_dict: dict, uid: int) -> dict:
         """Parses the relic data
 
         :param stats_dict: The stats dict
-        :param relic_id: The relic ID
+        :param uid: The relic UID
         :return: The parsed relic data
         """
         if self._interrupt_event.is_set():
@@ -182,7 +182,7 @@ class RelicStrategy:
 
         (
             self._log(
-                f"Relic ID {relic_id}: Raw data: {filter_images_from_dict(stats_dict)}",
+                f"Relic UID {uid}: Raw data: {filter_images_from_dict(stats_dict)}",
                 LogLevel.DEBUG,
             )
             if self._debug
@@ -204,14 +204,14 @@ class RelicStrategy:
         main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)
         if not level:
             self._log(
-                f"Relic ID {relic_id}: Failed to extract level. Setting to 0.",
+                f"Relic UID {uid}: Failed to extract level. Setting to 0.",
                 LogLevel.ERROR,
             )
             level = 0
         level = int(level)
         if not name:
             self._log(
-                f'Relic ID {relic_id}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
+                f'Relic UID {uid}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
                 LogLevel.ERROR,
             )
             name = "Musketeer's Wild Wheat Felt Hat"
@@ -224,13 +224,14 @@ class RelicStrategy:
         substat_names = substat_names.split("\n")
         substat_vals = substat_vals.split("\n")
 
-        substats_res = self._parse_substats(substat_names, substat_vals, relic_id)
-        self._validate_substats(substats_res, rarity, level, relic_id)
-        self._sort_substats(substats_res, relic_id)
+        substats_res = self._parse_substats(substat_names, substat_vals, uid)
+        self._validate_substats(substats_res, rarity, level, uid)
+        self._sort_substats(substats_res, uid)
 
         # Set and slot
         metadata = self._game_data.get_relic_meta_data(name)
-        set_key = metadata["set"]
+        set_id = str(metadata["set_id"])
+        set_name = metadata["set"]
         slot_key = metadata["slot"]
         if slot_key == "Hands":
             main_stat_key = "ATK"
@@ -238,7 +239,7 @@ class RelicStrategy:
             main_stat_key = "HP"
         elif not main_stat_key:
             self._log(
-                f"Relic ID {relic_id}: Failed to extract main stat. Setting to ATK.",
+                f"Relic UID {uid}: Failed to extract main stat. Setting to ATK.",
                 LogLevel.ERROR,
             )
             main_stat_key = "ATK"
@@ -250,7 +251,7 @@ class RelicStrategy:
             lock = locate(lock_img, lock, confidence=0.3) is not None
         except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
             self._log(
-                f"Relic ID {relic_id}: Failed to parse lock. Setting to False.",
+                f"Relic UID {uid}: Failed to parse lock. Setting to False.",
                 LogLevel.ERROR,
             )
             lock = False
@@ -260,7 +261,7 @@ class RelicStrategy:
             discard = locate(discard_img, discard, confidence=0.3) is not None
         except Exception:
             self._log(
-                f"Relic ID {relic_id}: Failed to parse discard. Setting to False.",
+                f"Relic UID {uid}: Failed to parse discard. Setting to False.",
                 LogLevel.ERROR,
             )
             discard = False
@@ -274,7 +275,8 @@ class RelicStrategy:
             location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
-            "set": set_key,
+            "set_id": set_id,
+            "name": set_name,
             "slot": slot_key,
             "rarity": rarity,
             "level": level,
@@ -283,7 +285,7 @@ class RelicStrategy:
             "location": location,
             "lock": lock,
             "discard": discard,
-            "_id": f"relic_{relic_id}",
+            "_uid": f"relic_{uid}",
         }
 
         self._update_signal.emit(IncrementType.RELIC_SUCCESS.value)
@@ -291,17 +293,17 @@ class RelicStrategy:
         return result
 
     def _parse_substats(
-        self, names: list[str], vals: list[str], relic_id: int
+        self, names: list[str], vals: list[str], uid: int
     ) -> list[dict[str, int | float]]:
         """Parses the substats
 
         :param names: The substat names
         :param vals: The substat values
-        :param relic_id: The relic ID
+        :param uid: The relic UID
         :return: The parsed substats
         """
         self._log(
-            f"Relic ID {relic_id}: Parsing substats. Substats: {names}, Values: {vals}",
+            f"Relic UID {uid}: Parsing substats. Substats: {names}, Values: {vals}",
             LogLevel.TRACE,
         )
 
@@ -314,14 +316,14 @@ class RelicStrategy:
             name, dist = self._game_data.get_closest_relic_sub_stat(name)
             if dist > 3:
                 self._log(
-                    f"Relic ID {relic_id}: Substat {name} has a distance of {dist} from {names[i]}. Ignoring rest of substats.",
+                    f"Relic UID {uid}: Substat {name} has a distance of {dist} from {names[i]}. Ignoring rest of substats.",
                     LogLevel.DEBUG,
                 )
                 break
 
             if i >= len(vals):
                 self._log(
-                    f"Relic ID {relic_id}: Failed to get value for substat: {name}.",
+                    f"Relic UID {uid}: Failed to get value for substat: {name}.",
                     LogLevel.ERROR,
                 )
                 break
@@ -336,7 +338,7 @@ class RelicStrategy:
             except ValueError:
                 if dist == 0:
                     self._log(
-                        f"Relic ID {relic_id}: Failed to get value for substat: {name}. Error parsing substat value: {val}.",
+                        f"Relic UID {uid}: Failed to get value for substat: {name}. Error parsing substat value: {val}.",
                         LogLevel.ERROR,
                     )
                 continue
@@ -369,14 +371,14 @@ class RelicStrategy:
         substats: list[dict[str, int | float]],
         rarity: int,
         level: int,
-        relic_id: int,
+        uid: int,
     ) -> None:
         """Rudimentary substat validation on number of substats based on rarity and level
 
         :param substats: The substats
         :param rarity: The rarity of the relic
         :param level: The level of the relic
-        :param relic_id: The relic ID
+        :param uid: The relic UID
         """
         seen_substats = set()
 
@@ -385,7 +387,7 @@ class RelicStrategy:
         min_substats = min(rarity - 2 + int(level / 3), 4)
         if substats_len < min_substats:
             self._log(
-                f"Relic ID {relic_id} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}.",
+                f"Relic UID {uid} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}.",
                 LogLevel.ERROR,
             )
             return
@@ -397,13 +399,13 @@ class RelicStrategy:
         for substat in substats:
             if substat["key"] in seen_substats:
                 self._log(
-                    f"Relic ID {relic_id}: More than one substat with key {substat['key']} parsed.",
+                    f"Relic UID {uid}: More than one substat with key {substat['key']} parsed.",
                     LogLevel.ERROR,
                 )
                 return
             if not self._validate_substat(substat, rarity):
                 self._log(
-                    f'Relic ID {relic_id}: Substat {substat["key"]} has illegal value "{substat["value"]}" for rarity {rarity}.',
+                    f'Relic UID {uid}: Substat {substat["key"]} has illegal value "{substat["value"]}" for rarity {rarity}.',
                     LogLevel.ERROR,
                 )
                 return
@@ -419,22 +421,20 @@ class RelicStrategy:
         total = round(total, 1)
         if total < min_roll_value:
             self._log(
-                f"Relic ID {relic_id} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}.",
+                f"Relic UID {uid} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}.",
                 LogLevel.ERROR,
             )
         elif total > max_roll_value:
             self._log(
-                f"Relic ID {relic_id} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
+                f"Relic UID {uid} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
                 LogLevel.ERROR,
             )
 
-    def _sort_substats(
-        self, substats: list[dict[str, int | float]], relic_id: int
-    ) -> None:
+    def _sort_substats(self, substats: list[dict[str, int | float]], uid: int) -> None:
         """Sorts the substats
 
         :param substats: The substats
-        :param relic_id: The relic ID
+        :param uid: The relic UID
         """
         SORT_ORDER = [
             "HP",
@@ -454,7 +454,7 @@ class RelicStrategy:
         substats.sort(key=lambda x: SORT_ORDER.index(x["key"]))
         if original != substats:
             self._log(
-                f"Relic ID {relic_id}: Newly upgraded relic detected. Substats have been sorted.",
+                f"Relic UID {uid}: Newly upgraded relic detected. Substats have been sorted.",
             )
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:

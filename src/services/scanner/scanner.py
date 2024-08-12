@@ -564,8 +564,8 @@ class HSRScanner(QObject):
 
                 curr_page_res[i] = {
                     "name": character_name,
-                    "ascension": ascension,
                     "path": path,
+                    "ascension": ascension,
                     "level": self._screenshot.screenshot_character_level(),
                 }
 

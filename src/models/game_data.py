@@ -76,7 +76,14 @@ class GameData:
         self.RELIC_META_DATA = data["relics"]
         self.LIGHT_CONE_META_DATA = data["light_cones"]
         self.CHARACTER_META_DATA = data["characters"]
+        self.CHARACTER_IDS = data["mini_icons"].keys()
+
         self.EQUIPPED_ICONS = {}
+        for char_id, base64_string in data["mini_icons"].items():
+            decoded_image = base64.b64decode(base64_string)
+            img = PILImage.open(BytesIO(decoded_image))
+            img = cv2.GaussianBlur(np.array(img), (5, 5), 0)
+            self.EQUIPPED_ICONS[char_id] = img
 
         # where i + 1 is the rarity
         self.COLOURS = np.array(
@@ -88,14 +95,6 @@ class GameData:
                 [158, 109, 95],  # gold
             ]
         )
-
-        for key in data["mini_icons"]:
-            base64_string = data["mini_icons"][key]
-            decoded_image = base64.b64decode(base64_string)
-            img = PILImage.open(BytesIO(decoded_image))
-            img = np.array(img)
-            img = cv2.GaussianBlur(img, (5, 5), 0)
-            self.EQUIPPED_ICONS[key] = img
 
     def get_sro_mappings(self) -> dict:
         """Get SRO mappings
@@ -127,13 +126,20 @@ class GameData:
         """
         return self.LIGHT_CONE_META_DATA[name]
 
-    def get_character_meta_data(self, name: str) -> dict:
+    def get_character_meta_data(self, name: str, path: str) -> dict:
         """Get character meta data from name
 
         :param name: The name of the character
+        :param path: The path of the character
         :return: The character meta data
         """
-        return self.CHARACTER_META_DATA[name]
+        if name == "Trailblazer":
+            name = (
+                "Stelle"
+                if self.settings.value("is_stelle", True) == "true"
+                else "Caelus"
+            )
+        return self.CHARACTER_META_DATA[name][path]
 
     def get_equipped_character(self, equipped_avatar_img: Image) -> str:
         """Get equipped character from equipped avatar image
@@ -141,7 +147,7 @@ class GameData:
         Side effect: Sets the is_stelle QSetting
 
         :param equipped_avatar_img: The equipped avatar image
-        :return: The character name
+        :return: The character id
         """
         equipped_avatar_img = np.array(equipped_avatar_img)
         equipped_avatar_img = cv2.resize(equipped_avatar_img, (100, 100))
@@ -155,26 +161,23 @@ class GameData:
         )
 
         max_conf = 0
-        character = ""
+        res = ""
 
-        # Get character with highest confidence
-        for c in self._get_character_keys:
-            # Construct key
-            key = "".join(filter(lambda char: char.isalnum() or char == "#", c))
-
+        # Get character id with highest confidence
+        for char_id in self.CHARACTER_IDS:
             # Get confidence
             conf = cv2.matchTemplate(
                 equipped_avatar_img,
-                self.EQUIPPED_ICONS[key],
+                self.EQUIPPED_ICONS[char_id],
                 cv2.TM_CCOEFF_NORMED,
             ).max()
             if conf > max_conf:
                 max_conf = conf
-                character = c
+                res = char_id
 
-        if character.startswith("Trailblazer"):
-            self.settings.setValue("is_stelle", character.split("#")[1] == "F")
-        return character.split("#")[0]
+        if res.startswith("8"):
+            self.settings.setValue("is_stelle", int(res[-1]) % 2 == 0)
+        return res
 
     def get_closest_relic_name(self, name: str) -> str:
         """Get closest relic name from name
@@ -214,7 +217,7 @@ class GameData:
         :param name: The name of the character
         :return: The closest character name
         """
-        return self._get_closest_match(name, self._get_character_keys_no_march_path)
+        return self._get_closest_match(name, self._get_character_keys)
 
     def get_closest_path_name(self, name: str) -> str:
         """Get closest path name from name
@@ -271,28 +274,7 @@ class GameData:
         :return: The character keys
         """
         character_keys = list(self.CHARACTER_META_DATA.keys())
-        for path in PATHS:
-            path = path.split(" ")[-1]
-            if f"Trailblazer{path}" in character_keys:
-                character_keys.remove(f"Trailblazer{path}")
-                character_keys.append(f"Trailblazer{path}#M")
-                character_keys.append(f"Trailblazer{path}#F")
-
-        return character_keys
-
-    @cached_property
-    def _get_character_keys_no_march_path(self) -> list:
-        """Get character keys without March 7th paths
-
-        (ugly hack for new March 7th path [why hoyoverse...])
-
-        :return: The character keys without March 7th paths
-        """
-        character_keys = list(self.CHARACTER_META_DATA.keys())
-        for path in PATHS:
-            path = path.split(" ")[-1]
-            if f"March 7th{path}" in character_keys:
-                character_keys.remove(f"March 7th{path}")
-        character_keys.append("March 7th")
+        character_keys.remove("Stelle")
+        character_keys.remove("Caelus")
 
         return character_keys
