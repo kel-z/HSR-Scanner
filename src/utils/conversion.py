@@ -61,14 +61,7 @@ def convert_to_sro(data: dict, game_data: GameData) -> dict:
     }
 
     sro_mappings = game_data.get_sro_mappings()
-    trailblazer_suffix = (
-        "F"
-        if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True) == "true"
-        else "M"
-    )
-    get_sro_character_key = lambda key: _get_sro_character_key(
-        key, sro_mappings, trailblazer_suffix
-    )
+    get_sro_character_key = lambda key: _get_sro_character_key(key, sro_mappings)
 
     if data["characters"]:
         res["characters"] = _convert_characters_sro(
@@ -99,7 +92,7 @@ def _convert_characters_sro(
     formatted_characters = []
     for character in characters:
         res = {
-            "key": character_key_fn(character["key"]),
+            "key": character_key_fn(character["id"]),
             "level": character["level"],
             "eidolon": character["eidolon"],
             "ascension": character["ascension"],
@@ -164,7 +157,7 @@ def _convert_relics_sro(
                 pass
 
         res = {
-            "setKey": sro_mappings["relic_sets"][relic["set"]],
+            "setKey": sro_mappings["relic_sets"][relic["name"]],
             "slotKey": SRO_SLOT_MAP[relic["slot"]],
             "level": relic["level"],
             "rarity": relic["rarity"],
@@ -192,7 +185,7 @@ def _convert_light_cones_sro(
     formatted_light_cones = []
     for light_cone in light_cones:
         res = {
-            "key": sro_mappings["light_cones"][light_cone["key"]],
+            "key": sro_mappings["light_cones"][light_cone["name"]],
             "level": light_cone["level"],
             "ascension": light_cone["ascension"],
             "superimpose": light_cone["superimposition"],
@@ -204,20 +197,13 @@ def _convert_light_cones_sro(
     return formatted_light_cones
 
 
-def _get_sro_character_key(
-    key: str, sro_mappings: dict, trailblazer_suffix: str
-) -> str:
+def _get_sro_character_key(key: str, sro_mappings: dict) -> str:
     """Get the SRO character key
 
     :param key: The character key
     :param sro_mappings: The SRO key mappings
-    :param trailblazer_suffix: The Trailblazer suffix
     :return: The SRO character key
     """
     if not key:
         return ""
-    sro_key = sro_mappings["characters"][key]
-    if key.startswith("Trailblazer"):
-        sro_key += trailblazer_suffix
-
-    return sro_key
+    return sro_mappings["characters"][key]

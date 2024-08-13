@@ -54,8 +54,15 @@ class CharacterParser:
         if self._interrupt_event.is_set():
             return
 
+        name = stats_dict["name"]
+        path = stats_dict["path"]
+        metadata = self._game_data.get_character_meta_data(name, path)
+        char_id = str(metadata["id"])
+
         character = {
-            "key": stats_dict["name"].split("#")[0],
+            "id": char_id,
+            "name": name,
+            "path": path,
             "level": 1,
             "ascension": stats_dict["ascension"],
             "eidolon": self._process_eidolons(stats_dict["eidolon_images"]),
@@ -81,10 +88,7 @@ class CharacterParser:
         for eidolon in (5, 3):
             if character["eidolon"] >= eidolon:
                 e_token = f"e{eidolon}"
-                metadata = self._game_data.get_character_meta_data(character["key"])[
-                    e_token
-                ]
-                for k, v in metadata.items():
+                for k, v in metadata[e_token].items():
                     character["skills"][k] -= v
 
         traces_dict = stats_dict["traces"]
@@ -176,7 +180,7 @@ class CharacterParser:
             else:
                 self._is_trailblazer_scanned = True
 
-            return "Trailblazer" + path.split(" ")[-1], path
+            return "Trailblazer", path
         else:
             character_name, min_dist = self._game_data.get_closest_character_name(name)
             self._log(

@@ -58,13 +58,13 @@ class LightConeStrategy:
             return "Rarity"
 
     def check_filters(
-        self, stats_dict: dict, filters: dict, lc_id: int
+        self, stats_dict: dict, filters: dict, uid: int
     ) -> tuple[dict, dict]:
         """Check if the stats dictionary passes the filters
 
         :param stats_dict: The stats dictionary
         :param filters: The filters
-        :param lc_id: The ID of the light cone
+        :param uid: The UID of the light cone
         :raises ValueError: Thrown if the filter key does not have an int value
         :raises KeyError: Thrown if the filter key is not valid
         :return: The filter results and the stats dictionary
@@ -88,7 +88,7 @@ class LightConeStrategy:
                     )
                     if not stats_dict["name"]:
                         self._log(
-                            f'Light Cone ID {lc_id}: Failed to parse name. Setting to "Void".',
+                            f'Light Cone UID {uid}: Failed to parse name. Setting to "Void".',
                             LogLevel.ERROR,
                         )
                         stats_dict["name"] = "Void"
@@ -111,7 +111,7 @@ class LightConeStrategy:
                     )
                     if not stats_dict["level"]:
                         self._log(
-                            f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1.",
+                            f"Light Cone UID {uid}: Failed to parse level. Setting to 1.",
                             LogLevel.ERROR,
                         )
                         stats_dict["level"] = "1/20"
@@ -163,11 +163,11 @@ class LightConeStrategy:
             case _:
                 return img
 
-    def parse(self, stats_dict: dict, lc_id: int) -> dict:
+    def parse(self, stats_dict: dict, uid: int) -> dict:
         """Parses the stats dictionary
 
         :param stats_dict: The stats dictionary
-        :param lc_id: The ID of the light cone
+        :param uid: The UID of the light cone
         :return: The parsed stats dictionary
         """
         if self._interrupt_event.is_set():
@@ -179,7 +179,7 @@ class LightConeStrategy:
 
         (
             self._log(
-                f"Light Cone ID {lc_id}: Raw data: {filter_images_from_dict(stats_dict)}",
+                f"Light Cone UID {uid}: Raw data: {filter_images_from_dict(stats_dict)}",
                 LogLevel.DEBUG,
             )
             if self._debug
@@ -194,10 +194,12 @@ class LightConeStrategy:
 
         if not name:
             self._log(
-                f'Light Cone ID {lc_id}: Failed to parse name. Setting to "Void".',
+                f'Light Cone UID {uid}: Failed to parse name. Setting to "Void".',
                 LogLevel.ERROR,
             )
             name = "Void"
+
+        lc_id = str(self._game_data.get_light_cone_meta_data(name)["id"])
 
         # Parse level, ascension, superimposition
         try:
@@ -206,7 +208,7 @@ class LightConeStrategy:
             max_level = int(max_level)
         except ValueError:
             self._log(
-                f"Light Cone ID {lc_id}: Failed to parse level. Setting to 1.",
+                f"Light Cone UID {uid}: Failed to parse level. Setting to 1.",
                 LogLevel.ERROR,
             )
             level = 1
@@ -218,7 +220,7 @@ class LightConeStrategy:
             superimposition = int(superimposition)
         except ValueError:
             self._log(
-                f"Light Cone ID {lc_id}: Failed to parse superimposition. Setting to 1.",
+                f"Light Cone UID {uid}: Failed to parse superimposition. Setting to 1.",
                 LogLevel.ERROR,
             )
             superimposition = 1
@@ -231,7 +233,7 @@ class LightConeStrategy:
             lock = locate(locked, lock, confidence=0.1) is not None
         except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
             self._log(
-                f"Light Cone ID {lc_id}: Failed to parse lock. Setting to False.",
+                f"Light Cone UID {uid}: Failed to parse lock. Setting to False.",
                 LogLevel.ERROR,
             )
             lock = False
@@ -245,13 +247,14 @@ class LightConeStrategy:
             location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
-            "key": name,
+            "id": lc_id,
+            "name": name,
             "level": int(level),
             "ascension": int(ascension),
             "superimposition": int(superimposition),
             "location": location,
             "lock": lock,
-            "_id": f"light_cone_{lc_id}",
+            "_uid": f"light_cone_{uid}",
         }
 
         self._update_signal.emit(IncrementType.LIGHT_CONE_SUCCESS.value)

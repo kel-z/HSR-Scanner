@@ -33,7 +33,7 @@ As of `v0.3.0`, the app's database is [updated separately](https://github.com/ke
 HSR Scanner has the following scan options:
 
 - Select whether to scan light cones, relics, and/or characters.
-- Include UID in the JSON file (disabled by default).
+- Include account UID in the JSON file (disabled by default).
 - Set output location for the JSON file.
 - Filter light cones, relics, and characters based on a minimum rarity or level threshhold.
 
@@ -48,157 +48,169 @@ If debug mode is enabled, the scanner will save ALL the screenshots taken during
 
 ## Output
 
-The output is loosely based off of Genshin's `.GOOD` export format. I don't expect this output to change anytime soon. If a breaking change has to made to the output, the version will be incremented by one to differentiate the change from previous versions.
+The output is loosely based off of Genshin's `.GOOD` export format. If a breaking change has to made to the output, the version will be incremented by one to differentiate the change from previous versions.
 
 ### Notes
 
 - SPD substats have a hidden decimal place that the scanner cannot directly parse. As a result, reproducing your character's stats (such as on optimizer websites) will most likely have a lower SPD stat than what it displays in-game. This is not an issue with the scanner, but rather a limitation when obtaining substats through OCR.
-- If the Trailblazer variant was not determinable during the scan or previous scans, it will default to `Stelle`.
+- The `id` value for light cones, relic sets, and characters correspond to the same unique ID assigned by the game.
+  - Similarly, the `location` value for light cones and relics correspond to the character ID that is equipping the item.- If the Trailblazer variant was not determinable during the scan or previous scans, it will default to `Stelle`.
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - Substats are sorted in the order of: `HP, ATK, DEF, HP%, ATK%, DEF%, SPD, CRIT Rate, CRIT DMG, Effect Hit Rate, Effect RES, Break Effect`. This ordering applies for every relic with the exception of newly upgraded relics, which gets fixed when the user logs out and logs back in. As a result, the scanner will automatically sort the substats before generating the output.
-- The `_id` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
+- The `_uid` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For `Dan Heng • Imbibitor Lunae`, the character `•` will appear as `\u2022` in the JSON output. This is the Unicode representation of the character and is a normal behaviour when special characters are included in JSON. Most modern environments will automatically render `\u2022` as `•` when displaying or processing the JSON.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
     - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from bottom to top.
-- The exact string values used can be found [here](src/models/game_data.py).
 
 Current output sample:
 
 ```JSON
 {
     "source": "HSR-Scanner",
-    "build": "v1.1.0",
-    "version": 3,
+    "build": "v1.2.0",
+    "version": 4,
     "metadata": {
         "uid": 601869216,
         "trailblazer": "Stelle"
     },
     "light_cones": [
         {
-            "key": "Cruising in the Stellar Sea",
-            "level": 60,
-            "ascension": 4,
-            "superimposition": 2,
-            "location": "Seele",
+            "id": "20010",
+            "name": "Defense",
+            "level": 80,
+            "ascension": 6,
+            "superimposition": 5,
+            "location": "1001",
             "lock": true,
-            "_id": "light_cone_1"
+            "_uid": "light_cone_1"
         },
         {
-            "key": "Meshing Cogs",
+            "id": "20020",
+            "name": "Sagacity",
             "level": 1,
             "ascension": 0,
-            "superimposition": 5,
+            "superimposition": 1,
             "location": "",
-            "lock": true,
-            "_id": "light_cone_2"
+            "lock": false,
+            "_uid": "light_cone_2"
         }
     ],
     "relics": [
         {
-            "set": "Celestial Differentiator",
-            "slot": "Planar Sphere",
+            "set_id": "102",
+            "name": "Musketeer of Wild Wheat",
+            "slot": "Hands",
             "rarity": 5,
             "level": 15,
-            "mainstat": "Wind DMG Boost",
+            "mainstat": "ATK",
             "substats": [
                 {
-                    "key": "HP",
-                    "value": 105
+                    "key": "DEF",
+                    "value": 16
+                },
+                {
+                    "key": "DEF_",
+                    "value": 5.4
                 },
                 {
                     "key": "CRIT Rate_",
-                    "value": 3.2
+                    "value": 5.1
                 },
                 {
                     "key": "CRIT DMG_",
-                    "value": 17.4
-                },
-                {
-                    "key": "Effect Hit Rate_",
-                    "value": 8.2
+                    "value": 31.7
                 }
             ],
-            "location": "Bronya",
+            "location": "1101",
             "lock": true,
             "discard": false,
-            "_id": "relic_1"
+            "_uid": "relic_1"
         },
         {
-            "set": "Thief of Shooting Meteor",
-            "slot": "Body",
-            "rarity": 4,
+            "set_id": "111",
+            "name": "Thief of Shooting Meteor",
+            "slot": "Hands",
+            "rarity": 5,
             "level": 0,
-            "mainstat": "Outgoing Healing Boost",
+            "mainstat": "ATK",
             "substats": [
                 {
-                    "key": "HP",
-                    "value": 30
+                    "key": "ATK_",
+                    "value": 4.3
                 },
                 {
-                    "key": "HP_",
-                    "value": 3.4
+                    "key": "DEF_",
+                    "value": 4.3
+                },
+                {
+                    "key": "CRIT DMG_",
+                    "value": 5.8
                 }
             ],
             "location": "",
             "lock": false,
-            "discard": true,
-            "_id": "relic_2"
+            "discard": false,
+            "_uid": "relic_2"
         }
     ],
     "characters": [
         {
-            "key": "Seele",
-            "level": 59,
-            "ascension": 4,
-            "eidolon": 0,
+            "id": "1001",
+            "name": "March 7th",
+            "path": "Preservation",
+            "level": 80,
+            "ascension": 6,
+            "eidolon": 6,
             "skills": {
-                "basic": 4,
-                "skill": 6,
-                "ult": 6,
-                "talent": 6
+                "basic": 1,
+                "skill": 10,
+                "ult": 4,
+                "talent": 2
             },
             "traces": {
                 "ability_1": true,
                 "ability_2": true,
-                "ability_3": false,
+                "ability_3": true,
+                "stat_1": true,
+                "stat_2": true,
+                "stat_3": false,
+                "stat_4": true,
+                "stat_5": true,
+                "stat_6": true,
+                "stat_7": true,
+                "stat_8": true,
+                "stat_9": false,
+                "stat_10": true
+            }
+        },
+        {
+            "id": "1101",
+            "name": "Bronya",
+            "path": "Harmony",
+            "level": 75,
+            "ascension": 6,
+            "eidolon": 0,
+            "skills": {
+                "basic": 4,
+                "skill": 9,
+                "ult": 9,
+                "talent": 9
+            },
+            "traces": {
+                "ability_1": true,
+                "ability_2": true,
+                "ability_3": true,
                 "stat_1": true,
                 "stat_2": true,
                 "stat_3": true,
                 "stat_4": true,
                 "stat_5": true,
-                "stat_6": false,
+                "stat_6": true,
                 "stat_7": false,
-                "stat_8": false,
-                "stat_9": false,
-                "stat_10": false
-            }
-        },
-        {
-            "key": "Bronya",
-            "level": 20,
-            "ascension": 1,
-            "eidolon": 0,
-            "skills": {
-                "basic": 1,
-                "skill": 1,
-                "ult": 1,
-                "talent": 1
-            },
-            "traces": {
-                "ability_1": true,
-                "ability_2": false,
-                "ability_3": false,
-                "stat_1": true,
-                "stat_2": false,
-                "stat_3": false,
-                "stat_4": false,
-                "stat_5": false,
-                "stat_6": false,
-                "stat_7": false,
-                "stat_8": false,
-                "stat_9": false,
+                "stat_8": true,
+                "stat_9": true,
                 "stat_10": false
             }
         }

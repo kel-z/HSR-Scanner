@@ -175,8 +175,8 @@ class HSRScanner(QObject):
 
         return {
             "source": "HSR-Scanner",
-            "build": "v1.1.0",
-            "version": 3,
+            "build": "v1.2.0",
+            "version": 4,
             "metadata": {
                 "uid": int(uid) if uid else None,
                 "trailblazer": (
@@ -564,8 +564,8 @@ class HSRScanner(QObject):
 
                 curr_page_res[i] = {
                     "name": character_name,
-                    "ascension": ascension,
                     "path": path,
+                    "ascension": ascension,
                     "level": self._screenshot.screenshot_character_level(),
                 }
 

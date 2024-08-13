@@ -433,7 +433,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     convert_to_sro(data, self.game_data), output_location, file_name
                 )
             except Exception as e:
-                self.log(("Failed to convert to SRO format: " + str(e), LogLevel.ERROR))
+                self.log(
+                    (
+                        "Failed to convert to SRO format: " + traceback.format_exc(),
+                        LogLevel.ERROR,
+                    )
+                )
         self.log("Scan complete. Data saved to " + output_location)
 
         if debug_output_location:
