@@ -54,7 +54,8 @@ The output is loosely based off of Genshin's `.GOOD` export format. If a breakin
 
 - SPD substats have a hidden decimal place that the scanner cannot directly parse. As a result, reproducing your character's stats (such as on optimizer websites) will most likely have a lower SPD stat than what it displays in-game. This is not an issue with the scanner, but rather a limitation when obtaining substats through OCR.
 - The `id` value for light cones, relic sets, and characters correspond to the same unique ID assigned by the game.
-  - Similarly, the `location` value for light cones and relics correspond to the character ID that is equipping the item.- If the Trailblazer variant was not determinable during the scan or previous scans, it will default to `Stelle`.
+  - Similarly, the `location` value for light cones and relics correspond to the character ID that is equipping the item.
+- If the Trailblazer variant was not determinable during the scan or previous scans, it will default to `Stelle`.
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - Substats are sorted in the order of: `HP, ATK, DEF, HP%, ATK%, DEF%, SPD, CRIT Rate, CRIT DMG, Effect Hit Rate, Effect RES, Break Effect`. This ordering applies for every relic with the exception of newly upgraded relics, which gets fixed when the user logs out and logs back in. As a result, the scanner will automatically sort the substats before generating the output.
