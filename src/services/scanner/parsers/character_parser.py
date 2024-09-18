@@ -80,7 +80,7 @@ class CharacterParser:
             character["level"] = self.get_level(level)
         except ValueError:
             self._log(
-                f"{character['key']}: Failed to parse level."
+                f"{character['name']}: Failed to parse level."
                 + (f' Got "{level}" instead.' if level else ""),
                 LogLevel.ERROR,
             )
@@ -99,7 +99,7 @@ class CharacterParser:
                 # If the first OCR attempt failed, try again with different parameters
                 if not res or "/" not in res:
                     self._log(
-                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
+                        f"{character['name']}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
                         LogLevel.DEBUG,
                     )
                     res = image_to_string(
@@ -107,7 +107,7 @@ class CharacterParser:
                     )
                 if not res or "/" not in res:
                     self._log(
-                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
+                        f"{character['name']}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
                         LogLevel.DEBUG,
                     )
                     res = image_to_string(
@@ -115,7 +115,7 @@ class CharacterParser:
                     )
                 if not res or "/" not in res:
                     self._log(
-                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
+                        f"{character['name']}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
                         LogLevel.DEBUG,
                     )
                     res = image_to_string(
@@ -127,7 +127,7 @@ class CharacterParser:
                     raise ValueError
             except ValueError:
                 self._log(
-                    f"{character['key']}: Failed to parse '{k}' level. "
+                    f"{character['name']}: Failed to parse '{k}' level. "
                     + (f"Got '{res}' instead. " if res else "")
                     + "Setting to 1.",
                     LogLevel.ERROR,
