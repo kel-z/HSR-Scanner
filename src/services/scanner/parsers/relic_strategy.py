@@ -11,6 +11,7 @@ from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from models.game_data import GameData
 from models.substat_vals import SUBSTAT_ROLL_VALS
+from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
     image_to_string,
@@ -20,33 +21,15 @@ from utils.ocr import (
 )
 
 
-class RelicStrategy:
+class RelicStrategy(BaseParseStrategy):
     """RelicStrategy class for parsing relic data from screenshots."""
 
     SCAN_TYPE = IncrementType.RELIC_ADD
     NAV_DATA = RELIC_NAV_DATA
 
-    def __init__(
-        self,
-        game_data: GameData,
-        log_signal: pyqtBoundSignal,
-        update_signal: pyqtBoundSignal,
-        interrupt_event: Event,
-        debug: bool = False,
-    ) -> None:
-        """Constructor
-
-        :param game_data: The GameData class instance
-        :param log_signal: The log signal
-        :param update_signal: The update signal
-        :param interrupt_event: The interrupt event
-        """
-        self._game_data = game_data
-        self._log_signal = log_signal
-        self._update_signal = update_signal
-        self._interrupt_event = interrupt_event
-        self._debug = debug
-        self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
+    def __init__(self, *args, **kwargs) -> None:
+        """Constructor"""
+        super().__init__(*args, **kwargs)
         self._discard_icon = PILImage.open(resource_path("assets/images/discard.png"))
 
     def get_optimal_sort_method(self, filters: dict) -> str:

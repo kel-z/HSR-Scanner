@@ -9,6 +9,7 @@ from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from models.game_data import GameData
+from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
     image_to_string,
@@ -18,33 +19,11 @@ from utils.ocr import (
 )
 
 
-class LightConeStrategy:
+class LightConeStrategy(BaseParseStrategy):
     """LightConeStrategy class for parsing light cone data from screenshots."""
 
     SCAN_TYPE = IncrementType.LIGHT_CONE_ADD
     NAV_DATA = LIGHT_CONE_NAV_DATA
-
-    def __init__(
-        self,
-        game_data: GameData,
-        log_signal: pyqtBoundSignal,
-        update_signal: pyqtBoundSignal,
-        interrupt_event: Event,
-        debug: bool = False,
-    ) -> None:
-        """Constructor
-
-        :param game_data: The GameData class instance
-        :param log_signal: The log signal
-        :param update_signal: The update signal
-        :param interrupt_event: The interrupt event
-        """
-        self._game_data = game_data
-        self._log_signal = log_signal
-        self._update_signal = update_signal
-        self._interrupt_event = interrupt_event
-        self._debug = debug
-        self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
