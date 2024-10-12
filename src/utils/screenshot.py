@@ -11,7 +11,6 @@ from PyQt6.QtCore import pyqtBoundSignal
 
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
-from enums.log_level import LogLevel
 
 
 class Screenshot:
@@ -126,13 +125,13 @@ class Screenshot:
         res = []
 
         screenshot = ImageGrab.grab(all_screens=True)
-        offset, _, _ = PILImage.core.grabscreen_win32(False, True)
+        offset, _, _ = PILImage.core.grabscreen_win32(False, True)  # type: ignore
         x0, y0 = offset
         dim = 81
 
         # Circle mask
         mask = np.zeros((dim, dim), dtype="uint8")
-        cv2.circle(mask, (int(dim / 2), int(dim / 2)), int(dim / 2), 255, -1)
+        cv2.circle(mask, (int(dim / 2), int(dim / 2)), int(dim / 2), 255, -1)  # type: ignore
 
         for c in SCREENSHOT_COORDS[self._aspect_ratio]["character"]["eidolons"]:
             left = self._window_x + int(self._window_width * c[0])
@@ -143,8 +142,8 @@ class Screenshot:
 
             # Apply circle mask
             img = np.array(img)
-            img = cv2.resize(img, (dim, dim))
-            img = cv2.bitwise_and(img, img, mask=mask)
+            img = cv2.resize(img, (dim, dim))  # type: ignore
+            img = cv2.bitwise_and(img, img, mask=mask)  # type: ignore
 
             res.append(img)
 
@@ -187,7 +186,7 @@ class Screenshot:
         height = int(self._window_height * height)
 
         screenshot = ImageGrab.grab(
-            bbox=(x, y, x + width, y + height), all_screens=True
+            bbox=(int(x), int(y), int(x + width), int(y + height)), all_screens=True
         )
 
         screenshot = screenshot.resize(
@@ -210,11 +209,11 @@ class Screenshot:
         img = self._take_screenshot(*coords["stats"])
 
         adjusted_stat_coords = {
-            k: tuple(
-                [
-                    int(v * img.width) if i % 2 == 0 else int(v * img.height)
-                    for i, v in enumerate(v)
-                ]
+            k: (
+                int(v[0] * img.width),
+                int(v[1] * img.height),
+                int(v[2] * img.width),
+                int(v[3] * img.height),
             )
             for k, v in coords[key].items()
         }
@@ -234,7 +233,7 @@ class Screenshot:
         res = {}
 
         screenshot = ImageGrab.grab(all_screens=True)
-        offset, _, _ = PILImage.core.grabscreen_win32(False, True)
+        offset, _, _ = PILImage.core.grabscreen_win32(False, True)  # type: ignore
         x0, y0 = offset
 
         for k, v in coords["character"]["traces"][key].items():

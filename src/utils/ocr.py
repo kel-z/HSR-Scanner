@@ -173,16 +173,16 @@ def _preprocess_img_by_colour_filter(
     for c, v in zip(colour, variance):
         lower = np.array([max(0, c - v) for c in c], dtype="uint8")
         upper = np.array([min(255, c + v) for c in c], dtype="uint8")
-        mask = cv2.bitwise_or(mask, cv2.inRange(img_arr, lower, upper))
+        mask = cv2.bitwise_or(mask, cv2.inRange(img_arr, lower, upper))  # type: ignore
 
-    img_arr = cv2.bitwise_and(img_arr, img_arr, mask=mask)
-    img_arr = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)
+    img_arr = cv2.bitwise_and(img_arr, img_arr, mask=mask)  # type: ignore
+    img_arr = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)  # type: ignore
 
     # blur
-    img_arr = cv2.GaussianBlur(img_arr, (3, 3), 1)
+    img_arr = cv2.GaussianBlur(img_arr, (3, 3), 1)  # type: ignore
 
     # brighten image
-    img_arr = cv2.convertScaleAbs(img_arr, alpha=2, beta=0)
+    img_arr = cv2.convertScaleAbs(img_arr, alpha=2, beta=0)  # type: ignore
 
     # invert
     img_arr = 255 - img_arr

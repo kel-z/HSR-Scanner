@@ -52,7 +52,7 @@ class CharacterParser:
         :return: The character dictionary
         """
         if self._interrupt_event.is_set():
-            return
+            return {}
 
         name = stats_dict["name"]
         path = stats_dict["path"]
@@ -80,7 +80,7 @@ class CharacterParser:
             character["level"] = self.get_level(level)
         except ValueError:
             self._log(
-                f"{character['key']}: Failed to parse level."
+                f"{character['name']}: Failed to parse level."
                 + (f' Got "{level}" instead.' if level else ""),
                 LogLevel.ERROR,
             )
@@ -99,7 +99,7 @@ class CharacterParser:
                 # If the first OCR attempt failed, try again with different parameters
                 if not res or "/" not in res:
                     self._log(
-                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
+                        f"{character['name']}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
                         LogLevel.DEBUG,
                     )
                     res = image_to_string(
@@ -107,7 +107,7 @@ class CharacterParser:
                     )
                 if not res or "/" not in res:
                     self._log(
-                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
+                        f"{character['name']}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
                         LogLevel.DEBUG,
                     )
                     res = image_to_string(
@@ -115,7 +115,7 @@ class CharacterParser:
                     )
                 if not res or "/" not in res:
                     self._log(
-                        f"{character['key']}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
+                        f"{character['name']}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
                         LogLevel.DEBUG,
                     )
                     res = image_to_string(
@@ -127,7 +127,7 @@ class CharacterParser:
                     raise ValueError
             except ValueError:
                 self._log(
-                    f"{character['key']}: Failed to parse '{k}' level. "
+                    f"{character['name']}: Failed to parse '{k}' level. "
                     + (f"Got '{res}' instead. " if res else "")
                     + "Setting to 1.",
                     LogLevel.ERROR,
@@ -149,13 +149,18 @@ class CharacterParser:
         if isinstance(level, int):
             return level
 
-        res = (
-            image_to_string(level, "0123456789", 7, True)
-            if isinstance(level, Image)
-            else level
-        )
-        if not res or not res.isdigit():
-            res = image_to_string(level, "0123456789", 6, True)
+        if isinstance(level, Image):
+            res = image_to_string(level, "0123456789", 7, True)
+            if not res or not res.isdigit():
+                res = image_to_string(level, "0123456789", 6, True)
+
+        if not res.isdigit():
+            self._log(
+                f"Failed to parse level. Got '{res}' instead. Setting to 1.",
+                LogLevel.ERROR,
+            )
+            return 1
+
         return int(res)
 
     def get_closest_name_and_path(
@@ -188,7 +193,7 @@ class CharacterParser:
                 LogLevel.TRACE,
             )
 
-            if min_dist > 5:
+            if int(min_dist) > 5:
                 raise Exception(
                     f'Failed to get a character name: got "{character_name}".'
                 )
@@ -225,15 +230,15 @@ class CharacterParser:
 
         eidolon = 0
         for img in eidolon_images:
-            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            white = cv2.Laplacian(img_bw, cv2.CV_64F).var()
+            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # type: ignore
+            white = cv2.Laplacian(img_bw, cv2.CV_64F).var()  # type: ignore
 
             # Eidolon is locked if the image is too dark
             if white < 10000:
                 break
 
-            mask = cv2.inRange(img, lower_orange, upper_orange)
-            orange = cv2.countNonZero(mask)
+            mask = cv2.inRange(img, lower_orange, upper_orange)  # type: ignore
+            orange = cv2.countNonZero(mask)  # type: ignore
 
             # Eidolon is unlocked but not activated if the image is too orange
             if orange > 200:

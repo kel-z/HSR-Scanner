@@ -2,9 +2,10 @@ import asyncio
 import datetime
 import sys
 import traceback
+from typing import Optional
 import winsound
 
-from pynput.keyboard import Key, Listener
+from pynput.keyboard import Key, KeyCode, Listener
 from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import QSettings, QThread, QUrl, pyqtSignal
 
@@ -313,7 +314,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
 
     def to_scanner_thread(
-        self, scanner: HSRScanner, debug_output_location: str = None
+        self, scanner: HSRScanner, debug_output_location: Optional[str] = None
     ) -> None:
         """Starts the scanner thread
 
@@ -413,7 +414,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         return config
 
-    def handle_result(self, data: dict, debug_output_location: str = None) -> None:
+    def handle_result(
+        self, data: dict, debug_output_location: Optional[str] = None
+    ) -> None:
         """Handles the result of the scan
 
         :param data: The data from the scan
@@ -448,7 +451,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             )
         self.notify()
 
-    def handle_error(self, msg: str, debug_output_location: str = None) -> None:
+    def handle_error(
+        self, msg: str, debug_output_location: Optional[str] = None
+    ) -> None:
         """Post-scan error operations
 
         :param msg: The error message
@@ -519,7 +524,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonStartScanRecentRelics.setText("Scan")
         self.pushButtonStartScanRecentRelics.setEnabled(True)
 
-    def log(self, log: tuple[str, LogLevel] | str) -> None:
+    def log(self, log: tuple[str | Exception, LogLevel] | str) -> None:
         """Logs a message to the log box
 
         :param log: The log message and log level
@@ -578,7 +583,7 @@ class InterruptListener(QThread):
         if self._listener:
             self._listener.stop()
 
-    def on_press(self, key: Key) -> None:
+    def on_press(self, key: Key | KeyCode | None):
         """Handles the key press. If the key is enter, emit the interrupt signal
 
         :param key: The key that was pressed

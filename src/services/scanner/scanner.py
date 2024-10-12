@@ -12,6 +12,7 @@ from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
 from models.game_data import GameData
+from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
 from utils.navigation import Navigation
 from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
@@ -168,7 +169,7 @@ class HSRScanner(QObject):
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
-            return
+            return {}
 
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")
@@ -195,9 +196,7 @@ class HSRScanner(QObject):
         """Stops the scan"""
         self._interrupt_event.set()
 
-    def scan_inventory(
-        self, strategy: LightConeStrategy | RelicStrategy
-    ) -> set[asyncio.Task]:
+    def scan_inventory(self, strategy: BaseParseStrategy) -> set[asyncio.Task]:
         """Scans the inventory for light cones or relics
 
         :param strategy: The strategy to use

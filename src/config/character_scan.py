@@ -10,7 +10,6 @@ CHARACTER_NAV_DATA = {
         "traces_button": (0.13, 0.315),
         "eidolons_button": (0.13, 0.49),
         "trailblazer": (0.3315, 0.4432, 0.126, 0.1037),
-        # trigger warning:
         "traces": {
             "hunt": {
                 "ability_1": (0.5020833333333333, 0.6833333333333333),
