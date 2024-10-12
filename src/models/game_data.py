@@ -82,7 +82,7 @@ class GameData:
         for char_id, base64_string in data["mini_icons"].items():
             decoded_image = base64.b64decode(base64_string)
             img = PILImage.open(BytesIO(decoded_image))
-            img = cv2.GaussianBlur(np.array(img), (5, 5), 0)
+            img = cv2.GaussianBlur(np.array(img), (5, 5), 0)  # type: ignore
             self.EQUIPPED_ICONS[char_id] = img
 
         # where i + 1 is the rarity
@@ -149,15 +149,15 @@ class GameData:
         :param equipped_avatar_img: The equipped avatar image
         :return: The character id
         """
-        equipped_avatar_img = np.array(equipped_avatar_img)
-        equipped_avatar_img = cv2.resize(equipped_avatar_img, (100, 100))
+        to_compare_img = np.array(equipped_avatar_img)  # type: ignore
+        to_compare_img = cv2.resize(to_compare_img, (100, 100))  # type: ignore
 
         # Circle mask
-        mask = np.zeros(equipped_avatar_img.shape[:2], dtype="uint8")
-        (h, w) = equipped_avatar_img.shape[:2]
-        cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)
-        equipped_avatar_img = cv2.bitwise_and(
-            equipped_avatar_img, equipped_avatar_img, mask=mask
+        mask = np.zeros(to_compare_img.shape[:2], dtype="uint8")
+        (h, w) = to_compare_img.shape[:2]
+        cv2.circle(mask, (int(w / 2), int(h / 2)), 50, 255, -1)  # type: ignore
+        to_compare_img = cv2.bitwise_and(  # type: ignore
+            to_compare_img, to_compare_img, mask=mask
         )
 
         max_conf = 0
@@ -166,10 +166,10 @@ class GameData:
         # Get character id with highest confidence
         for char_id in self.CHARACTER_IDS:
             # Get confidence
-            conf = cv2.matchTemplate(
-                equipped_avatar_img,
+            conf = cv2.matchTemplate(  # type: ignore
+                to_compare_img,
                 self.EQUIPPED_ICONS[char_id],
-                cv2.TM_CCOEFF_NORMED,
+                cv2.TM_CCOEFF_NORMED,  # type: ignore
             ).max()
             if conf > max_conf:
                 max_conf = conf
@@ -179,51 +179,51 @@ class GameData:
             self.settings.setValue("is_stelle", int(res[-1]) % 2 == 0)
         return res
 
-    def get_closest_relic_name(self, name: str) -> str:
+    def get_closest_relic_name(self, name: str) -> tuple[str, int]:
         """Get closest relic name from name
 
         :param name: The name of the relic
-        :return: The closest relic name
+        :return: The closest relic name and distance
         """
         return self._get_closest_match(name, self.RELIC_META_DATA)
 
-    def get_closest_light_cone_name(self, name: str) -> str:
+    def get_closest_light_cone_name(self, name: str) -> tuple[str, int]:
         """Get closest light cone name from name
 
         :param name: The name of the light cone
-        :return: The closest light cone name
+        :return: The closest light cone name and distance
         """
         return self._get_closest_match(name, self.LIGHT_CONE_META_DATA)
 
-    def get_closest_relic_sub_stat(self, name: str) -> str:
+    def get_closest_relic_sub_stat(self, name: str) -> tuple[str, int]:
         """Get closest relic sub stat from name
 
         :param name: The name of the relic sub stat
-        :return: The closest relic sub stat
+        :return: The closest relic sub stat and distance
         """
         return self._get_closest_match(name, RELIC_SUB_STATS)
 
-    def get_closest_relic_main_stat(self, name: str) -> str:
+    def get_closest_relic_main_stat(self, name: str) -> tuple[str, int]:
         """Get closest relic main stat from name
 
         :param name: The name of the relic main stat
-        :return: The closest relic main stat
+        :return: The closest relic main stat and distance
         """
         return self._get_closest_match(name, RELIC_MAIN_STATS)
 
-    def get_closest_character_name(self, name: str) -> str:
+    def get_closest_character_name(self, name: str) -> tuple[str, int]:
         """Get closest character name from name
 
         :param name: The name of the character
-        :return: The closest character name
+        :return: The closest character name and distance
         """
         return self._get_closest_match(name, self._get_character_keys)
 
-    def get_closest_path_name(self, name: str) -> str:
+    def get_closest_path_name(self, name: str) -> tuple[str, int]:
         """Get closest path name from name
 
         :param name: The name of the path
-        :return: The closest path name
+        :return: The closest path name and distance
         """
         return self._get_closest_match(name, PATHS)
 

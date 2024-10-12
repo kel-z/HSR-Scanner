@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QSettings
+from typing import Callable
 
 from models.game_data import GameData
 
@@ -81,7 +81,7 @@ def convert_to_sro(data: dict, game_data: GameData) -> dict:
 
 
 def _convert_characters_sro(
-    characters: list[dict], character_key_fn: callable
+    characters: list[dict], character_key_fn: Callable
 ) -> list[dict]:
     """Convert characters to SRO format
 
@@ -124,7 +124,7 @@ def _convert_characters_sro(
 
 
 def _convert_relics_sro(
-    relics: list[dict], sro_mappings: dict, character_key_fn: callable
+    relics: list[dict], sro_mappings: dict, character_key_fn: Callable
 ) -> list[dict]:
     """Convert relics to SRO format
 
@@ -173,7 +173,7 @@ def _convert_relics_sro(
 
 
 def _convert_light_cones_sro(
-    light_cones: list[dict], sro_mappings: dict, character_key_fn: callable
+    light_cones: list[dict], sro_mappings: dict, character_key_fn: Callable
 ) -> list[dict]:
     """Convert light cones to SRO format
 

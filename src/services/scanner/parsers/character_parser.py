@@ -52,7 +52,7 @@ class CharacterParser:
         :return: The character dictionary
         """
         if self._interrupt_event.is_set():
-            return
+            return {}
 
         name = stats_dict["name"]
         path = stats_dict["path"]
@@ -149,13 +149,12 @@ class CharacterParser:
         if isinstance(level, int):
             return level
 
-        res = (
-            image_to_string(level, "0123456789", 7, True)
-            if isinstance(level, Image)
-            else level
-        )
-        if not res or not res.isdigit():
-            res = image_to_string(level, "0123456789", 6, True)
+        if isinstance(level, Image):
+            res = image_to_string(level, "0123456789", 7, True)
+            if not res or not res.isdigit():
+                res = image_to_string(level, "0123456789", 6, True)
+        else:
+            res = level
         return int(res)
 
     def get_closest_name_and_path(
@@ -188,7 +187,7 @@ class CharacterParser:
                 LogLevel.TRACE,
             )
 
-            if min_dist > 5:
+            if int(min_dist) > 5:
                 raise Exception(
                     f'Failed to get a character name: got "{character_name}".'
                 )
@@ -225,15 +224,15 @@ class CharacterParser:
 
         eidolon = 0
         for img in eidolon_images:
-            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            white = cv2.Laplacian(img_bw, cv2.CV_64F).var()
+            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # type: ignore
+            white = cv2.Laplacian(img_bw, cv2.CV_64F).var() # type: ignore
 
             # Eidolon is locked if the image is too dark
             if white < 10000:
                 break
 
-            mask = cv2.inRange(img, lower_orange, upper_orange)
-            orange = cv2.countNonZero(mask)
+            mask = cv2.inRange(img, lower_orange, upper_orange) # type: ignore
+            orange = cv2.countNonZero(mask) # type: ignore
 
             # Eidolon is unlocked but not activated if the image is too orange
             if orange > 200:

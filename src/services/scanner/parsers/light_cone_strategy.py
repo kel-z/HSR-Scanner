@@ -1,16 +1,13 @@
-from asyncio import Event
+from type_defs.stats_dict import LightConeDict
 
-from PIL import Image as PILImage
 from PIL.Image import Image
 from pyautogui import locate
-from PyQt6.QtCore import pyqtBoundSignal
 
 from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
-from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
-from utils.data import filter_images_from_dict, resource_path
+from utils.data import filter_images_from_dict
 from utils.ocr import (
     image_to_string,
     preprocess_equipped_img,
@@ -37,8 +34,8 @@ class LightConeStrategy(BaseParseStrategy):
             return "Rarity"
 
     def check_filters(
-        self, stats_dict: dict, filters: dict, uid: int
-    ) -> tuple[dict, dict]:
+        self, stats_dict: LightConeDict, filters: dict, uid: int
+    ) -> tuple[dict, LightConeDict]:
         """Check if the stats dictionary passes the filters
 
         :param stats_dict: The stats dictionary
@@ -65,7 +62,9 @@ class LightConeStrategy(BaseParseStrategy):
                     stats_dict["name"] = self.extract_stats_data(
                         "name", stats_dict["name"]
                     )
-                    if not stats_dict["name"]:
+                    if not stats_dict["name"] or not isinstance(
+                        stats_dict["name"], str
+                    ):
                         self._log(
                             f'Light Cone UID {uid}: Failed to parse name. Setting to "Void".',
                             LogLevel.ERROR,
@@ -96,7 +95,7 @@ class LightConeStrategy(BaseParseStrategy):
                         stats_dict["level"] = "1/20"
                         filter_results[key] = True
                         continue
-                    val = int(stats_dict["level"].split("/")[0])
+                    val = int(stats_dict["level"].split("/")[0])  # type: ignore
 
             if not isinstance(val, int):
                 raise ValueError(f'Filter key "{key}" does not have an int value.')
@@ -110,18 +109,21 @@ class LightConeStrategy(BaseParseStrategy):
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key: str, img: Image) -> str | Image:
+    def extract_stats_data(self, key: str, data: str | Image) -> str | Image:
         """Extracts the stats data from the image
 
         :param key: The key
-        :param img: The image
+        :param data: The data
         :return: The extracted data, or the image if the key is not recognized
         """
+        if not isinstance(data, Image):
+            return data
+
         match key:
             case "name":
                 name, _ = self._game_data.get_closest_light_cone_name(
                     image_to_string(
-                        img,
+                        data,
                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-",
                         6,
                     )
@@ -129,18 +131,18 @@ class LightConeStrategy(BaseParseStrategy):
                 return name
             case "level":
                 return image_to_string(
-                    img, "0123456789S/", 7, True, preprocess_lc_level_img
+                    data, "0123456789S/", 7, True, preprocess_lc_level_img
                 ).replace("S", "5")
             case "superimposition":
                 return image_to_string(
-                    img, "12345S", 10, True, preprocess_superimposition_img
+                    data, "12345S", 10, True, preprocess_superimposition_img
                 ).replace("S", "5")
             case "equipped":
                 return image_to_string(
-                    img, "Equipped", 7, True, preprocess_equipped_img
+                    data, "Equipped", 7, True, preprocess_equipped_img
                 )
             case _:
-                return img
+                return data
 
     def parse(self, stats_dict: dict, uid: int) -> dict:
         """Parses the stats dictionary
@@ -150,7 +152,7 @@ class LightConeStrategy(BaseParseStrategy):
         :return: The parsed stats dictionary
         """
         if self._interrupt_event.is_set():
-            return
+            return {}
 
         for key in stats_dict:
             if isinstance(stats_dict[key], Image):

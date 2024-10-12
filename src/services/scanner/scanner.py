@@ -169,7 +169,7 @@ class HSRScanner(QObject):
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
-            return
+            return {}
 
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")

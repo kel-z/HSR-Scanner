@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from asyncio import Event
 
 from PIL import Image as PILImage
+from PIL.Image import Image
 from PyQt6.QtCore import pyqtBoundSignal
 
 from enums.increment_type import IncrementType
@@ -12,8 +13,8 @@ from utils.data import resource_path
 class BaseParseStrategy(ABC):
     """BaseStrategy class for parsing data from screenshots."""
 
-    SCAN_TYPE = None
-    NAV_DATA = None
+    SCAN_TYPE: IncrementType
+    NAV_DATA: dict
 
     def __init__(
         self,
@@ -63,7 +64,7 @@ class BaseParseStrategy(ABC):
         pass
 
     @abstractmethod
-    def extract_stats_data(self, key: str, data: str) -> str:
+    def extract_stats_data(self, key: str, data: str | Image) -> str | Image:
         """Extract the stats data from the string
 
         :param key: The key
@@ -73,10 +74,11 @@ class BaseParseStrategy(ABC):
         pass
 
     @abstractmethod
-    def parse(self, img: PILImage.Image) -> dict:
-        """Parse the image and return the stats dictionary
+    def parse(self, stats_dict: dict, uid: int) -> dict:
+        """Parses the stats dictionary
 
-        :param img: The image
-        :return: The stats dictionary
+        :param stats_dict: The stats dictionary
+        :param uid: The UID of the light cone
+        :return: The parsed stats dictionary
         """
         pass

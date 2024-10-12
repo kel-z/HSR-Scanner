@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import pyautogui
 import win32gui
-from PIL.Image import Image
 from pynput import keyboard, mouse
 
 from utils.window import bring_window_to_foreground
@@ -52,7 +51,7 @@ class Navigation:
 
         self._mouse.position = (x, y)
 
-    def move_cursor_to_image(self, haystack: Image, needle: Image) -> None:
+    def move_cursor_to_image(self, haystack: object, needle: object) -> None:
         """Move the cursor to the center of the needle image in the haystack image
 
         :param haystack: The haystack image
@@ -61,8 +60,8 @@ class Navigation:
         haystack = np.array(haystack)
         needle = np.array(needle)
 
-        pos = cv2.matchTemplate(haystack, needle, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(pos)
+        pos = cv2.matchTemplate(haystack, needle, cv2.TM_CCOEFF_NORMED)  # type: ignore
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(pos)  # type: ignore
 
         offset_x = 0.5 * needle.shape[1] / haystack.shape[1]
         offset_y = 0.5 * needle.shape[0] / haystack.shape[0]
@@ -74,13 +73,13 @@ class Navigation:
 
         self.move_cursor_to(*pos)
 
-    def key_tap(self, key: keyboard.Key | str) -> None:
+    def key_tap(self, key: keyboard.Key | keyboard.KeyCode | str) -> None:
         """Tap a key
 
         :param key: The key to tap
         """
         # already a Key, tap it
-        if isinstance(key, keyboard.Key):
+        if isinstance(key, keyboard.Key) or isinstance(key, keyboard.KeyCode):
             self._keyboard.tap(key)
             return
 

@@ -1,17 +1,14 @@
-from asyncio import Event
-
 import numpy as np
 from PIL import Image as PILImage
 from PIL.Image import Image
 from pyautogui import locate
-from PyQt6.QtCore import pyqtBoundSignal
 
 from config.relic_scan import RELIC_NAV_DATA
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
-from models.game_data import GameData
 from models.substat_vals import SUBSTAT_ROLL_VALS
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
+from type_defs.stats_dict import RelicDict
 from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
     image_to_string,
@@ -44,8 +41,8 @@ class RelicStrategy(BaseParseStrategy):
             return "Rarity"
 
     def check_filters(
-        self, stats_dict: dict, filters: dict, uid: int
-    ) -> tuple[dict, dict]:
+        self, stats_dict: RelicDict, filters: dict, uid: int
+    ) -> tuple[dict, RelicDict]:
         """Checks if the relic passes the filters
 
         :param stats_dict: The stats dict
@@ -68,7 +65,7 @@ class RelicStrategy(BaseParseStrategy):
                     if filters[key] <= 2:
                         filter_results[key] = True
                         continue
-                    val = stats_dict["rarity"] = self.extract_stats_data(
+                    val = stats_dict["rarity"] = self.extract_stats_data(  # type: ignore
                         filter_key, stats_dict["rarity"]
                     )
                 elif key == "min_level":
@@ -77,7 +74,7 @@ class RelicStrategy(BaseParseStrategy):
                         filter_results[key] = True
                         continue
                     level = self.extract_stats_data("level", stats_dict["level"])
-                    if not level:
+                    if not level or not isinstance(level, str):
                         self._log(
                             f"Relic UID {uid}: Failed to parse level. Setting to 0.",
                             LogLevel.ERROR,
@@ -97,40 +94,47 @@ class RelicStrategy(BaseParseStrategy):
 
         return (filter_results, stats_dict)
 
-    def extract_stats_data(self, key: str, img: Image) -> str | int | Image:
+    def extract_stats_data(
+        self, key: str, data: str | int | Image
+    ) -> str | int | Image:
         """Extracts the stats data from the image
 
         :param key: The key
-        :param img: The image
+        :param data: The data
         :return: The extracted data, or the image if the key is not relevant
         """
+        if not isinstance(data, Image):
+            return data
+
         match key:
             case "name":
                 return image_to_string(
-                    img, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
+                    data, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
                 )
             case "level":
-                return image_to_string(img, "0123456789S", 7, True).replace("S", "5")
+                return image_to_string(data, "0123456789S", 7, True).replace("S", "5")
             case "mainStatKey":
                 return image_to_string(
-                    img,
+                    data,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz",
                     7,
                     True,
                     preprocess_main_stat_img,
                 )
             case "equipped":
-                return image_to_string(img, "Equiped", 7, True, preprocess_equipped_img)
+                return image_to_string(
+                    data, "Equiped", 7, True, preprocess_equipped_img
+                )
             case "rarity":
                 # Get rarity by color matching
-                rarity_sample = np.array(img)
+                rarity_sample = np.array(data)
                 rarity_sample = rarity_sample[int(rarity_sample.shape[0] / 2)][
                     int(rarity_sample.shape[1] / 2)
                 ]
                 return self._game_data.get_closest_rarity(rarity_sample)
             case "substat_names":
                 return image_to_string(
-                    img,
+                    data,
                     " ABCDEFGHIKMPRSTacefikrt",
                     6,
                     True,
@@ -140,16 +144,16 @@ class RelicStrategy(BaseParseStrategy):
             case "substat_vals":
                 return (
                     image_to_string(
-                        img, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
+                        data, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
                     )
                     .replace("S", "5")
                     .replace(",", ".")
                     .replace("..", ".")
                 )
             case _:
-                return img
+                return data
 
-    def parse(self, stats_dict: dict, uid: int) -> dict:
+    def parse(self, stats_dict: RelicDict, uid: int) -> dict:
         """Parses the relic data
 
         :param stats_dict: The stats dict
@@ -157,7 +161,7 @@ class RelicStrategy(BaseParseStrategy):
         :return: The parsed relic data
         """
         if self._interrupt_event.is_set():
-            return
+            return {}
 
         for key in stats_dict:
             if isinstance(stats_dict[key], Image):
@@ -183,9 +187,9 @@ class RelicStrategy(BaseParseStrategy):
         substat_vals = stats_dict["substat_vals"]
 
         # Fix OCR errors
-        name, _ = self._game_data.get_closest_relic_name(name)
-        main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)
-        if not level:
+        name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
+        main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)  # type: ignore
+        if not level or not isinstance(level, str):
             self._log(
                 f"Relic UID {uid}: Failed to extract level. Setting to 0.",
                 LogLevel.ERROR,
@@ -200,15 +204,15 @@ class RelicStrategy(BaseParseStrategy):
             name = "Musketeer's Wild Wheat Felt Hat"
 
         # Substats
-        while "\n\n" in substat_names:
-            substat_names = substat_names.replace("\n\n", "\n")
-        while "\n\n" in substat_vals:
-            substat_vals = substat_vals.replace("\n\n", "\n")
-        substat_names = substat_names.split("\n")
-        substat_vals = substat_vals.split("\n")
+        while "\n\n" in substat_names:  # type: ignore
+            substat_names = substat_names.replace("\n\n", "\n")  # type: ignore
+        while "\n\n" in substat_vals:  # type: ignore
+            substat_vals = substat_vals.replace("\n\n", "\n")  # type: ignore
+        substat_names = substat_names.split("\n")  # type: ignore
+        substat_vals = substat_vals.split("\n")  # type: ignore
 
         substats_res = self._parse_substats(substat_names, substat_vals, uid)
-        self._validate_substats(substats_res, rarity, level, uid)
+        self._validate_substats(substats_res, rarity, level, uid)  # type: ignore
         self._sort_substats(substats_res, uid)
 
         # Set and slot
@@ -393,7 +397,7 @@ class RelicStrategy(BaseParseStrategy):
                 )
                 return
 
-            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][substat["key"]][
+            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][str(substat["key"])][
                 str(substat["value"])
             ]
             if isinstance(roll_value, list):
@@ -434,7 +438,7 @@ class RelicStrategy(BaseParseStrategy):
             "Break Effect_",
         ]
         original = substats.copy()
-        substats.sort(key=lambda x: SORT_ORDER.index(x["key"]))
+        substats.sort(key=lambda x: SORT_ORDER.index(str(x["key"])))
         if original != substats:
             self._log(
                 f"Relic UID {uid}: Newly upgraded relic detected. Substats have been sorted.",
