@@ -74,7 +74,7 @@ class RelicStrategy(BaseParseStrategy):
                         filter_results[key] = True
                         continue
                     level = self.extract_stats_data("level", stats_dict["level"])
-                    if not level or not isinstance(level, str):
+                    if not level or isinstance(level, Image):
                         self._log(
                             f"Relic UID {uid}: Failed to parse level. Setting to 0.",
                             LogLevel.ERROR,
@@ -164,8 +164,7 @@ class RelicStrategy(BaseParseStrategy):
             return {}
 
         for key in stats_dict:
-            if isinstance(stats_dict[key], Image):
-                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
+            stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
         (
             self._log(
@@ -189,7 +188,7 @@ class RelicStrategy(BaseParseStrategy):
         # Fix OCR errors
         name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
         main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)  # type: ignore
-        if not level or not isinstance(level, str):
+        if not level or isinstance(level, Image):
             self._log(
                 f"Relic UID {uid}: Failed to extract level. Setting to 0.",
                 LogLevel.ERROR,

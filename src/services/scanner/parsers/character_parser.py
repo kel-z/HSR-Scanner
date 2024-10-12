@@ -153,8 +153,14 @@ class CharacterParser:
             res = image_to_string(level, "0123456789", 7, True)
             if not res or not res.isdigit():
                 res = image_to_string(level, "0123456789", 6, True)
-        else:
-            res = level
+
+        if not res.isdigit():
+            self._log(
+                f"Failed to parse level. Got '{res}' instead. Setting to 1.",
+                LogLevel.ERROR,
+            )
+            return 1
+
         return int(res)
 
     def get_closest_name_and_path(
@@ -224,15 +230,15 @@ class CharacterParser:
 
         eidolon = 0
         for img in eidolon_images:
-            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) # type: ignore
-            white = cv2.Laplacian(img_bw, cv2.CV_64F).var() # type: ignore
+            img_bw = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # type: ignore
+            white = cv2.Laplacian(img_bw, cv2.CV_64F).var()  # type: ignore
 
             # Eidolon is locked if the image is too dark
             if white < 10000:
                 break
 
-            mask = cv2.inRange(img, lower_orange, upper_orange) # type: ignore
-            orange = cv2.countNonZero(mask) # type: ignore
+            mask = cv2.inRange(img, lower_orange, upper_orange)  # type: ignore
+            orange = cv2.countNonZero(mask)  # type: ignore
 
             # Eidolon is unlocked but not activated if the image is too orange
             if orange > 200:

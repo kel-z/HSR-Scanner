@@ -155,8 +155,7 @@ class LightConeStrategy(BaseParseStrategy):
             return {}
 
         for key in stats_dict:
-            if isinstance(stats_dict[key], Image):
-                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
+            stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
         (
             self._log(
