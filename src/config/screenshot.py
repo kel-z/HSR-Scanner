@@ -61,6 +61,14 @@ SCREENSHOT_COORDS = {
                     "ult": (0.5796875, 0.59375),
                     "talent": (0.5796875, 0.4625),
                 },
+                "remembrance": {
+                    "basic": (0.5173125, 0.697333333333333),
+                    "skill": (0.661328125, 0.6972222222222222),
+                    "ult": (0.589453125, 0.7340277777777777),
+                    "talent": (0.702734375, 0.5694444444444444),
+                    "memosprite_skill": (0.59, 0.5486111111111112),
+                    "memosprite_talent": (0.59, 0.3862777777777778),
+                },
             },
         },
         # stats screenshot of selected item in inventory screen
