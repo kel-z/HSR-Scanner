@@ -64,13 +64,14 @@ The output is loosely based off of Genshin's `.GOOD` export format. If a breakin
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
     - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from bottom to top.
+- Characters on the Remembrance path will have a `memosprite` key in the character data (see example below). 
 
 Current output sample:
 
 ```JSON
 {
     "source": "HSR-Scanner",
-    "build": "v1.2.0",
+    "build": "v1.3.0",
     "version": 4,
     "metadata": {
         "uid": 601869216,
@@ -187,32 +188,36 @@ Current output sample:
             }
         },
         {
-            "id": "1101",
-            "name": "Bronya",
-            "path": "Harmony",
-            "level": 75,
+            "id": "8008",
+            "name": "Trailblazer",
+            "path": "Remembrance",
+            "level": 80,
             "ascension": 6,
             "eidolon": 0,
             "skills": {
-                "basic": 4,
-                "skill": 9,
-                "ult": 9,
-                "talent": 9
+                "basic": 1,
+                "skill": 1,
+                "ult": 2,
+                "talent": 1
             },
             "traces": {
                 "ability_1": true,
-                "ability_2": true,
-                "ability_3": true,
-                "stat_1": true,
-                "stat_2": true,
-                "stat_3": true,
-                "stat_4": true,
-                "stat_5": true,
-                "stat_6": true,
+                "ability_2": false,
+                "ability_3": false,
+                "stat_1": false,
+                "stat_2": false,
+                "stat_3": false,
+                "stat_4": false,
+                "stat_5": false,
+                "stat_6": false,
                 "stat_7": false,
-                "stat_8": true,
-                "stat_9": true,
+                "stat_8": false,
+                "stat_9": false,
                 "stat_10": false
+            },
+            "memosprite": {
+                "skill": 4,
+                "talent": 3
             }
         }
     ]

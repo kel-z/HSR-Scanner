@@ -55,6 +55,7 @@ PATHS = {
     "Destruction",
     "Nihility",
     "Abundance",
+    "Remembrance",
 }
 
 

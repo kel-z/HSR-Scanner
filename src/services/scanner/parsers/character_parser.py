@@ -75,6 +75,12 @@ class CharacterParser:
             "traces": {},
         }
 
+        if path == "Remembrance":
+            character["memosprite"] = {
+                "skill": 0,
+                "talent": 0,
+            }
+
         level = stats_dict["level"]
         try:
             character["level"] = self.get_level(level)
@@ -89,7 +95,11 @@ class CharacterParser:
             if character["eidolon"] >= eidolon:
                 e_token = f"e{eidolon}"
                 for k, v in metadata[e_token].items():
-                    character["skills"][k] -= v
+                    if k == "memosprite":
+                        for k2, v2 in v.items():
+                            character["memosprite"][k2] -= v2
+                    else:
+                        character["skills"][k] -= v
 
         traces_dict = stats_dict["traces"]
         for k, v in traces_dict["levels"].items():
@@ -122,9 +132,15 @@ class CharacterParser:
                         v, "0123456789/", 7, False, preprocess_trace_img
                     )
 
-                character["skills"][k] += int(res.split("/")[0])
-                if not 1 <= character["skills"][k] <= (6 if k == "basic" else 10):
-                    raise ValueError
+                if k.startswith("memosprite"):
+                    key = k.split("_")[1]
+                    character["memosprite"][key] += int(res.split("/")[0])
+                    if not 1 <= character["memosprite"][key] <= 6:
+                        raise ValueError
+                else:
+                    character["skills"][k] += int(res.split("/")[0])
+                    if not 1 <= character["skills"][k] <= (6 if k == "basic" else 10):
+                        raise ValueError
             except ValueError:
                 self._log(
                     f"{character['name']}: Failed to parse '{k}' level. "
