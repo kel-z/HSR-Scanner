@@ -228,9 +228,9 @@ class HSRScanner(QObject):
                     else "Caelus"
                 ),
             },
-            "light_cones": await asyncio.gather(*light_cones),
-            "relics": await asyncio.gather(*relics),
-            "characters": await asyncio.gather(*characters),
+            "light_cones": [x for x in await asyncio.gather(*light_cones) if x],
+            "relics": [x for x in await asyncio.gather(*relics) if x],
+            "characters": [x for x in await asyncio.gather(*characters) if x],
         }
 
     def stop_scan(self) -> None:
@@ -402,54 +402,80 @@ class HSRScanner(QObject):
         bring_window_to_foreground(self._hwnd)
         self._nav_sleep(1)
 
-        # Locate and click databank button
-        self._log("Locating Data Bank button...", LogLevel.DEBUG)
-        haystack = self._screenshot.screenshot_screen()
-        needle = self._databank_img.resize(
-            # Scale image to match capture size
-            (
-                int(haystack.size[0] * 0.0296875),
-                int(haystack.size[1] * 0.05625),
-            )
-        )
-        self._nav.move_cursor_to_image(haystack, needle)
-        self._log(
-            f"Data Bank button found at {self._nav.get_mouse_position()}.",
-            LogLevel.DEBUG,
-        )
-        time.sleep(0.05)
-        self._nav.click()
-        self._nav_sleep(1)
-
-        # Get character count
-        max_retry = 5
-        retry = 0
+        # Enable hard retry for databank button
+        max_databank_retry = 2
+        databank_retry = 0
         while True:
-            character_total = self._screenshot.screenshot_character_count()
-            character_total = image_to_string(
-                character_total, "0123456789/", 7, True, preprocess_char_count_img
-            )
             try:
-                self._log(f"Character total: {character_total}.")
-                character_total = int(character_total.split("/")[0])
-                break
-            except ValueError:
-                retry += 1
-                if retry > max_retry:
-                    raise ValueError(
-                        "Failed to parse character count from Data Bank screen."
-                        + (
-                            f' Got "{character_total}" instead.'
-                            if character_total
-                            else ""
-                        )
+                # Locate and click databank button
+                self._log("Locating Data Bank button...", LogLevel.DEBUG)
+                haystack = self._screenshot.screenshot_screen()
+                needle = self._databank_img.resize(
+                    # Scale image to match capture size
+                    (
+                        int(haystack.size[0] * 0.0296875),
+                        int(haystack.size[1] * 0.05625),
                     )
-                else:
-                    self._log(
-                        f"Failed to parse character count. Retrying... ({retry}/{max_retry})",
-                        LogLevel.WARNING,
-                    )
+                )
+                self._nav.move_cursor_to_image(haystack, needle)
+                self._log(
+                    f"Data Bank button found at {self._nav.get_mouse_position()}.",
+                    LogLevel.DEBUG,
+                )
+                time.sleep(0.05)
+                self._nav.click()
                 self._nav_sleep(1)
+
+                # Get character count
+                max_retry = 5
+                retry = 0
+                while True:
+                    character_total = self._screenshot.screenshot_character_count()
+                    character_total = image_to_string(
+                        character_total,
+                        "0123456789/",
+                        7,
+                        True,
+                        preprocess_char_count_img,
+                    )
+                    try:
+                        self._log(f"Character total: {character_total}.")
+                        character_total = int(character_total.split("/")[0])
+                        break
+                    except ValueError:
+                        retry += 1
+                        if retry > max_retry:
+                            self._log(
+                                "Failed to parse character count from Data Bank screen."
+                                + (
+                                    f' Got "{character_total}" instead.'
+                                    if character_total
+                                    else ""
+                                ),
+                                LogLevel.ERROR,
+                            )
+                            raise ValueError
+                        else:
+                            self._log(
+                                f"Failed to parse character count. Retrying... ({retry}/{max_retry})",
+                                LogLevel.WARNING,
+                            )
+                        self._nav_sleep(1)
+            except ValueError as e:
+                databank_retry += 1
+                if databank_retry > max_databank_retry:
+                    self._log(
+                        f"Failed to parse character count after {max_databank_retry} character scan restarts. Ending scan.",
+                        LogLevel.ERROR,
+                    )
+                    return set()
+                self._log(
+                    f"Restarting character count scan... ({databank_retry}/{max_databank_retry})",
+                    LogLevel.WARNING,
+                )
+                self._nav_sleep(1)
+                continue
+            break
 
         # Navigate to characters menu
         self._nav.key_tap(Key.esc)
@@ -475,6 +501,7 @@ class HSRScanner(QObject):
         self._nav.enter_gamepad()
 
         prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
+        max_retry = 3
         while i < character_total:
             # Get name and path
             character_name = ""
@@ -526,9 +553,13 @@ class HSRScanner(QObject):
 
             if character_name in characters_seen:
                 self._log(
-                    f"Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway.",
+                    f"Duplicate character '{path} / {character_name}' scanned (Did you move your mouse during the scan?). Moving onto next character...",
                     LogLevel.ERROR,
                 )
+                self._nav.enter_gamepad()
+                self._nav.press_gamepad_rb()
+                self._scan_sleep(0.3)
+                continue
             else:
                 characters_seen.add(character_name)
                 self._log(
@@ -594,11 +625,11 @@ class HSRScanner(QObject):
             self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
 
             # Don't go right if we are on the last character
-            if i == character_total:
+            if i == character_total - 1:
                 break
             i += 1
             self._nav.press_gamepad_rb()
-            self._scan_sleep(0.1)
+            self._scan_sleep(0.3)
         self._nav.exit_gamepad()
 
         # Traces tab

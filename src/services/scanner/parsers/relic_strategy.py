@@ -186,131 +186,140 @@ class RelicStrategy(BaseParseStrategy):
         if self._interrupt_event.is_set():
             return {}
 
-        for key in stats_dict:
-            stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
-
-        (
-            self._log(
-                f"Relic UID {uid}: Raw data: {filter_images_from_dict(stats_dict)}",
-                LogLevel.DEBUG,
-            )
-            if self._debug
-            else None
-        )
-
-        name = stats_dict[RELIC_NAME]
-        level = stats_dict[RELIC_LEVEL]
-        main_stat_key = stats_dict[RELIC_MAINSTAT]
-        lock = stats_dict[LOCK]
-        discard = stats_dict[RELIC_DISCARD]
-        rarity = stats_dict[RELIC_RARITY]
-        equipped = stats_dict[EQUIPPED]
-        substat_names = stats_dict[RELIC_SUBSTAT_NAMES]
-        substat_vals = stats_dict[RELIC_SUBSTAT_VALUES]
-
-        # Fix OCR errors
-        name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
-        main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)  # type: ignore
-        if not level or isinstance(level, Image):
-            self._log(
-                f"Relic UID {uid}: Failed to extract level. Setting to 0.",
-                LogLevel.ERROR,
-            )
-            level = 0
-        level = int(level)
-        if not name:
-            self._log(
-                f'Relic UID {uid}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
-                LogLevel.ERROR,
-            )
-            name = "Musketeer's Wild Wheat Felt Hat"
-
-        # Substats
-        while "\n\n" in substat_names:  # type: ignore
-            substat_names = substat_names.replace("\n\n", "\n")  # type: ignore
-        while "\n\n" in substat_vals:  # type: ignore
-            substat_vals = substat_vals.replace("\n\n", "\n")  # type: ignore
-        substat_names = substat_names.split("\n")  # type: ignore
-        substat_vals = substat_vals.split("\n")  # type: ignore
-
-        substats_res = self._parse_substats(substat_names, substat_vals, uid)
-        self._validate_substats(substats_res, rarity, level, uid)  # type: ignore
-        self._sort_substats(substats_res, uid)
-
-        # Set and slot
-        metadata = self._game_data.get_relic_meta_data(name)
-        set_id = str(metadata[RELIC_SET_ID])
-        set_name = metadata[RELIC_SET]
-        slot_key = metadata[RELIC_SLOT]
-        if slot_key == "Hands":
-            main_stat_key = "ATK"
-        elif slot_key == "Head":
-            main_stat_key = "HP"
-        elif not main_stat_key:
-            self._log(
-                f"Relic UID {uid}: Failed to extract main stat. Setting to ATK.",
-                LogLevel.ERROR,
-            )
-            main_stat_key = "ATK"
-
-        # Check if locked/discarded by image matching
-        min_dim = min(lock.size)
         try:
-            lock_img = self._lock_icon.resize((min_dim, min_dim))
-            lock = locate(lock_img, lock, confidence=0.3) is not None
-        except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
+            for key in stats_dict:
+                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
+
+            (
+                self._log(
+                    f"Relic UID {uid}: Raw data: {filter_images_from_dict(stats_dict)}",
+                    LogLevel.DEBUG,
+                )
+                if self._debug
+                else None
+            )
+
+            name = stats_dict[RELIC_NAME]
+            level = stats_dict[RELIC_LEVEL]
+            main_stat_key = stats_dict[RELIC_MAINSTAT]
+            lock = stats_dict[LOCK]
+            discard = stats_dict[RELIC_DISCARD]
+            rarity = stats_dict[RELIC_RARITY]
+            equipped = stats_dict[EQUIPPED]
+            substat_names = stats_dict[RELIC_SUBSTAT_NAMES]
+            substat_vals = stats_dict[RELIC_SUBSTAT_VALUES]
+
+            # Fix OCR errors
+            name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
+            main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)  # type: ignore
+            if not level or isinstance(level, Image):
+                self._log(
+                    f"Relic UID {uid}: Failed to extract level. Setting to 0.",
+                    LogLevel.ERROR,
+                )
+                level = 0
+            level = int(level)
+            if not name:
+                self._log(
+                    f'Relic UID {uid}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
+                    LogLevel.ERROR,
+                )
+                name = "Musketeer's Wild Wheat Felt Hat"
+
+            # Substats
+            while "\n\n" in substat_names:  # type: ignore
+                substat_names = substat_names.replace("\n\n", "\n")  # type: ignore
+            while "\n\n" in substat_vals:  # type: ignore
+                substat_vals = substat_vals.replace("\n\n", "\n")  # type: ignore
+            substat_names = substat_names.split("\n")  # type: ignore
+            substat_vals = substat_vals.split("\n")  # type: ignore
+
+            substats_res = self._parse_substats(substat_names, substat_vals, uid)
+            self._validate_substats(substats_res, rarity, level, uid)  # type: ignore
+            self._sort_substats(substats_res, uid)
+
+            # Set and slot
+            metadata = self._game_data.get_relic_meta_data(name)
+            set_id = str(metadata[RELIC_SET_ID])
+            set_name = metadata[RELIC_SET]
+            slot_key = metadata[RELIC_SLOT]
+            if slot_key == "Hands":
+                main_stat_key = "ATK"
+            elif slot_key == "Head":
+                main_stat_key = "HP"
+            elif not main_stat_key:
+                self._log(
+                    f"Relic UID {uid}: Failed to extract main stat. Setting to ATK.",
+                    LogLevel.ERROR,
+                )
+                main_stat_key = "ATK"
+
+            # Check if locked/discarded by image matching
+            min_dim = min(lock.size)
+            try:
+                lock_img = self._lock_icon.resize((min_dim, min_dim))
+                lock = locate(lock_img, lock, confidence=0.3) is not None
+            except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
+                self._log(
+                    f"Relic UID {uid}: Failed to parse lock. Setting to False.",
+                    LogLevel.ERROR,
+                )
+                lock = False
+            min_dim = min(discard.size)
+            try:
+                discard_img = self._discard_icon.resize((min_dim, min_dim))
+                discard = locate(discard_img, discard, confidence=0.3) is not None
+            except Exception:
+                self._log(
+                    f"Relic UID {uid}: Failed to parse discard. Setting to False.",
+                    LogLevel.ERROR,
+                )
+                discard = False
+
+            location = ""
+            outfit_id = None
+            if equipped == "Equipped":
+                equipped_avatar = stats_dict[EQUIPPED_AVATAR]
+                location, outfit_id = self._game_data.get_equipped_character(
+                    equipped_avatar
+                )
+            elif (
+                equipped == "Equippe"
+            ):  # https://github.com/kel-z/HSR-Scanner/issues/88
+                equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
+                location, outfit_id = self._game_data.get_equipped_character(
+                    equipped_avatar
+                )
+
+            if outfit_id:
+                self._log(
+                    f"Relic UID {uid}: Equipped character is {location} with outfit ID {outfit_id}.",
+                    LogLevel.DEBUG,
+                )
+
+            result = {
+                RELIC_SET_ID: set_id,
+                RELIC_NAME: set_name,
+                RELIC_SLOT: slot_key,
+                RELIC_RARITY: rarity,
+                RELIC_LEVEL: level,
+                RELIC_MAINSTAT: main_stat_key,
+                RELIC_SUBSTATS: substats_res,
+                RELIC_LOCATION: location,
+                LOCK: lock,
+                RELIC_DISCARD: discard,
+                "_uid": f"relic_{uid}",
+            }
+
+            self._update_signal.emit(IncrementType.RELIC_SUCCESS.value)
+
+            return result
+        except Exception as e:
             self._log(
-                f"Relic UID {uid}: Failed to parse lock. Setting to False.",
+                f"Failed to parse relic {uid}. stats_dict={stats_dict}, exception={e}",
                 LogLevel.ERROR,
             )
-            lock = False
-        min_dim = min(discard.size)
-        try:
-            discard_img = self._discard_icon.resize((min_dim, min_dim))
-            discard = locate(discard_img, discard, confidence=0.3) is not None
-        except Exception:
-            self._log(
-                f"Relic UID {uid}: Failed to parse discard. Setting to False.",
-                LogLevel.ERROR,
-            )
-            discard = False
-
-        location = ""
-        outfit_id = None
-        if equipped == "Equipped":
-            equipped_avatar = stats_dict[EQUIPPED_AVATAR]
-            location, outfit_id = self._game_data.get_equipped_character(
-                equipped_avatar
-            )
-        elif equipped == "Equippe":  # https://github.com/kel-z/HSR-Scanner/issues/88
-            equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
-            location, outfit_id = self._game_data.get_equipped_character(
-                equipped_avatar
-            )
-
-        if outfit_id:
-            self._log(
-                f"Relic UID {uid}: Equipped character is {location} with outfit ID {outfit_id}.",
-                LogLevel.DEBUG,
-            )
-
-        result = {
-            RELIC_SET_ID: set_id,
-            RELIC_NAME: set_name,
-            RELIC_SLOT: slot_key,
-            RELIC_RARITY: rarity,
-            RELIC_LEVEL: level,
-            RELIC_MAINSTAT: main_stat_key,
-            RELIC_SUBSTATS: substats_res,
-            RELIC_LOCATION: location,
-            LOCK: lock,
-            RELIC_DISCARD: discard,
-            "_uid": f"relic_{uid}",
-        }
-
-        self._update_signal.emit(IncrementType.RELIC_SUCCESS.value)
-
-        return result
+            return {}
 
     def _parse_substats(
         self, names: list[str], vals: list[str], uid: int

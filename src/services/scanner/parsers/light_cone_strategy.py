@@ -165,105 +165,112 @@ class LightConeStrategy(BaseParseStrategy):
         if self._interrupt_event.is_set():
             return {}
 
-        for key in stats_dict:
-            stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
-
-        (
-            self._log(
-                f"Light Cone UID {uid}: Raw data: {filter_images_from_dict(stats_dict)}",
-                LogLevel.DEBUG,
-            )
-            if self._debug
-            else None
-        )
-
-        name = stats_dict[LC_NAME]
-        level = stats_dict[LC_LEVEL]
-        superimposition = stats_dict[LC_SUPERIMPOSITION]
-        lock = stats_dict[LOCK]
-        equipped_text = stats_dict[EQUIPPED]
-
-        if not name:
-            self._log(
-                f'Light Cone UID {uid}: Failed to parse name. Setting to "Void".',
-                LogLevel.ERROR,
-            )
-            name = "Void"
-
-        lc_id = str(self._game_data.get_light_cone_meta_data(name)[LC_ID])
-
-        # Parse level, ascension, superimposition
         try:
-            level, max_level = level.split("/")
-            level = int(level)
-            max_level = int(max_level)
-        except ValueError:
+            for key in stats_dict:
+                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
+
+            (
+                self._log(
+                    f"Light Cone UID {uid}: Raw data: {filter_images_from_dict(stats_dict)}",
+                    LogLevel.DEBUG,
+                )
+                if self._debug
+                else None
+            )
+
+            name = stats_dict[LC_NAME]
+            level = stats_dict[LC_LEVEL]
+            superimposition = stats_dict[LC_SUPERIMPOSITION]
+            lock = stats_dict[LOCK]
+            equipped_text = stats_dict[EQUIPPED]
+
+            if not name:
+                self._log(
+                    f'Light Cone UID {uid}: Failed to parse name. Setting to "Void".',
+                    LogLevel.ERROR,
+                )
+                name = "Void"
+
+            lc_id = str(self._game_data.get_light_cone_meta_data(name)[LC_ID])
+
+            # Parse level, ascension, superimposition
+            try:
+                level, max_level = level.split("/")
+                level = int(level)
+                max_level = int(max_level)
+            except ValueError:
+                self._log(
+                    f"Light Cone UID {uid}: Failed to parse level. Setting to 1.",
+                    LogLevel.ERROR,
+                )
+                level = 1
+                max_level = 20
+
+            ascension = (max(max_level, 20) - 20) // 10
+
+            try:
+                superimposition = int(superimposition)
+            except ValueError:
+                self._log(
+                    f"Light Cone UID {uid}: Failed to parse superimposition. Setting to 1.",
+                    LogLevel.ERROR,
+                )
+                superimposition = 1
+
+            min_dim = min(lock.size)
+            try:
+                locked = self._lock_icon.resize((min_dim, min_dim))
+
+                # Check if locked by image matching
+                lock = locate(locked, lock, confidence=0.1) is not None
+            except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
+                self._log(
+                    f"Light Cone UID {uid}: Failed to parse lock. Setting to False.",
+                    LogLevel.ERROR,
+                )
+                lock = False
+
+            location = ""
+            outfit_id = None
+            if equipped_text == "Equipped":
+                equipped_avatar = stats_dict[EQUIPPED_AVATAR]
+                location, outfit_id = self._game_data.get_equipped_character(
+                    equipped_avatar
+                )
+            elif (
+                equipped_text == "Equippe"
+            ):  # https://github.com/kel-z/HSR-Scanner/issues/88
+                equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
+                location, outfit_id = self._game_data.get_equipped_character(
+                    equipped_avatar
+                )
+
+            if outfit_id:
+                self._log(
+                    f"Light Cone UID {uid}: Equipped character is {location} with outfit ID {outfit_id}.",
+                    LogLevel.DEBUG,
+                )
+
+            result = {
+                LC_ID: lc_id,
+                LC_NAME: name,
+                LC_LEVEL: int(level),
+                LC_ASCENSION: int(ascension),
+                LC_SUPERIMPOSITION: int(superimposition),
+                LC_LOCATION: location,
+                LC_LOCK: lock,
+                "_uid": f"light_cone_{uid}",
+            }
+
+            self._update_signal.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
+
+            return result
+        except Exception as e:
             self._log(
-                f"Light Cone UID {uid}: Failed to parse level. Setting to 1.",
+                f"Failed to parse light cone {uid}. stats_dict={stats_dict}, exception={e}",
                 LogLevel.ERROR,
             )
-            level = 1
-            max_level = 20
-
-        ascension = (max(max_level, 20) - 20) // 10
-
-        try:
-            superimposition = int(superimposition)
-        except ValueError:
-            self._log(
-                f"Light Cone UID {uid}: Failed to parse superimposition. Setting to 1.",
-                LogLevel.ERROR,
-            )
-            superimposition = 1
-
-        min_dim = min(lock.size)
-        try:
-            locked = self._lock_icon.resize((min_dim, min_dim))
-
-            # Check if locked by image matching
-            lock = locate(locked, lock, confidence=0.1) is not None
-        except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
-            self._log(
-                f"Light Cone UID {uid}: Failed to parse lock. Setting to False.",
-                LogLevel.ERROR,
-            )
-            lock = False
-
-        location = ""
-        outfit_id = None
-        if equipped_text == "Equipped":
-            equipped_avatar = stats_dict[EQUIPPED_AVATAR]
-            location, outfit_id = self._game_data.get_equipped_character(
-                equipped_avatar
-            )
-        elif (
-            equipped_text == "Equippe"
-        ):  # https://github.com/kel-z/HSR-Scanner/issues/88
-            equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
-            location, outfit_id = self._game_data.get_equipped_character(
-                equipped_avatar
-            )
-
-        if outfit_id:
-            self._log(
-                f"Light Cone UID {uid}: Equipped character is {location} with outfit ID {outfit_id}.",
-                LogLevel.DEBUG,
-            )
-
-        result = {
-            LC_ID: lc_id,
-            LC_NAME: name,
-            LC_LEVEL: int(level),
-            LC_ASCENSION: int(ascension),
-            LC_SUPERIMPOSITION: int(superimposition),
-            LC_LOCATION: location,
-            LC_LOCK: lock,
-            "_uid": f"light_cone_{uid}",
-        }
-
-        self._update_signal.emit(IncrementType.LIGHT_CONE_SUCCESS.value)
-
-        return result
+            return {}
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
         """Logs a message

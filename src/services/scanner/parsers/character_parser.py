@@ -77,112 +77,121 @@ class CharacterParser:
         if self._interrupt_event.is_set():
             return {}
 
-        name = stats_dict[CHAR_NAME]
-        path = stats_dict[CHAR_PATH]
-        metadata = self._game_data.get_character_meta_data(name, path)
-        char_id = str(metadata[CHAR_ID])
+        try:
+            name = stats_dict[CHAR_NAME]
+            path = stats_dict[CHAR_PATH]
+            metadata = self._game_data.get_character_meta_data(name, path)
+            char_id = str(metadata[CHAR_ID])
 
-        # Output
-        character = {
-            CHAR_ID: char_id,
-            CHAR_NAME: name,
-            CHAR_PATH: path,
-            CHAR_LEVEL: 1,
-            CHAR_ASCENSION: stats_dict[CHAR_ASCENSION],
-            CHAR_EIDOLON: self._process_eidolons(stats_dict[EIDOLON_IMAGES]),
-            CHAR_SKILLS: {
-                BASIC: 0,
-                SKILL: 0,
-                ULT: 0,
-                TALENT: 0,
-            },
-            CHAR_TRACES: {},
-        }
-
-        if path == "Remembrance":
-            character[CHAR_MEMOSPRITE] = {
-                SKILL: 0,
-                TALENT: 0,
+            # Output
+            character = {
+                CHAR_ID: char_id,
+                CHAR_NAME: name,
+                CHAR_PATH: path,
+                CHAR_LEVEL: 1,
+                CHAR_ASCENSION: stats_dict[CHAR_ASCENSION],
+                CHAR_EIDOLON: self._process_eidolons(stats_dict[EIDOLON_IMAGES]),
+                CHAR_SKILLS: {
+                    BASIC: 0,
+                    SKILL: 0,
+                    ULT: 0,
+                    TALENT: 0,
+                },
+                CHAR_TRACES: {},
             }
 
-        level = stats_dict[CHAR_LEVEL]
-        try:
-            character[CHAR_LEVEL] = self.get_level(level)
-        except ValueError:
-            self._log(
-                f"{character[CHAR_NAME]}: Failed to parse level."
-                + (f' Got "{level}" instead.' if level else ""),
-                LogLevel.ERROR,
-            )
+            if path == "Remembrance":
+                character[CHAR_MEMOSPRITE] = {
+                    SKILL: 0,
+                    TALENT: 0,
+                }
 
-        for eidolon in (5, 3):
-            if character[CHAR_EIDOLON] >= eidolon:
-                e_token = f"e{eidolon}"
-                for k, v in metadata[e_token].items():
-                    if k == CHAR_MEMOSPRITE:
-                        for k2, v2 in v.items():
-                            character[CHAR_MEMOSPRITE][k2] -= v2
-                    else:
-                        character[CHAR_SKILLS][k] -= v
-
-        traces_dict = stats_dict[CHAR_TRACES]
-        for k, v in traces_dict[TRACES_LEVELS].items():
+            level = stats_dict[CHAR_LEVEL]
             try:
-                res = image_to_string(v, "0123456789/", 6, True, preprocess_trace_img)
-
-                # If the first OCR attempt failed, try again with different parameters
-                if not res or "/" not in res:
-                    self._log(
-                        f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
-                        LogLevel.DEBUG,
-                    )
-                    res = image_to_string(
-                        v, "0123456789/", 6, False, preprocess_trace_img
-                    )
-                if not res or "/" not in res:
-                    self._log(
-                        f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
-                        LogLevel.DEBUG,
-                    )
-                    res = image_to_string(
-                        v, "0123456789/", 7, True, preprocess_trace_img
-                    )
-                if not res or "/" not in res:
-                    self._log(
-                        f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
-                        LogLevel.DEBUG,
-                    )
-                    res = image_to_string(
-                        v, "0123456789/", 7, False, preprocess_trace_img
-                    )
-
-                if k.startswith(CHAR_MEMOSPRITE):
-                    key = k.split("_")[1]
-                    character[CHAR_MEMOSPRITE][key] += int(res.split("/")[0])
-                    if not 1 <= character[CHAR_MEMOSPRITE][key] <= 6:
-                        raise ValueError
-                else:
-                    character[CHAR_SKILLS][k] += int(res.split("/")[0])
-                    if (
-                        not 1
-                        <= character[CHAR_SKILLS][k]
-                        <= (6 if k == "basic" else 10)
-                    ):
-                        raise ValueError
+                character[CHAR_LEVEL] = self.get_level(level)
             except ValueError:
                 self._log(
-                    f"{character[CHAR_NAME]}: Failed to parse '{k}' level. "
-                    + (f"Got '{res}' instead. " if res else "")
-                    + "Setting to 1.",
+                    f"{character[CHAR_NAME]}: Failed to parse level."
+                    + (f' Got "{level}" instead.' if level else ""),
                     LogLevel.ERROR,
                 )
-                character[CHAR_SKILLS][k] = 1
 
-        character[CHAR_TRACES] = traces_dict[TRACES_UNLOCKS]
+            for eidolon in (5, 3):
+                if character[CHAR_EIDOLON] >= eidolon:
+                    e_token = f"e{eidolon}"
+                    for k, v in metadata[e_token].items():
+                        if k == CHAR_MEMOSPRITE:
+                            for k2, v2 in v.items():
+                                character[CHAR_MEMOSPRITE][k2] -= v2
+                        else:
+                            character[CHAR_SKILLS][k] -= v
 
-        self._update_signal.emit(IncrementType.CHARACTER_SUCCESS.value)
+            traces_dict = stats_dict[CHAR_TRACES]
+            for k, v in traces_dict[TRACES_LEVELS].items():
+                try:
+                    res = image_to_string(
+                        v, "0123456789/", 6, True, preprocess_trace_img
+                    )
 
-        return character
+                    # If the first OCR attempt failed, try again with different parameters
+                    if not res or "/" not in res:
+                        self._log(
+                            f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
+                            LogLevel.DEBUG,
+                        )
+                        res = image_to_string(
+                            v, "0123456789/", 6, False, preprocess_trace_img
+                        )
+                    if not res or "/" not in res:
+                        self._log(
+                            f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
+                            LogLevel.DEBUG,
+                        )
+                        res = image_to_string(
+                            v, "0123456789/", 7, True, preprocess_trace_img
+                        )
+                    if not res or "/" not in res:
+                        self._log(
+                            f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
+                            LogLevel.DEBUG,
+                        )
+                        res = image_to_string(
+                            v, "0123456789/", 7, False, preprocess_trace_img
+                        )
+
+                    if k.startswith(CHAR_MEMOSPRITE):
+                        key = k.split("_")[1]
+                        character[CHAR_MEMOSPRITE][key] += int(res.split("/")[0])
+                        if not 1 <= character[CHAR_MEMOSPRITE][key] <= 6:
+                            raise ValueError
+                    else:
+                        character[CHAR_SKILLS][k] += int(res.split("/")[0])
+                        if (
+                            not 1
+                            <= character[CHAR_SKILLS][k]
+                            <= (6 if k == "basic" else 10)
+                        ):
+                            raise ValueError
+                except ValueError:
+                    self._log(
+                        f"{character[CHAR_NAME]}: Failed to parse '{k}' level. "
+                        + (f"Got '{res}' instead. " if res else "")
+                        + "Setting to 1.",
+                        LogLevel.ERROR,
+                    )
+                    character[CHAR_SKILLS][k] = 1
+
+            character[CHAR_TRACES] = traces_dict[TRACES_UNLOCKS]
+
+            self._update_signal.emit(IncrementType.CHARACTER_SUCCESS.value)
+
+            return character
+        except Exception as e:
+            self._log(
+                f"Failed to parse character. stats_dict={stats_dict}, exception={e}",
+                LogLevel.ERROR,
+            )
+            return {}
 
     def get_level(self, level: Image | str | int) -> int:
         """Get the level if level is an image, otherwise return the level as is
