@@ -3,9 +3,33 @@ from PIL import Image as PILImage
 from PIL.Image import Image
 from pyautogui import locate
 
+from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_TRAILBLAZER, LOCK
 from config.relic_scan import RELIC_NAV_DATA
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
+from models.const import (
+    FILTER_MAX,
+    FILTER_MIN,
+    RELIC_DISCARD,
+    RELIC_LEVEL,
+    RELIC_LOCATION,
+    RELIC_MAINSTAT,
+    RELIC_NAME,
+    RELIC_RARITY,
+    MIN_LEVEL,
+    MIN_RARITY,
+    RELIC_FILTERS,
+    RELIC_SET,
+    RELIC_SET_ID,
+    RELIC_SLOT,
+    RELIC_SUBSTAT_NAME,
+    RELIC_SUBSTAT_VALUE,
+    RELIC_SUBSTAT_VALUES,
+    RELIC_SUBSTATS,
+    RELIC_SUBSTAT_NAMES,
+    SORT_LV,
+    SORT_RARITY,
+)
 from models.substat_vals import SUBSTAT_ROLL_VALS
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from type_defs.stats_dict import RelicDict
@@ -35,10 +59,10 @@ class RelicStrategy(BaseParseStrategy):
         :param filters: The filters
         :return: The optimal sort method
         """
-        if filters["relic"]["min_level"] > 0:
-            return "Lv"
+        if filters[RELIC_FILTERS][MIN_LEVEL] > 0:
+            return SORT_LV
         else:
-            return "Rarity"
+            return SORT_RARITY
 
     def check_filters(
         self, stats_dict: RelicDict, filters: dict, uid: int
@@ -51,7 +75,7 @@ class RelicStrategy(BaseParseStrategy):
         :raises ValueError: Thrown if the filter key does not have an int value
         :return: A tuple of the filter results and the stats dict
         """
-        filters = filters["relic"]
+        filters = filters[RELIC_FILTERS]
 
         filter_results = {}
         for key in filters:
@@ -60,36 +84,38 @@ class RelicStrategy(BaseParseStrategy):
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
             if not val or isinstance(val, Image):
-                if key == "min_rarity":
+                if key == MIN_RARITY:
                     # Trivial case
                     if filters[key] <= 2:
                         filter_results[key] = True
                         continue
-                    val = stats_dict["rarity"] = self.extract_stats_data(  # type: ignore
-                        filter_key, stats_dict["rarity"]
+                    val = stats_dict[RELIC_RARITY] = self.extract_stats_data(  # type: ignore
+                        filter_key, stats_dict[RELIC_RARITY]
                     )
-                elif key == "min_level":
+                elif key == MIN_LEVEL:
                     # Trivial case
                     if filters[key] <= 0:
                         filter_results[key] = True
                         continue
-                    level = self.extract_stats_data("level", stats_dict["level"])
+                    level = self.extract_stats_data(
+                        RELIC_LEVEL, stats_dict[RELIC_LEVEL]
+                    )
                     if not level or isinstance(level, Image):
                         self._log(
                             f"Relic UID {uid}: Failed to parse level. Setting to 0.",
                             LogLevel.ERROR,
                         )
-                        stats_dict["level"] = 0
+                        stats_dict[RELIC_LEVEL] = 0
                         filter_results[key] = True
                         continue
-                    val = stats_dict["level"] = int(level)
+                    val = stats_dict[RELIC_LEVEL] = int(level)
 
             if not isinstance(val, int):
                 raise ValueError(f"Filter key {key} does not have an int value.")
 
-            if filter_type == "min":
+            if filter_type == FILTER_MIN:
                 filter_results[key] = val >= filters[key]
-            elif filter_type == "max":
+            elif filter_type == FILTER_MAX:
                 filter_results[key] = val <= filters[key]
 
         return (filter_results, stats_dict)
@@ -106,52 +132,49 @@ class RelicStrategy(BaseParseStrategy):
         if not isinstance(data, Image):
             return data
 
-        match key:
-            case "name":
-                return image_to_string(
-                    data, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
+        if key == RELIC_NAME:
+            return image_to_string(
+                data, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
+            )
+        elif key == RELIC_LEVEL:
+            return image_to_string(data, "0123456789S", 7, True).replace("S", "5")
+        elif key == RELIC_MAINSTAT:
+            return image_to_string(
+                data,
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz",
+                7,
+                True,
+                preprocess_main_stat_img,
+            )
+        elif key == EQUIPPED:
+            return image_to_string(data, "Equiped", 7, True, preprocess_equipped_img)
+        elif key == RELIC_RARITY:
+            # Get rarity by color matching
+            rarity_sample = np.array(data)
+            rarity_sample = rarity_sample[int(rarity_sample.shape[0] / 2)][
+                int(rarity_sample.shape[1] / 2)
+            ]
+            return self._game_data.get_closest_rarity(rarity_sample)
+        elif key == RELIC_SUBSTAT_NAMES:
+            return image_to_string(
+                data,
+                " ABCDEFGHIKMPRSTacefikrt",
+                6,
+                True,
+                preprocess_sub_stat_img,
+                False,
+            )
+        elif key == RELIC_SUBSTAT_VALUES:
+            return (
+                image_to_string(
+                    data, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
                 )
-            case "level":
-                return image_to_string(data, "0123456789S", 7, True).replace("S", "5")
-            case "mainStatKey":
-                return image_to_string(
-                    data,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz",
-                    7,
-                    True,
-                    preprocess_main_stat_img,
-                )
-            case "equipped":
-                return image_to_string(
-                    data, "Equiped", 7, True, preprocess_equipped_img
-                )
-            case "rarity":
-                # Get rarity by color matching
-                rarity_sample = np.array(data)
-                rarity_sample = rarity_sample[int(rarity_sample.shape[0] / 2)][
-                    int(rarity_sample.shape[1] / 2)
-                ]
-                return self._game_data.get_closest_rarity(rarity_sample)
-            case "substat_names":
-                return image_to_string(
-                    data,
-                    " ABCDEFGHIKMPRSTacefikrt",
-                    6,
-                    True,
-                    preprocess_sub_stat_img,
-                    False,
-                )
-            case "substat_vals":
-                return (
-                    image_to_string(
-                        data, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
-                    )
-                    .replace("S", "5")
-                    .replace(",", ".")
-                    .replace("..", ".")
-                )
-            case _:
-                return data
+                .replace("S", "5")
+                .replace(",", ".")
+                .replace("..", ".")
+            )
+        else:
+            return data
 
     def parse(self, stats_dict: RelicDict, uid: int) -> dict:
         """Parses the relic data
@@ -175,15 +198,15 @@ class RelicStrategy(BaseParseStrategy):
             else None
         )
 
-        name = stats_dict["name"]
-        level = stats_dict["level"]
-        main_stat_key = stats_dict["mainStatKey"]
-        lock = stats_dict["lock"]
-        discard = stats_dict["discard"]
-        rarity = stats_dict["rarity"]
-        equipped = stats_dict["equipped"]
-        substat_names = stats_dict["substat_names"]
-        substat_vals = stats_dict["substat_vals"]
+        name = stats_dict[RELIC_NAME]
+        level = stats_dict[RELIC_LEVEL]
+        main_stat_key = stats_dict[RELIC_MAINSTAT]
+        lock = stats_dict[LOCK]
+        discard = stats_dict[RELIC_DISCARD]
+        rarity = stats_dict[RELIC_RARITY]
+        equipped = stats_dict[EQUIPPED]
+        substat_names = stats_dict[RELIC_SUBSTAT_NAMES]
+        substat_vals = stats_dict[RELIC_SUBSTAT_VALUES]
 
         # Fix OCR errors
         name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
@@ -216,9 +239,9 @@ class RelicStrategy(BaseParseStrategy):
 
         # Set and slot
         metadata = self._game_data.get_relic_meta_data(name)
-        set_id = str(metadata["set_id"])
-        set_name = metadata["set"]
-        slot_key = metadata["slot"]
+        set_id = str(metadata[RELIC_SET_ID])
+        set_name = metadata[RELIC_SET]
+        slot_key = metadata[RELIC_SLOT]
         if slot_key == "Hands":
             main_stat_key = "ATK"
         elif slot_key == "Head":
@@ -254,23 +277,23 @@ class RelicStrategy(BaseParseStrategy):
 
         location = ""
         if equipped == "Equipped":
-            equipped_avatar = stats_dict["equipped_avatar"]
+            equipped_avatar = stats_dict[EQUIPPED_AVATAR]
             location = self._game_data.get_equipped_character(equipped_avatar)
         elif equipped == "Equippe":  # https://github.com/kel-z/HSR-Scanner/issues/88
-            equipped_avatar = stats_dict["equipped_avatar_trailblazer"]
+            equipped_avatar = stats_dict[EQUIPPED_AVATAR_TRAILBLAZER]
             location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
-            "set_id": set_id,
-            "name": set_name,
-            "slot": slot_key,
-            "rarity": rarity,
-            "level": level,
-            "mainstat": main_stat_key,
-            "substats": substats_res,
-            "location": location,
-            "lock": lock,
-            "discard": discard,
+            RELIC_SET_ID: set_id,
+            RELIC_NAME: set_name,
+            RELIC_SLOT: slot_key,
+            RELIC_RARITY: rarity,
+            RELIC_LEVEL: level,
+            RELIC_MAINSTAT: main_stat_key,
+            RELIC_SUBSTATS: substats_res,
+            RELIC_LOCATION: location,
+            LOCK: lock,
+            RELIC_DISCARD: discard,
             "_uid": f"relic_{uid}",
         }
 
@@ -341,8 +364,8 @@ class RelicStrategy(BaseParseStrategy):
         :return: True if the substat is valid, False otherwise
         """
         try:
-            name = substat["key"]
-            val = substat["value"]
+            name = substat[RELIC_SUBSTAT_NAME]
+            val = substat[RELIC_SUBSTAT_VALUE]
             if name not in SUBSTAT_ROLL_VALS[str(rarity)]:
                 return False
             if str(val) not in SUBSTAT_ROLL_VALS[str(rarity)][name]:
@@ -383,22 +406,22 @@ class RelicStrategy(BaseParseStrategy):
         max_roll_value = round(rarity - 1 + int(level / 3), 1)
         total = 0
         for substat in substats:
-            if substat["key"] in seen_substats:
+            if substat[RELIC_SUBSTAT_NAME] in seen_substats:
                 self._log(
-                    f"Relic UID {uid}: More than one substat with key {substat['key']} parsed.",
+                    f"Relic UID {uid}: More than one substat with key {substat[RELIC_SUBSTAT_NAME]} parsed.",
                     LogLevel.ERROR,
                 )
                 return
             if not self._validate_substat(substat, rarity):
                 self._log(
-                    f'Relic UID {uid}: Substat {substat["key"]} has illegal value "{substat["value"]}" for rarity {rarity}.',
+                    f'Relic UID {uid}: Substat {substat[RELIC_SUBSTAT_NAME]} has illegal value "{substat[RELIC_SUBSTAT_VALUE]}" for rarity {rarity}.',
                     LogLevel.ERROR,
                 )
                 return
 
-            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][str(substat["key"])][
-                str(substat["value"])
-            ]
+            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][
+                str(substat[RELIC_SUBSTAT_NAME])
+            ][str(substat[RELIC_SUBSTAT_VALUE])]
             if isinstance(roll_value, list):
                 # assume minimum
                 roll_value = roll_value[0]
@@ -437,7 +460,7 @@ class RelicStrategy(BaseParseStrategy):
             "Break Effect_",
         ]
         original = substats.copy()
-        substats.sort(key=lambda x: SORT_ORDER.index(str(x["key"])))
+        substats.sort(key=lambda x: SORT_ORDER.index(str(x[RELIC_SUBSTAT_NAME])))
         if original != substats:
             self._log(
                 f"Relic UID {uid}: Newly upgraded relic detected. Substats have been sorted.",

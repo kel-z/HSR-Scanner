@@ -8,9 +8,60 @@ from pynput.keyboard import Key
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
+from config.const import (
+    ASCENSION_OFFSET_X,
+    ASCENSION_START,
+    ASPECT_16_9,
+    CHAR_END,
+    CHAR_START,
+    CHARS_PER_SCAN,
+    COLS,
+    DETAILS_BUTTON,
+    EIDOLONS_BUTTON,
+    CHAR_OFFSET_X,
+    INV_TAB,
+    OFFSET_Y,
+    ROW_START_BOTTOM,
+    ROW_START_TOP,
+    ROWS,
+    SORT_BUTTON,
+    TRACES,
+    TRACES_BUTTON,
+)
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
+from models.const import (
+    CHAR_FILTERS,
+    CHAR_LEVEL,
+    CHAR_NAME,
+    CHAR_PATH,
+    CHAR_TRACES,
+    CONFIG_CHARACTERS_KEY,
+    CONFIG_DEBUG,
+    CONFIG_DEBUG_OUTPUT_LOCATION,
+    CONFIG_INCLUDE_UID,
+    CONFIG_INVENTORY_KEY,
+    CONFIG_NAV_DELAY,
+    CONFIG_RECENT_RELICS_NUM,
+    CONFIG_SCAN_CHARACTERS,
+    CONFIG_SCAN_DELAY,
+    CONFIG_SCAN_LC,
+    CONFIG_SCAN_RELICS,
+    EIDOLON_IMAGES,
+    FILTERS,
+    HSR_SCANNER,
+    KEL_Z,
+    LEVEL,
+    MIN_LEVEL,
+    MIN_RARITY,
+    RARITY,
+    SORT_DATE,
+    SORT_LV,
+    SORT_RARITY,
+    TRACES_LEVELS,
+    TRACES_UNLOCKS,
+)
 from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
@@ -23,7 +74,7 @@ from .parsers.character_parser import CharacterParser
 from .parsers.light_cone_strategy import LightConeStrategy
 from .parsers.relic_strategy import RelicStrategy
 
-SUPPORTED_ASPECT_RATIOS = ["16:9"]
+SUPPORTED_ASPECT_RATIOS = [ASPECT_16_9]
 
 
 class InterruptedScanException(Exception):
@@ -53,9 +104,9 @@ class HSRScanner(QObject):
                 "Honkai: Star Rail",
                 "崩坏：星穹铁道",
                 "崩壞：星穹鐵道",
-                "붕괴:\u00A0스타레일",
+                "붕괴:\u00a0스타레일",
                 "崩壊：スターレイル",
-                "Honkai\u00A0: Star Rail",
+                "Honkai\u00a0: Star Rail",
             ]
         ):
             self._hwnd = win32gui.FindWindow("UnityWndClass", game_name)
@@ -82,8 +133,8 @@ class HSRScanner(QObject):
             self._hwnd,
             self.log_signal,
             self._aspect_ratio,
-            config["debug"],
-            config["debug_output_location"],
+            config[CONFIG_DEBUG],
+            config[CONFIG_DEBUG_OUTPUT_LOCATION],
         )
         self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
@@ -105,7 +156,7 @@ class HSRScanner(QObject):
         bring_window_to_foreground(self._hwnd)
 
         uid = None
-        if self._config["include_uid"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_INCLUDE_UID] and not self._interrupt_event.is_set():
             self._nav_sleep(1)
             uid_img = self._screenshot.screenshot_uid()
             uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
@@ -122,7 +173,7 @@ class HSRScanner(QObject):
                 self._log(f"UID: {uid}.")
 
         light_cones = []
-        if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_SCAN_LC] and not self._interrupt_event.is_set():
             self._log("Scanning light cones...")
             light_cones = self.scan_inventory(
                 LightConeStrategy(
@@ -130,7 +181,7 @@ class HSRScanner(QObject):
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
-                    self._config["debug"],
+                    self._config[CONFIG_DEBUG],
                 )
             )
             (
@@ -140,7 +191,7 @@ class HSRScanner(QObject):
             )
 
         relics = []
-        if self._config["scan_relics"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_SCAN_RELICS] and not self._interrupt_event.is_set():
             self._log("Scanning relics...")
             relics = self.scan_inventory(
                 RelicStrategy(
@@ -148,7 +199,7 @@ class HSRScanner(QObject):
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
-                    self._config["debug"],
+                    self._config[CONFIG_DEBUG],
                 )
             )
             (
@@ -158,7 +209,7 @@ class HSRScanner(QObject):
             )
 
         characters = []
-        if self._config["scan_characters"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_SCAN_CHARACTERS] and not self._interrupt_event.is_set():
             self._log("Scanning characters...")
             characters = self.scan_characters()
             (
@@ -182,8 +233,7 @@ class HSRScanner(QObject):
                 "uid": int(uid) if uid else None,
                 "trailblazer": (
                     "Stelle"
-                    if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True)
-                    == "true"
+                    if QSettings(KEL_Z, HSR_SCANNER).value("is_stelle", True) == "true"
                     else "Caelus"
                 ),
             },
@@ -210,14 +260,14 @@ class HSRScanner(QObject):
         self._nav_sleep(1)
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
-        self._nav.key_tap(self._config["inventory_key"])
+        self._nav.key_tap(self._config[CONFIG_INVENTORY_KEY])
         self._nav_sleep(1.5)
 
         # Get quantity
         max_retry = 5
         retry = 0
         while True:
-            self._nav.move_cursor_to(*nav_data["inv_tab"])
+            self._nav.move_cursor_to(*nav_data[INV_TAB])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(1.5)
@@ -251,25 +301,25 @@ class HSRScanner(QObject):
         current_sort_method = image_to_string(
             self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
         )
-        optimal_sort_method = "Date obtained"
+        optimal_sort_method = SORT_DATE
         if self._scan_mode != ScanMode.RECENT_RELICS.value:
             optimal_sort_method = strategy.get_optimal_sort_method(
-                self._config["filters"]
+                self._config[FILTERS]
             )
 
         if optimal_sort_method != current_sort_method:
             self._log(f"Sorting by {optimal_sort_method} (was {current_sort_method}).")
-            self._nav.move_cursor_to(*nav_data["sort"]["button"])
+            self._nav.move_cursor_to(*nav_data[SORT_BUTTON])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(0.5)
-            self._nav.move_cursor_to(*nav_data["sort"][optimal_sort_method])
+            self._nav.move_cursor_to(*nav_data[optimal_sort_method])
             self._nav.click()
             current_sort_method = optimal_sort_method
             self._nav_sleep(0.5)
 
         tasks = set()
-        scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
+        scanned_per_scroll = nav_data[ROWS] * nav_data[COLS]
         num_times_scrolled = 0
         scanned = 0
 
@@ -277,7 +327,7 @@ class HSRScanner(QObject):
             if self._scan_mode == ScanMode.RECENT_RELICS.value:
                 return (
                     quantity_remaining <= 0
-                    or scanned >= self._config["recent_relics_num"]
+                    or scanned >= self._config[CONFIG_RECENT_RELICS_NUM]
                 )
             return quantity_remaining <= 0
 
@@ -286,14 +336,14 @@ class HSRScanner(QObject):
                 quantity_remaining <= scanned_per_scroll
                 and not quantity <= scanned_per_scroll
             ):
-                x, y = nav_data["row_start_bottom"]
-                todo_rows = self._ceildiv(quantity_remaining, nav_data["cols"]) - 1
-                y -= todo_rows * nav_data["offset_y"]
+                x, y = nav_data[ROW_START_BOTTOM]
+                todo_rows = self._ceildiv(quantity_remaining, nav_data[COLS]) - 1
+                y -= todo_rows * nav_data[OFFSET_Y]
             else:
-                x, y = nav_data["row_start_top"]
+                x, y = nav_data[ROW_START_TOP]
 
-            for _ in range(nav_data["rows"]):
-                for _ in range(nav_data["cols"]):
+            for _ in range(nav_data[ROWS]):
+                for _ in range(nav_data[COLS]):
                     if should_stop():
                         break
 
@@ -307,40 +357,40 @@ class HSRScanner(QObject):
                     # Get stats
                     stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
                     item_id = quantity - quantity_remaining
-                    x += nav_data["offset_x"]
+                    x += nav_data[CHAR_OFFSET_X]
 
                     # Check if item satisfies filters
-                    if "filters" in self._config:
+                    if FILTERS in self._config:
                         filter_results, stats_dict = strategy.check_filters(
                             stats_dict,
-                            self._config["filters"],
+                            self._config[FILTERS],
                             item_id,
                         )
                         if (
-                            current_sort_method == "Lv"
-                            and "min_level" in filter_results
-                            and not filter_results["min_level"]
+                            current_sort_method == SORT_LV
+                            and MIN_LEVEL in filter_results
+                            and not filter_results[MIN_LEVEL]
                         ):
                             quantity_remaining = 0
                             self._log(
-                                f"Reached minimum level filter (got level {stats_dict['level']})."
+                                f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
                             )
                             break
                         if (
-                            current_sort_method == "Rarity"
-                            and "min_rarity" in filter_results
-                            and not filter_results["min_rarity"]
+                            current_sort_method == SORT_RARITY
+                            and MIN_RARITY in filter_results
+                            and not filter_results[MIN_RARITY]
                         ):
                             quantity_remaining = 0
                             self._log(
-                                f"Reached minimum rarity filter (got rarity {stats_dict['rarity']})."
+                                f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
                             )
                             break
                         if (
                             self._scan_mode == ScanMode.RECENT_RELICS.value
-                            and current_sort_method == "Date obtained"
-                            and "min_rarity" in filter_results
-                            and filter_results["min_rarity"]
+                            and current_sort_method == SORT_DATE
+                            and MIN_RARITY in filter_results
+                            and filter_results[MIN_RARITY]
                         ):
                             scanned += 1
                         if not all(filter_results.values()):
@@ -353,8 +403,8 @@ class HSRScanner(QObject):
                     tasks.add(task)
 
                 # Next row
-                x = nav_data["row_start_top"][0]
-                y += nav_data["offset_y"]
+                x = nav_data[ROW_START_TOP][0]
+                y += nav_data[OFFSET_Y]
 
             if should_stop():
                 break
@@ -385,7 +435,7 @@ class HSRScanner(QObject):
             self.log_signal,
             self.update_signal,
             self._interrupt_event,
-            self._config["debug"],
+            self._config[CONFIG_DEBUG],
         )
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
@@ -450,31 +500,31 @@ class HSRScanner(QObject):
         self._nav_sleep(1.5)
         self._nav.key_tap("1")
         self._nav_sleep(0.2)
-        self._nav.key_tap(self._config["characters_key"])
+        self._nav.key_tap(self._config[CONFIG_CHARACTERS_KEY])
         self._nav_sleep(1)
 
         tasks = set()
         characters_seen = set()
         while character_count > 0:
-            if character_count > nav_data["chars_per_scan"]:
-                character_x, character_y = nav_data["char_start"]
+            if character_count > nav_data[CHARS_PER_SCAN]:
+                character_x, character_y = nav_data[CHAR_START]
             else:
-                character_x, character_y = nav_data["char_end"]
-                character_x -= nav_data["offset_x"] * (character_count - 1)
+                character_x, character_y = nav_data[CHAR_END]
+                character_x -= nav_data[CHAR_OFFSET_X] * (character_count - 1)
 
-            i_stop = min(character_count, nav_data["chars_per_scan"])
+            i_stop = min(character_count, nav_data[CHARS_PER_SCAN])
             curr_page_res = [{} for _ in range(i_stop)]
 
             # Details tab
             i = 0
-            self._nav.move_cursor_to(*nav_data["details_button"])
+            self._nav.move_cursor_to(*nav_data[DETAILS_BUTTON])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(0.5)
             prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
             while i < i_stop:
                 self._nav.move_cursor_to(
-                    character_x + i * nav_data["offset_x"], character_y
+                    character_x + i * nav_data[CHAR_OFFSET_X], character_y
                 )
                 time.sleep(0.05)
                 self._nav.click()
@@ -545,7 +595,7 @@ class HSRScanner(QObject):
                 prev_trailblazer = character_name.startswith("Trailblazer")
 
                 # Get ascension by counting ascension stars
-                ascension_pos = nav_data["ascension_start"]
+                ascension_pos = nav_data[ASCENSION_START]
                 ascension = 0
                 for _ in range(6):
                     pixel = pyautogui.pixel(
@@ -557,7 +607,7 @@ class HSRScanner(QObject):
 
                     ascension += 1
                     ascension_pos = (
-                        ascension_pos[0] + nav_data["ascension_offset_x"],
+                        ascension_pos[0] + nav_data[ASCENSION_OFFSET_X],
                         ascension_pos[1],
                     )
 
@@ -569,10 +619,10 @@ class HSRScanner(QObject):
                 }
 
                 # Check if character satisfies level filter
-                min_level = self._config["filters"]["character"].get("min_level", 1)
+                min_level = self._config[FILTERS][CHAR_FILTERS].get(MIN_LEVEL, 1)
                 if min_level > 1:
-                    curr_page_res[i]["level"] = character_level = char_parser.get_level(
-                        curr_page_res[i]["level"]
+                    curr_page_res[i][CHAR_LEVEL] = character_level = (
+                        char_parser.get_level(curr_page_res[i][CHAR_LEVEL])
                     )
                     if (
                         character_level < min_level
@@ -599,13 +649,13 @@ class HSRScanner(QObject):
                 i += 1
 
             self._log(
-                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res if c])}",
+                f"Page {self._ceildiv(len(characters_seen), nav_data[CHARS_PER_SCAN])}: {', '.join([c[CHAR_NAME] for c in curr_page_res if c])}",
                 LogLevel.TRACE,
             )
 
             # Traces tab
             i = 0
-            self._nav.move_cursor_to(*nav_data["traces_button"])
+            self._nav.move_cursor_to(*nav_data[TRACES_BUTTON])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(0.4)
@@ -614,30 +664,30 @@ class HSRScanner(QObject):
                     i += 1
                     continue
                 self._nav.move_cursor_to(
-                    character_x + i * nav_data["offset_x"], character_y
+                    character_x + i * nav_data[CHAR_OFFSET_X], character_y
                 )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.6)
-                path_key = curr_page_res[i]["path"].split(" ")[-1].lower()
+                path_key = curr_page_res[i][CHAR_PATH].split(" ")[-1].lower()
                 traces_dict = self._screenshot.screenshot_character_traces(path_key)
-                curr_page_res[i]["traces"] = {
-                    "levels": traces_dict,
-                    "unlocks": {},
+                curr_page_res[i][CHAR_TRACES] = {
+                    TRACES_LEVELS: traces_dict,
+                    TRACES_UNLOCKS: {},
                 }
-                for k, v in nav_data["traces"][path_key].items():
+                for k, v in nav_data[TRACES][path_key].items():
                     # Trace is unlocked if pixel is white
                     pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
                     dist = min(
                         sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
                         sum([(a - b) ** 2 for a, b in zip(pixel, (178, 200, 255))]),
                     )
-                    curr_page_res[i]["traces"]["unlocks"][k] = dist < 3000
+                    curr_page_res[i][CHAR_TRACES][TRACES_UNLOCKS][k] = dist < 3000
                 i += 1
 
             # Eidolons tab
             i = 0
-            self._nav.move_cursor_to(*nav_data["eidolons_button"])
+            self._nav.move_cursor_to(*nav_data[EIDOLONS_BUTTON])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(1.5 if character_total == character_count else 0.9)
@@ -646,13 +696,13 @@ class HSRScanner(QObject):
                     i += 1
                     continue
                 self._nav.move_cursor_to(
-                    character_x + i * nav_data["offset_x"], character_y
+                    character_x + i * nav_data[CHAR_OFFSET_X], character_y
                 )
                 time.sleep(0.05)
                 self._nav.click()
                 self._scan_sleep(0.5)
                 curr_page_res[i][
-                    "eidolon_images"
+                    EIDOLON_IMAGES
                 ] = self._screenshot.screenshot_character_eidolons()
                 i += 1
 
@@ -665,8 +715,8 @@ class HSRScanner(QObject):
 
             # Drag to next page
             if character_count > 0:
-                character_x, character_y = nav_data["char_start"]
-                character_x += nav_data["offset_x"] * nav_data["chars_per_scan"]
+                character_x, character_y = nav_data[CHAR_START]
+                character_x += nav_data[CHAR_OFFSET_X] * nav_data[CHARS_PER_SCAN]
                 self._nav.move_cursor_to(character_x, character_y)
                 time.sleep(0.05)
                 self._nav.click()
@@ -674,7 +724,7 @@ class HSRScanner(QObject):
                 self._nav.drag_scroll(
                     character_x,
                     character_y,
-                    nav_data["char_start"][0] - 0.031,
+                    nav_data[CHAR_START][0] - 0.031,
                     character_y,
                 )
 
@@ -691,7 +741,7 @@ class HSRScanner(QObject):
         :param msg: The message to log
         :param level: The log level
         """
-        if self._config["debug"] or level in [
+        if self._config[CONFIG_DEBUG] or level in [
             LogLevel.INFO,
             LogLevel.WARNING,
             LogLevel.ERROR,
@@ -716,7 +766,7 @@ class HSRScanner(QObject):
         :param seconds: The amount of time to sleep
         :raises InterruptedScanException: Thrown if the scan is interrupted
         """
-        time.sleep(seconds + self._config["nav_delay"])
+        time.sleep(seconds + self._config[CONFIG_NAV_DELAY])
         if self._interrupt_event.is_set():
             raise InterruptedScanException()
 
@@ -726,7 +776,7 @@ class HSRScanner(QObject):
         :param seconds: The amount of time to sleep
         :raises InterruptedScanException: Thrown if the scan is interrupted
         """
-        time.sleep(seconds + self._config["scan_delay"])
+        time.sleep(seconds + self._config[CONFIG_SCAN_DELAY])
         if self._interrupt_event.is_set():
             raise InterruptedScanException()
 

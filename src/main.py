@@ -12,6 +12,37 @@ from PyQt6.QtCore import QSettings, QThread, QUrl, pyqtSignal
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
+from models.const import (
+    CHAR_FILTERS,
+    CONFIG_CHARACTERS_KEY,
+    CONFIG_DEBUG,
+    CONFIG_DEBUG_MODE,
+    CONFIG_DEBUG_OUTPUT_LOCATION,
+    CONFIG_INCLUDE_UID,
+    CONFIG_INVENTORY_KEY,
+    CONFIG_MIN_CHAR_LEVEL,
+    CONFIG_MIN_LC_LEVEL,
+    CONFIG_MIN_LC_RARITY,
+    CONFIG_MIN_RELIC_LEVEL,
+    CONFIG_MIN_RELIC_RARITY,
+    CONFIG_NAV_DELAY,
+    CONFIG_OUTPUT_LOCATION,
+    CONFIG_PLAY_SOUND,
+    CONFIG_RECENT_RELICS_FIVE_STAR,
+    CONFIG_RECENT_RELICS_NUM,
+    CONFIG_SCAN_CHARACTERS,
+    CONFIG_SCAN_DELAY,
+    CONFIG_SCAN_LC,
+    CONFIG_SCAN_RELICS,
+    CONFIG_SRO_FORMAT,
+    FILTERS,
+    HSR_SCANNER,
+    KEL_Z,
+    LC_FILTERS,
+    MIN_LEVEL,
+    MIN_RARITY,
+    RELIC_FILTERS,
+)
 from models.game_data import GameData
 from services.scanner.scanner import HSRScanner, InterruptedScanException
 from ui.hsr_scanner import Ui_MainWindow
@@ -36,7 +67,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._scanner_thread = None
         self._listener = InterruptListener()
         self._is_running = False
-        self._settings = QSettings("kel-z", "HSRScanner")
+        self._settings = QSettings(KEL_Z, HSR_SCANNER)
 
         # fetch game data
         self._fetch_game_data_thread = FetchGameDataThread()
@@ -132,106 +163,125 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def load_settings(self) -> None:
         """Loads the settings for the scan"""
         self.lineEditOutputLocation.setText(
-            self._settings.value("output_location", executable_path("StarRailData"))
+            self._settings.value(
+                CONFIG_OUTPUT_LOCATION, executable_path("StarRailData")
+            )
         )
         self.lineEditInventoryKey.setText(
-            self._settings.value("inventory_key", "b").upper()
+            self._settings.value(CONFIG_INVENTORY_KEY, "b").upper()
         )
         self.lineEditCharactersKey.setText(
-            self._settings.value("characters_key", "c").upper()
+            self._settings.value(CONFIG_CHARACTERS_KEY, "c").upper()
         )
         self.spinBoxLightConeMinLevel.setValue(
-            self._settings.value("min_light_cone_level", 1)
+            self._settings.value(CONFIG_MIN_LC_LEVEL, 1)
         )
         self.spinBoxLightConeMinRarity.setValue(
-            self._settings.value("min_light_cone_rarity", 3)
+            self._settings.value(CONFIG_MIN_LC_RARITY, 3)
         )
-        self.spinBoxRelicMinLevel.setValue(self._settings.value("min_relic_level", 0))
-        self.spinBoxRelicMinRarity.setValue(self._settings.value("min_relic_rarity", 2))
+        self.spinBoxRelicMinLevel.setValue(
+            self._settings.value(CONFIG_MIN_RELIC_LEVEL, 0)
+        )
+        self.spinBoxRelicMinRarity.setValue(
+            self._settings.value(CONFIG_MIN_RELIC_RARITY, 2)
+        )
         self.spinBoxCharacterMinLevel.setValue(
-            self._settings.value("min_character_level", 1)
+            self._settings.value(CONFIG_MIN_CHAR_LEVEL, 1)
         )
         self.checkBoxScanLightCones.setChecked(
-            self._settings.value("scan_light_cones", False) == "true"
+            self._settings.value(CONFIG_SCAN_LC, False) == "true"
         )
         self.checkBoxScanRelics.setChecked(
-            self._settings.value("scan_relics", False) == "true"
+            self._settings.value(CONFIG_SCAN_RELICS, False) == "true"
         )
         self.checkBoxScanChars.setChecked(
-            self._settings.value("scan_characters", False) == "true"
+            self._settings.value(CONFIG_SCAN_CHARACTERS, False) == "true"
         )
         self.checkBoxSroFormat.setChecked(
-            self._settings.value("sro_format", False) == "true"
+            self._settings.value(CONFIG_SRO_FORMAT, False) == "true"
         )
         self.checkBoxDebugMode.setChecked(
-            self._settings.value("debug_mode", False) == "true"
+            self._settings.value(CONFIG_DEBUG_MODE, False) == "true"
         )
-        self.spinBoxNavDelay.setValue(self._settings.value("nav_delay", 0))
-        self.spinBoxScanDelay.setValue(self._settings.value("scan_delay", 0))
-        self.spinBoxRecentRelics.setValue(self._settings.value("recent_relics_num", 5))
+        self.spinBoxNavDelay.setValue(self._settings.value(CONFIG_NAV_DELAY, 0))
+        self.spinBoxScanDelay.setValue(self._settings.value(CONFIG_SCAN_DELAY, 0))
+        self.spinBoxRecentRelics.setValue(
+            self._settings.value(CONFIG_RECENT_RELICS_NUM, 5)
+        )
         self.checkBoxRecentRelicsFiveStar.setChecked(
-            self._settings.value("recent_relics_five_star", False) == "true"
+            self._settings.value(CONFIG_RECENT_RELICS_FIVE_STAR, False) == "true"
         )
         self.checkBoxIncludeUid.setChecked(
-            self._settings.value("include_uid", False) == "true"
+            self._settings.value(CONFIG_INCLUDE_UID, False) == "true"
         )
         self.checkBoxPlaySound.setChecked(
-            self._settings.value("play_sound", True) == "true"
+            self._settings.value(CONFIG_PLAY_SOUND, True) == "true"
         )
 
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
-        self._settings.setValue("output_location", self.lineEditOutputLocation.text())
-        self._settings.setValue("inventory_key", self.lineEditInventoryKey.text())
-        self._settings.setValue("characters_key", self.lineEditCharactersKey.text())
         self._settings.setValue(
-            "min_light_cone_level", self.spinBoxLightConeMinLevel.value()
+            CONFIG_OUTPUT_LOCATION, self.lineEditOutputLocation.text()
+        )
+        self._settings.setValue(CONFIG_INVENTORY_KEY, self.lineEditInventoryKey.text())
+        self._settings.setValue(
+            CONFIG_CHARACTERS_KEY, self.lineEditCharactersKey.text()
         )
         self._settings.setValue(
-            "min_light_cone_rarity", self.spinBoxLightConeMinRarity.value()
-        )
-        self._settings.setValue("min_relic_level", self.spinBoxRelicMinLevel.value())
-        self._settings.setValue("min_relic_rarity", self.spinBoxRelicMinRarity.value())
-        self._settings.setValue(
-            "scan_light_cones", self.checkBoxScanLightCones.isChecked()
+            CONFIG_MIN_LC_LEVEL, self.spinBoxLightConeMinLevel.value()
         )
         self._settings.setValue(
-            "min_character_level", self.spinBoxCharacterMinLevel.value()
+            CONFIG_MIN_LC_RARITY, self.spinBoxLightConeMinRarity.value()
         )
-        self._settings.setValue("scan_relics", self.checkBoxScanRelics.isChecked())
-        self._settings.setValue("scan_characters", self.checkBoxScanChars.isChecked())
-        self._settings.setValue("sro_format", self.checkBoxSroFormat.isChecked())
-        self._settings.setValue("debug_mode", self.checkBoxDebugMode.isChecked())
-        self._settings.setValue("nav_delay", self.spinBoxNavDelay.value())
-        self._settings.setValue("scan_delay", self.spinBoxScanDelay.value())
-        self._settings.setValue("recent_relics_num", self.spinBoxRecentRelics.value())
         self._settings.setValue(
-            "recent_relics_five_star", self.checkBoxRecentRelicsFiveStar.isChecked()
+            CONFIG_MIN_RELIC_LEVEL, self.spinBoxRelicMinLevel.value()
         )
-        self._settings.setValue("include_uid", self.checkBoxIncludeUid.isChecked())
-        self._settings.setValue("play_sound", self.checkBoxPlaySound.isChecked())
+        self._settings.setValue(
+            CONFIG_MIN_RELIC_RARITY, self.spinBoxRelicMinRarity.value()
+        )
+        self._settings.setValue(CONFIG_SCAN_LC, self.checkBoxScanLightCones.isChecked())
+        self._settings.setValue(
+            CONFIG_MIN_CHAR_LEVEL, self.spinBoxCharacterMinLevel.value()
+        )
+        self._settings.setValue(CONFIG_SCAN_RELICS, self.checkBoxScanRelics.isChecked())
+        self._settings.setValue(
+            CONFIG_SCAN_CHARACTERS, self.checkBoxScanChars.isChecked()
+        )
+        self._settings.setValue(CONFIG_SRO_FORMAT, self.checkBoxSroFormat.isChecked())
+        self._settings.setValue(CONFIG_DEBUG_MODE, self.checkBoxDebugMode.isChecked())
+        self._settings.setValue(CONFIG_NAV_DELAY, self.spinBoxNavDelay.value())
+        self._settings.setValue(CONFIG_SCAN_DELAY, self.spinBoxScanDelay.value())
+        self._settings.setValue(
+            CONFIG_RECENT_RELICS_NUM, self.spinBoxRecentRelics.value()
+        )
+        self._settings.setValue(
+            CONFIG_RECENT_RELICS_FIVE_STAR,
+            self.checkBoxRecentRelicsFiveStar.isChecked(),
+        )
+        self._settings.setValue(CONFIG_INCLUDE_UID, self.checkBoxIncludeUid.isChecked())
+        self._settings.setValue(CONFIG_PLAY_SOUND, self.checkBoxPlaySound.isChecked())
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
-        self._settings.setValue("output_location", executable_path("StarRailData"))
-        self._settings.setValue("inventory_key", "b")
-        self._settings.setValue("characters_key", "c")
-        self._settings.setValue("min_light_cone_level", 1)
-        self._settings.setValue("min_light_cone_rarity", 3)
-        self._settings.setValue("min_relic_level", 0)
-        self._settings.setValue("min_relic_rarity", 2)
-        self._settings.setValue("min_character_level", 1)
-        self._settings.setValue("scan_light_cones", False)
-        self._settings.setValue("scan_relics", False)
-        self._settings.setValue("scan_characters", False)
-        self._settings.setValue("sro_format", False)
-        self._settings.setValue("nav_delay", 0)
-        self._settings.setValue("scan_delay", 0)
-        self._settings.setValue("recent_relics_num", 8)
-        self._settings.setValue("recent_relics_five_star", True)
-        self._settings.setValue("debug_mode", False)
-        self._settings.setValue("include_uid", False)
-        self._settings.setValue("play_sound", True)
+        self._settings.setValue(CONFIG_OUTPUT_LOCATION, executable_path("StarRailData"))
+        self._settings.setValue(CONFIG_INVENTORY_KEY, "b")
+        self._settings.setValue(CONFIG_CHARACTERS_KEY, "c")
+        self._settings.setValue(CONFIG_MIN_LC_LEVEL, 1)
+        self._settings.setValue(CONFIG_MIN_LC_RARITY, 3)
+        self._settings.setValue(CONFIG_MIN_RELIC_LEVEL, 0)
+        self._settings.setValue(CONFIG_MIN_RELIC_RARITY, 2)
+        self._settings.setValue(CONFIG_MIN_CHAR_LEVEL, 1)
+        self._settings.setValue(CONFIG_SCAN_LC, False)
+        self._settings.setValue(CONFIG_SCAN_RELICS, False)
+        self._settings.setValue(CONFIG_SCAN_CHARACTERS, False)
+        self._settings.setValue(CONFIG_SRO_FORMAT, False)
+        self._settings.setValue(CONFIG_NAV_DELAY, 0)
+        self._settings.setValue(CONFIG_SCAN_DELAY, 0)
+        self._settings.setValue(CONFIG_RECENT_RELICS_NUM, 8)
+        self._settings.setValue(CONFIG_RECENT_RELICS_FIVE_STAR, True)
+        self._settings.setValue(CONFIG_DEBUG_MODE, False)
+        self._settings.setValue(CONFIG_INCLUDE_UID, False)
+        self._settings.setValue(CONFIG_PLAY_SOUND, True)
         self.load_settings()
 
     def reset_fields(self) -> None:
@@ -260,9 +310,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             if not any(
                 [
-                    config["scan_light_cones"],
-                    config["scan_relics"],
-                    config["scan_characters"],
+                    config[CONFIG_SCAN_LC],
+                    config[CONFIG_SCAN_RELICS],
+                    config[CONFIG_SCAN_CHARACTERS],
                 ]
             ):
                 raise Exception("No scan options selected. Please select at least one.")
@@ -274,7 +324,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.log("Starting scan...")
 
         self.to_scanner_thread(
-            scanner, config["debug_output_location"] if config["debug"] else None
+            scanner,
+            config[CONFIG_DEBUG_OUTPUT_LOCATION] if config[CONFIG_DEBUG] else None,
         )
 
     def start_scan_recent_relics(self) -> None:
@@ -286,18 +337,18 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tabWidget.setCurrentIndex(0)
 
         config = self.get_config()
-        config["scan_light_cones"] = False
-        config["scan_characters"] = False
-        config["scan_relics"] = True
-        config["filters"] = {
-            "relic": {
-                "min_rarity": 5 if config["recent_relics_five_star"] else 0,
+        config[CONFIG_SCAN_LC] = False
+        config[CONFIG_SCAN_CHARACTERS] = False
+        config[CONFIG_SCAN_RELICS] = True
+        config[FILTERS] = {
+            RELIC_FILTERS: {
+                MIN_RARITY: 5 if config[CONFIG_RECENT_RELICS_FIVE_STAR] else 0,
             }
         }
 
         # initialize scanner
         try:
-            if config["recent_relics_num"] < 1:
+            if config[CONFIG_RECENT_RELICS_NUM] < 1:
                 raise Exception("At least one relic must be scanned.")
             scanner = HSRScanner(
                 config, self.game_data, scan_mode=ScanMode.RECENT_RELICS.value
@@ -307,10 +358,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             return
 
         self.log(
-            f"Starting recent relics scan for {config['recent_relics_num']} relics..."
+            f"Starting recent relics scan for {config[CONFIG_RECENT_RELICS_NUM]} relics..."
         )
         self.to_scanner_thread(
-            scanner, config["debug_output_location"] if config["debug"] else None
+            scanner,
+            config[CONFIG_DEBUG_OUTPUT_LOCATION] if config[CONFIG_DEBUG] else None,
         )
 
     def to_scanner_thread(
@@ -361,55 +413,55 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         # scan options
         config = {}
-        config["include_uid"] = self.checkBoxIncludeUid.isChecked()
-        config["scan_light_cones"] = self.checkBoxScanLightCones.isChecked()
-        config["scan_relics"] = self.checkBoxScanRelics.isChecked()
-        config["scan_characters"] = self.checkBoxScanChars.isChecked()
+        config[CONFIG_INCLUDE_UID] = self.checkBoxIncludeUid.isChecked()
+        config[CONFIG_SCAN_LC] = self.checkBoxScanLightCones.isChecked()
+        config[CONFIG_SCAN_RELICS] = self.checkBoxScanRelics.isChecked()
+        config[CONFIG_SCAN_CHARACTERS] = self.checkBoxScanChars.isChecked()
 
         # recent relics scan options
-        config["recent_relics_num"] = self.spinBoxRecentRelics.value()
-        config["recent_relics_five_star"] = (
+        config[CONFIG_RECENT_RELICS_NUM] = self.spinBoxRecentRelics.value()
+        config[CONFIG_RECENT_RELICS_FIVE_STAR] = (
             self.checkBoxRecentRelicsFiveStar.isChecked()
         )
 
         # filters
-        config["filters"] = {
-            "light_cone": {
-                "min_level": self.spinBoxLightConeMinLevel.value(),
-                "min_rarity": self.spinBoxLightConeMinRarity.value(),
+        config[FILTERS] = {
+            LC_FILTERS: {
+                MIN_LEVEL: self.spinBoxLightConeMinLevel.value(),
+                MIN_RARITY: self.spinBoxLightConeMinRarity.value(),
             },
-            "relic": {
-                "min_level": self.spinBoxRelicMinLevel.value(),
-                "min_rarity": self.spinBoxRelicMinRarity.value(),
+            RELIC_FILTERS: {
+                MIN_LEVEL: self.spinBoxRelicMinLevel.value(),
+                MIN_RARITY: self.spinBoxRelicMinRarity.value(),
             },
-            "character": {
-                "min_level": self.spinBoxCharacterMinLevel.value(),
+            CHAR_FILTERS: {
+                MIN_LEVEL: self.spinBoxCharacterMinLevel.value(),
             },
         }
 
         # hotkeys
-        config["inventory_key"] = self.lineEditInventoryKey.text()
-        config["characters_key"] = self.lineEditCharactersKey.text()
-        if not config["inventory_key"]:
+        config[CONFIG_INVENTORY_KEY] = self.lineEditInventoryKey.text()
+        config[CONFIG_CHARACTERS_KEY] = self.lineEditCharactersKey.text()
+        if not config[CONFIG_INVENTORY_KEY]:
             raise Exception("Inventory key is not set.")
-        if not config["characters_key"]:
+        if not config[CONFIG_CHARACTERS_KEY]:
             raise Exception("Characters key is not set.")
 
         # delays
-        config["nav_delay"] = self.spinBoxNavDelay.value() / 1000
-        config["scan_delay"] = self.spinBoxScanDelay.value() / 1000
+        config[CONFIG_NAV_DELAY] = self.spinBoxNavDelay.value() / 1000
+        config[CONFIG_SCAN_DELAY] = self.spinBoxScanDelay.value() / 1000
 
         # debug mode
-        config["debug"] = self.checkBoxDebugMode.isChecked()
-        config["debug_output_location"] = None
+        config[CONFIG_DEBUG] = self.checkBoxDebugMode.isChecked()
+        config[CONFIG_DEBUG_OUTPUT_LOCATION] = None
 
-        if config["debug"]:
-            config["debug_output_location"] = create_debug_folder(
+        if config[CONFIG_DEBUG]:
+            config[CONFIG_DEBUG_OUTPUT_LOCATION] = create_debug_folder(
                 self.lineEditOutputLocation.text()
             )
             self.log(
                 "Debug mode enabled. Debug output will be saved to "
-                + config["debug_output_location"]
+                + config[CONFIG_DEBUG_OUTPUT_LOCATION]
             )
 
         return config

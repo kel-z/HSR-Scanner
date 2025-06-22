@@ -9,8 +9,21 @@ from PIL import ImageGrab
 from PIL.Image import Image
 from PyQt6.QtCore import pyqtBoundSignal
 
+from config.const import (
+    ASPECT_16_9,
+    CHARACTER,
+    CHAR_EIDOLONS,
+    CHEST,
+    COUNT,
+    QUANTITY,
+    SORT,
+    STATS,
+    TRACES,
+    UID,
+)
 from config.screenshot import SCREENSHOT_COORDS
 from enums.increment_type import IncrementType
+from models.const import CHAR_LEVEL, CHAR_NAME
 
 
 class Screenshot:
@@ -20,7 +33,7 @@ class Screenshot:
         self,
         hwnd: int,
         log_signal: pyqtBoundSignal,
-        aspect_ratio: str = "16:9",
+        aspect_ratio: str = ASPECT_16_9,
         debug: bool = False,
         debug_output_location: str = "",
     ) -> None:
@@ -52,7 +65,7 @@ class Screenshot:
         return self._take_screenshot(0, 0, 1, 1, do_not_save)
 
     def screenshot_stats(self, scan_type: IncrementType) -> dict:
-        """Takes a screenshot of the stats
+        """Takes a screenshot of the stats. Requires an item to be selected in the inventory.
 
         :param scan_type: The scan type
         :raises ValueError: Thrown if the scan type is invalid
@@ -67,27 +80,27 @@ class Screenshot:
                 raise ValueError(f"Invalid scan type: {scan_type.name}.")
 
     def screenshot_sort(self) -> Image:
-        """Takes a screenshot of the sort button
+        """Takes a screenshot of the current sort option. Requires inventory to be open.
 
         :return: The screenshot
         """
-        coords = SCREENSHOT_COORDS[self._aspect_ratio]["sort"]
+        coords = SCREENSHOT_COORDS[self._aspect_ratio][SORT]
         return self._take_screenshot(*coords)
 
     def screenshot_quantity(self) -> Image:
-        """Takes a screenshot of the quantity
+        """Takes a screenshot of the quantity. Requires inventory to be open.
 
         :return: The screenshot
         """
-        return self._take_screenshot(*SCREENSHOT_COORDS[self._aspect_ratio]["quantity"])
+        return self._take_screenshot(*SCREENSHOT_COORDS[self._aspect_ratio][QUANTITY])
 
     def screenshot_character_count(self) -> Image:
-        """Takes a screenshot of the character count
+        """Takes a screenshot of the character count. Requires
 
         :return: The screenshot
         """
         return self._take_screenshot(
-            *SCREENSHOT_COORDS[self._aspect_ratio]["character"]["count"]
+            *SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][COUNT]
         )
 
     def screenshot_character_name(self) -> Image:
@@ -96,7 +109,7 @@ class Screenshot:
         :return: The screenshot
         """
         return self._take_screenshot(
-            *SCREENSHOT_COORDS[self._aspect_ratio]["character"]["name"]
+            *SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHAR_NAME]
         )
 
     def screenshot_character_level(self) -> Image:
@@ -105,7 +118,7 @@ class Screenshot:
         :return: The screenshot
         """
         return self._take_screenshot(
-            *SCREENSHOT_COORDS[self._aspect_ratio]["character"]["level"]
+            *SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHAR_LEVEL]
         )
 
     def screenshot_character(self) -> Image:
@@ -114,7 +127,7 @@ class Screenshot:
         :return: The screenshot
         """
         return self._take_screenshot(
-            *SCREENSHOT_COORDS[self._aspect_ratio]["character"]["chest"]
+            *SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHEST]
         )
 
     def screenshot_character_eidolons(self) -> list[np.ndarray]:
@@ -133,7 +146,7 @@ class Screenshot:
         mask = np.zeros((dim, dim), dtype="uint8")
         cv2.circle(mask, (int(dim / 2), int(dim / 2)), int(dim / 2), 255, -1)  # type: ignore
 
-        for c in SCREENSHOT_COORDS[self._aspect_ratio]["character"]["eidolons"]:
+        for c in SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHAR_EIDOLONS]:
             left = self._window_x + int(self._window_width * c[0])
             upper = self._window_y + int(self._window_height * c[1])
             right = left + self._window_width * 0.042
@@ -162,11 +175,11 @@ class Screenshot:
         return self._screenshot_traces(key)
 
     def screenshot_uid(self) -> Image:
-        """Takes a screenshot of the UID from the ESC menu
+        """Takes a screenshot of the UID. Requires ESC menu to be open.
 
         :return: The screenshot
         """
-        return self._take_screenshot(*SCREENSHOT_COORDS[self._aspect_ratio]["uid"])
+        return self._take_screenshot(*SCREENSHOT_COORDS[self._aspect_ratio][UID])
 
     def _take_screenshot(
         self, x: float, y: float, width: float, height: float, do_not_save: bool = False
@@ -206,7 +219,7 @@ class Screenshot:
         """
         coords = SCREENSHOT_COORDS[self._aspect_ratio]
 
-        img = self._take_screenshot(*coords["stats"])
+        img = self._take_screenshot(*coords[STATS])
 
         adjusted_stat_coords = {
             k: (
@@ -236,7 +249,7 @@ class Screenshot:
         offset, _, _ = PILImage.core.grabscreen_win32(False, True)  # type: ignore
         x0, y0 = offset
 
-        for k, v in coords["character"]["traces"][key].items():
+        for k, v in coords[CHARACTER][TRACES][key].items():
             left = self._window_x + int(self._window_width * v[0])
             upper = self._window_y + int(self._window_height * v[1])
             right = left + int(self._window_width * 0.04)

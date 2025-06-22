@@ -6,6 +6,7 @@ import pyautogui
 import win32gui
 from pynput import keyboard, mouse
 
+from config.const import ASPECT_16_9
 from utils.window import bring_window_to_foreground
 
 
@@ -176,7 +177,7 @@ class Navigation:
 
         # handle 1366x768 as a special case since it's an approximation of 16:9 and a common resolution
         if x == 1366 and y == 768:
-            return "16:9"
+            return ASPECT_16_9
 
         gcd = self._gcd(x, y)
         return f"{x // gcd}:{y // gcd}"

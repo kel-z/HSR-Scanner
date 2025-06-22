@@ -6,6 +6,7 @@ from PIL.Image import Image
 from PyQt6.QtCore import pyqtBoundSignal
 
 from enums.increment_type import IncrementType
+from models.const import LOCK_ICON_PATH
 from models.game_data import GameData
 from utils.data import resource_path
 
@@ -37,7 +38,7 @@ class BaseParseStrategy(ABC):
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
         self._debug = debug
-        self._lock_icon = PILImage.open(resource_path("assets/images/lock.png"))
+        self._lock_icon = PILImage.open(resource_path(LOCK_ICON_PATH))
 
     @abstractmethod
     def get_optimal_sort_method(self, filters: dict) -> str:

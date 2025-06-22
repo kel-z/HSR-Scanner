@@ -10,6 +10,8 @@ from PIL import Image as PILImage
 from PIL.Image import Image
 from PyQt6.QtCore import QSettings
 
+from models.const import HSR_SCANNER, IS_STELLE, KEL_Z
+
 GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v4/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
     "https://raw.githubusercontent.com/kel-z/HSR-Data/v4/output/min/sro_key_map.json"
@@ -71,7 +73,7 @@ class GameData:
         except requests.exceptions.RequestException:
             raise Exception("Failed to fetch game data from " + GAME_DATA_URL)
 
-        self.settings = QSettings("kel-z", "HSR-Scanner")
+        self.settings = QSettings(KEL_Z, HSR_SCANNER)
 
         self.version = data["version"]
         self.RELIC_META_DATA = data["relics"]
@@ -136,9 +138,7 @@ class GameData:
         """
         if name == "Trailblazer":
             name = (
-                "Stelle"
-                if self.settings.value("is_stelle", True) == "true"
-                else "Caelus"
+                "Stelle" if self.settings.value(IS_STELLE, True) == "true" else "Caelus"
             )
         return self.CHARACTER_META_DATA[name][path]
 
@@ -177,7 +177,7 @@ class GameData:
                 res = char_id
 
         if res.startswith("8"):
-            self.settings.setValue("is_stelle", int(res[-1]) % 2 == 0)
+            self.settings.setValue(IS_STELLE, int(res[-1]) % 2 == 0)
         return res
 
     def get_closest_relic_name(self, name: str) -> tuple[str, int]:

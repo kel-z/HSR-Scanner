@@ -1,3 +1,20 @@
+from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_TRAILBLAZER, LOCK
+from models.const import (
+    LC_ASCENSION,
+    LC_FILTERS,
+    LC_ID,
+    LC_LEVEL,
+    LC_LOCATION,
+    LC_LOCK,
+    LC_NAME,
+    LC_LEVEL,
+    LC_RARITY,
+    LC_SUPERIMPOSITION,
+    MIN_LEVEL,
+    MIN_RARITY,
+    SORT_LV,
+    SORT_RARITY,
+)
 from type_defs.stats_dict import LightConeDict
 
 from PIL.Image import Image
@@ -28,10 +45,10 @@ class LightConeStrategy(BaseParseStrategy):
         :param filters: The filters
         :return: The optimal sort method
         """
-        if filters["light_cone"]["min_level"] > 1:
-            return "Lv"
+        if filters[LC_FILTERS][MIN_LEVEL] > 1:
+            return SORT_LV
         else:
-            return "Rarity"
+            return SORT_RARITY
 
     def check_filters(
         self, stats_dict: LightConeDict, filters: dict, uid: int
@@ -45,7 +62,7 @@ class LightConeStrategy(BaseParseStrategy):
         :raises KeyError: Thrown if the filter key is not valid
         :return: The filter results and the stats dictionary
         """
-        filters = filters["light_cone"]
+        filters = filters[LC_FILTERS]
 
         filter_results = {}
         for key in filters:
@@ -54,48 +71,45 @@ class LightConeStrategy(BaseParseStrategy):
             val = stats_dict[filter_key] if filter_key in stats_dict else None
 
             if not val or isinstance(val, Image):
-                if key == "min_rarity":
+                if key == MIN_RARITY:
                     # Trivial case
                     if filters[key] <= 3:
                         filter_results[key] = True
                         continue
-                    stats_dict["name"] = self.extract_stats_data(
-                        "name", stats_dict["name"]
+                    stats_dict[LC_NAME] = self.extract_stats_data(
+                        LC_NAME, stats_dict[LC_NAME]
                     )
-                    if not stats_dict["name"] or not isinstance(
-                        stats_dict["name"], str
-                    ):
+                    lc_name = stats_dict[LC_NAME]
+                    if not lc_name or not isinstance(lc_name, str):
                         self._log(
                             f'Light Cone UID {uid}: Failed to parse name. Setting to "Void".',
                             LogLevel.ERROR,
                         )
-                        stats_dict["name"] = "Void"
+                        stats_dict[LC_NAME] = "Void"
                         filter_results[key] = True
                         continue
-                    stats_dict["name"], _ = self._game_data.get_closest_light_cone_name(
-                        stats_dict["name"]
+                    stats_dict[LC_NAME], _ = (
+                        self._game_data.get_closest_light_cone_name(lc_name)
                     )
-                    val = self._game_data.get_light_cone_meta_data(stats_dict["name"])[
-                        "rarity"
-                    ]
-                    stats_dict["rarity"] = val
-                elif key == "min_level":
+                    val = self._game_data.get_light_cone_meta_data(lc_name)[LC_RARITY]
+                    stats_dict[LC_RARITY] = val
+                elif key == MIN_LEVEL:
                     # Trivial case
                     if filters[key] <= 1:
                         filter_results[key] = True
                         continue
-                    stats_dict["level"] = self.extract_stats_data(
-                        "level", stats_dict["level"]
+                    stats_dict[LC_LEVEL] = self.extract_stats_data(
+                        LC_LEVEL, stats_dict[LC_LEVEL]
                     )
-                    if not stats_dict["level"]:
+                    if not stats_dict[LC_LEVEL]:
                         self._log(
                             f"Light Cone UID {uid}: Failed to parse level. Setting to 1.",
                             LogLevel.ERROR,
                         )
-                        stats_dict["level"] = "1/20"
+                        stats_dict[LC_LEVEL] = "1/20"
                         filter_results[key] = True
                         continue
-                    val = int(stats_dict["level"].split("/")[0])  # type: ignore
+                    val = int(stats_dict[LC_LEVEL].split("/")[0])  # type: ignore
 
             if not isinstance(val, int):
                 raise ValueError(f'Filter key "{key}" does not have an int value.')
@@ -119,30 +133,27 @@ class LightConeStrategy(BaseParseStrategy):
         if not isinstance(data, Image):
             return data
 
-        match key:
-            case "name":
-                name, _ = self._game_data.get_closest_light_cone_name(
-                    image_to_string(
-                        data,
-                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-",
-                        6,
-                    )
+        if key == LC_NAME:
+            name, _ = self._game_data.get_closest_light_cone_name(
+                image_to_string(
+                    data,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-",
+                    6,
                 )
-                return name
-            case "level":
-                return image_to_string(
-                    data, "0123456789S/", 7, True, preprocess_lc_level_img
-                ).replace("S", "5")
-            case "superimposition":
-                return image_to_string(
-                    data, "12345S", 10, True, preprocess_superimposition_img
-                ).replace("S", "5")
-            case "equipped":
-                return image_to_string(
-                    data, "Equipped", 7, True, preprocess_equipped_img
-                )
-            case _:
-                return data
+            )
+            return name
+        elif key == LC_LEVEL:
+            return image_to_string(
+                data, "0123456789S/", 7, True, preprocess_lc_level_img
+            ).replace("S", "5")
+        elif key == LC_SUPERIMPOSITION:
+            return image_to_string(
+                data, "12345S", 10, True, preprocess_superimposition_img
+            ).replace("S", "5")
+        elif key == EQUIPPED:
+            return image_to_string(data, "Equipped", 7, True, preprocess_equipped_img)
+        else:
+            return data
 
     def parse(self, stats_dict: dict, uid: int) -> dict:
         """Parses the stats dictionary
@@ -166,11 +177,11 @@ class LightConeStrategy(BaseParseStrategy):
             else None
         )
 
-        name = stats_dict["name"]
-        level = stats_dict["level"]
-        superimposition = stats_dict["superimposition"]
-        lock = stats_dict["lock"]
-        equipped = stats_dict["equipped"]
+        name = stats_dict[LC_NAME]
+        level = stats_dict[LC_LEVEL]
+        superimposition = stats_dict[LC_SUPERIMPOSITION]
+        lock = stats_dict[LOCK]
+        equipped_text = stats_dict[EQUIPPED]
 
         if not name:
             self._log(
@@ -179,7 +190,7 @@ class LightConeStrategy(BaseParseStrategy):
             )
             name = "Void"
 
-        lc_id = str(self._game_data.get_light_cone_meta_data(name)["id"])
+        lc_id = str(self._game_data.get_light_cone_meta_data(name)[LC_ID])
 
         # Parse level, ascension, superimposition
         try:
@@ -219,21 +230,23 @@ class LightConeStrategy(BaseParseStrategy):
             lock = False
 
         location = ""
-        if equipped == "Equipped":
-            equipped_avatar = stats_dict["equipped_avatar"]
+        if equipped_text == "Equipped":
+            equipped_avatar = stats_dict[EQUIPPED_AVATAR]
             location = self._game_data.get_equipped_character(equipped_avatar)
-        elif equipped == "Equippe":  # https://github.com/kel-z/HSR-Scanner/issues/88
-            equipped_avatar = stats_dict["equipped_avatar_trailblazer"]
+        elif (
+            equipped_text == "Equippe"
+        ):  # https://github.com/kel-z/HSR-Scanner/issues/88
+            equipped_avatar = stats_dict[EQUIPPED_AVATAR_TRAILBLAZER]
             location = self._game_data.get_equipped_character(equipped_avatar)
 
         result = {
-            "id": lc_id,
-            "name": name,
-            "level": int(level),
-            "ascension": int(ascension),
-            "superimposition": int(superimposition),
-            "location": location,
-            "lock": lock,
+            LC_ID: lc_id,
+            LC_NAME: name,
+            LC_LEVEL: int(level),
+            LC_ASCENSION: int(ascension),
+            LC_SUPERIMPOSITION: int(superimposition),
+            LC_LOCATION: location,
+            LC_LOCK: lock,
             "_uid": f"light_cone_{uid}",
         }
 

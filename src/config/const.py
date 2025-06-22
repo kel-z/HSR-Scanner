@@ -1,0 +1,50 @@
+# Aspect ratios
+ASPECT_16_9 = "16:9"
+
+# Character navigation data keys
+ASCENSION_START = "ascension_start"
+ASCENSION_OFFSET_X = "ascension_offset_x"
+CHARS_PER_SCAN = "chars_per_scan"
+CHAR_START = "char_start"
+CHAR_END = "char_end"
+CHAR_OFFSET_X = "offset_x"
+DETAILS_BUTTON = "details_button"
+TRACES_BUTTON = "traces_button"
+EIDOLONS_BUTTON = "eidolons_button"
+TRACES = "traces"
+
+# Relic and light cone navigation data keys
+INV_TAB = "inv_tab"
+SORT_BUTTON = "button"
+ROW_START_TOP = "row_start_top"
+ROW_START_BOTTOM = "row_start_bottom"
+OFFSET_X = "offset_x"
+OFFSET_Y = "offset_y"
+ROWS = "rows"
+COLS = "cols"
+
+# Screenshot coordinate keys
+QUANTITY = "quantity"
+SORT = "sort"
+UID = "uid"
+CHARACTER = "character"
+LIGHT_CONE = "light_cone"
+RELIC = "relic"
+CHAR_EIDOLONS = "eidolons"
+COUNT = "count"
+CHEST = "chest"
+STATS = "stats"
+EQUIPPED_AVATAR = "equipped_avatar"
+EQUIPPED_AVATAR_TRAILBLAZER = "equipped_avatar_trailblazer"
+EQUIPPED = "equipped"
+LOCK = "lock"
+
+# Paths
+HUNT = "hunt"
+ERUDITION = "erudition"
+HARMONY = "harmony"
+PRESERVATION = "preservation"
+DESTRUCTION = "destruction"
+NIHILITY = "nihility"
+ABUNDANCE = "abundance"
+REMEMBRANCE = "remembrance"
