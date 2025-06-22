@@ -12,9 +12,9 @@ from PyQt6.QtCore import QSettings
 
 from models.const import HSR_SCANNER, IS_STELLE, KEL_Z
 
-GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v4/output/min/game_data_with_icons.json"
+GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v5/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
-    "https://raw.githubusercontent.com/kel-z/HSR-Data/v4/output/min/sro_key_map.json"
+    "https://raw.githubusercontent.com/kel-z/HSR-Data/v5/output/min/sro_key_map.json"
 )
 
 RELIC_MAIN_STATS = {
@@ -149,13 +149,15 @@ class GameData:
                 f"Character '{name}' with path '{path}' not found in game data."
             )
 
-    def get_equipped_character(self, equipped_avatar_img: Image) -> str:
+    def get_equipped_character(
+        self, equipped_avatar_img: Image
+    ) -> tuple[str, str | None]:
         """Get equipped character from equipped avatar image
 
         Side effect: Sets the is_stelle QSetting
 
         :param equipped_avatar_img: The equipped avatar image
-        :return: The character id
+        :return: The character id and outfit id if applicable
         """
         to_compare_img = np.array(equipped_avatar_img)  # type: ignore
         to_compare_img = cv2.resize(to_compare_img, (100, 100))  # type: ignore
@@ -181,11 +183,13 @@ class GameData:
             ).max()
             if conf > max_conf:
                 max_conf = conf
-                res = char_id
+                res, outfit_id = (
+                    char_id.split("#", 1) if "#" in char_id else (char_id, None)
+                )
 
         if res.startswith("8"):
             self.settings.setValue(IS_STELLE, int(res[-1]) % 2 == 0)
-        return res
+        return res, outfit_id
 
     def get_closest_relic_name(self, name: str) -> tuple[str, int]:
         """Get closest relic name from name

@@ -25,7 +25,7 @@ COUNT = "count"
 CHEST = "chest"
 STATS = "stats"
 EQUIPPED_AVATAR = "equipped_avatar"
-EQUIPPED_AVATAR_TRAILBLAZER = "equipped_avatar_trailblazer"
+EQUIPPED_AVATAR_OFFSET = "equipped_avatar_trailblazer"
 EQUIPPED = "equipped"
 LOCK = "lock"
 

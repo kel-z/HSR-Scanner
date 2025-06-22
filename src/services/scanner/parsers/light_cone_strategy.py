@@ -1,4 +1,4 @@
-from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_TRAILBLAZER, LOCK
+from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_OFFSET, LOCK
 from models.const import (
     LC_ASCENSION,
     LC_FILTERS,
@@ -230,14 +230,25 @@ class LightConeStrategy(BaseParseStrategy):
             lock = False
 
         location = ""
+        outfit_id = None
         if equipped_text == "Equipped":
             equipped_avatar = stats_dict[EQUIPPED_AVATAR]
-            location = self._game_data.get_equipped_character(equipped_avatar)
+            location, outfit_id = self._game_data.get_equipped_character(
+                equipped_avatar
+            )
         elif (
             equipped_text == "Equippe"
         ):  # https://github.com/kel-z/HSR-Scanner/issues/88
-            equipped_avatar = stats_dict[EQUIPPED_AVATAR_TRAILBLAZER]
-            location = self._game_data.get_equipped_character(equipped_avatar)
+            equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
+            location, outfit_id = self._game_data.get_equipped_character(
+                equipped_avatar
+            )
+
+        if outfit_id:
+            self._log(
+                f"Light Cone UID {uid}: Equipped character is {location} with outfit ID {outfit_id}.",
+                LogLevel.DEBUG,
+            )
 
         result = {
             LC_ID: lc_id,

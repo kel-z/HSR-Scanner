@@ -19,6 +19,7 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+a.datas += [('vgamepad\\win\\vigem\\client\\x64\\ViGEmClient.dll', 'src\\assets\\vgamepad\\ViGEmClient.dll', 'BINARY')]
 a.datas += [('assets\\tesseract\\tesseract.exe', 'src\\assets\\tesseract\\tesseract.exe', 'BINARY')]
 a.datas += [('assets\\tesseract\\tessdata\\DIN-Alternate.traineddata','src\\assets\\tesseract\\tessdata\\DIN-Alternate.traineddata', "DATA")]
 a.datas += [('assets\\images\\databank.png','src\\assets\\images\\databank.png', "DATA")]

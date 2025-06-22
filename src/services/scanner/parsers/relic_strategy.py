@@ -3,7 +3,7 @@ from PIL import Image as PILImage
 from PIL.Image import Image
 from pyautogui import locate
 
-from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_TRAILBLAZER, LOCK
+from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_OFFSET, LOCK
 from config.relic_scan import RELIC_NAV_DATA
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
@@ -276,12 +276,23 @@ class RelicStrategy(BaseParseStrategy):
             discard = False
 
         location = ""
+        outfit_id = None
         if equipped == "Equipped":
             equipped_avatar = stats_dict[EQUIPPED_AVATAR]
-            location = self._game_data.get_equipped_character(equipped_avatar)
+            location, outfit_id = self._game_data.get_equipped_character(
+                equipped_avatar
+            )
         elif equipped == "Equippe":  # https://github.com/kel-z/HSR-Scanner/issues/88
-            equipped_avatar = stats_dict[EQUIPPED_AVATAR_TRAILBLAZER]
-            location = self._game_data.get_equipped_character(equipped_avatar)
+            equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
+            location, outfit_id = self._game_data.get_equipped_character(
+                equipped_avatar
+            )
+
+        if outfit_id:
+            self._log(
+                f"Relic UID {uid}: Equipped character is {location} with outfit ID {outfit_id}.",
+                LogLevel.DEBUG,
+            )
 
         result = {
             RELIC_SET_ID: set_id,

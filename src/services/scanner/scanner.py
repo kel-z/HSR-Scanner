@@ -362,6 +362,8 @@ class HSRScanner(QObject):
                 ):
                     scanned += 1
                 if not all(filter_results.values()):
+                    self._nav.key_tap("d")
+                    self._scan_sleep(0.05)
                     continue
 
             # Update UI count
@@ -476,7 +478,6 @@ class HSRScanner(QObject):
         while i < character_total:
             # Get name and path
             character_name = ""
-            max_retry = 5
             retry = 0
             while retry < max_retry and (
                 not character_name or character_name in characters_seen
