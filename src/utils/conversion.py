@@ -25,6 +25,9 @@ from models.const import (
     RELIC_NAME,
     RELIC_RARITY,
     RELIC_SLOT,
+    RELIC_SUBSTAT_NAME,
+    RELIC_SUBSTAT_VALUE,
+    RELIC_SUBSTATS,
     SKILL,
     STAT_1,
     STAT_10,
@@ -39,7 +42,7 @@ from models.const import (
     TALENT,
     ULT,
 )
-from models.game_data import RELIC_SUB_STATS, GameData
+from models.game_data import GameData
 
 SRO_SLOT_MAP = {
     "Head": "head",
@@ -179,16 +182,16 @@ def _convert_relics_sro(
             mainstat += "_"
 
         substats = []
-        for substat in relic[RELIC_SUB_STATS]:
+        for substat in relic[RELIC_SUBSTATS]:
             try:
                 value = (
-                    round(substat["value"] / 100, 3)
-                    if substat["key"].endswith("_")
-                    else substat["value"]
+                    round(substat[RELIC_SUBSTAT_VALUE] / 100, 3)
+                    if substat[RELIC_SUBSTAT_NAME].endswith("_")
+                    else substat[RELIC_SUBSTAT_VALUE]
                 )
                 substats.append(
                     {
-                        "key": SRO_SUB_STAT_MAP[substat["key"]],
+                        "key": SRO_SUB_STAT_MAP[substat[RELIC_SUBSTAT_NAME]],
                         "value": value,
                     }
                 )

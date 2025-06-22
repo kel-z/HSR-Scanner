@@ -3,6 +3,7 @@ import time
 import cv2
 import numpy as np
 import pyautogui
+import vgamepad as vg
 import win32gui
 from pynput import keyboard, mouse
 
@@ -27,6 +28,37 @@ class Navigation:
 
         self._mouse = mouse.Controller()
         self._keyboard = keyboard.Controller()
+        self._gamepad = vg.VX360Gamepad()
+
+    def enter_gamepad(self) -> None:
+        """Perform a minimal gamepad operation to ensure gamepad controls are enabled"""
+        self._gamepad.right_joystick_float(0, 0.5)
+        self._gamepad.update()
+        time.sleep(0.1)
+        self._gamepad.right_joystick_float(0, 0.0)
+        self._gamepad.update()
+        time.sleep(0.3)
+
+    def exit_gamepad(self) -> None:
+        """Perform a harmless key operation to ensure gamepad controls are disabled"""
+        self.key_tap("1")
+        time.sleep(0.1)
+
+    def press_gamepad_rb(self) -> None:
+        """Press the right button on the gamepad"""
+        self._gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
+        self._gamepad.update()
+        time.sleep(0.1)  # Ensure the button press is registered
+        self._gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
+        self._gamepad.update()
+
+    def press_gamepad_lb(self) -> None:
+        """Press the left button on the gamepad"""
+        self._gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
+        self._gamepad.update()
+        time.sleep(0.1)
+        self._gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
+        self._gamepad.update()
 
     def translate_percent_to_coords(
         self, x_percent: float, y_percent: float

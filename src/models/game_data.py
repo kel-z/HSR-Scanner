@@ -136,11 +136,18 @@ class GameData:
         :param path: The path of the character
         :return: The character meta data
         """
-        if name == "Trailblazer":
-            name = (
-                "Stelle" if self.settings.value(IS_STELLE, True) == "true" else "Caelus"
+        try:
+            if name == "Trailblazer":
+                name = (
+                    "Stelle"
+                    if self.settings.value(IS_STELLE, True) == "true"
+                    else "Caelus"
+                )
+            return self.CHARACTER_META_DATA[name][path]
+        except KeyError:
+            raise KeyError(
+                f"Character '{name}' with path '{path}' not found in game data."
             )
-        return self.CHARACTER_META_DATA[name][path]
 
     def get_equipped_character(self, equipped_avatar_img: Image) -> str:
         """Get equipped character from equipped avatar image

@@ -71,7 +71,7 @@ Current output sample:
 ```JSON
 {
     "source": "HSR-Scanner",
-    "build": "v1.3.0",
+    "build": "v1.4.0",
     "version": 4,
     "metadata": {
         "uid": 601869216,
