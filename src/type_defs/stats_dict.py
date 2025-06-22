@@ -13,7 +13,7 @@ class RelicDict(TypedDict):
     equipped: Image
     equipped_avatar: Image
     equipped_avatar_trailblazer: Image
-    mainStatKey: Image | str
+    mainstat: Image | str
     substat_names: Image | str
     substat_vals: Image | str
 

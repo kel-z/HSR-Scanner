@@ -64,14 +64,14 @@ The output is loosely based off of Genshin's `.GOOD` export format. If a breakin
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
   - In the case of ties, namely two stat bonuses _X_ and _Y_ that both unlock at the same Ascension level, the one that visually connects to the highest `stat_#` on the in-game character traces page comes first. For example, if a stat bonus _X_ connects to `stat_2` and stat bonus _Y_ connects to `stat_1`, then _X_ would be `stat_3` and _Y_ would be `stat_4`.
     - If _X_ and _Y_ both connect to the same `stat_#` (only found in Erudition), then visually assign from bottom to top.
-- Characters on the Remembrance path will have a `memosprite` key in the character data (see example below). 
+- Characters on the Remembrance path will have a `memosprite` key in the character data (see example below).
 
 Current output sample:
 
 ```JSON
 {
     "source": "HSR-Scanner",
-    "build": "v1.3.0",
+    "build": "v1.4.0",
     "version": 4,
     "metadata": {
         "uid": 601869216,

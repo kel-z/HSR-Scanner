@@ -1,17 +1,17 @@
+from config.const import (
+    ASPECT_16_9,
+    INV_TAB,
+    SORT_BUTTON,
+)
+from models.const import SORT_DATE, SORT_LV, SORT_RARITY
+
+
 LIGHT_CONE_NAV_DATA = {
-    "16:9": {
-        "inv_tab": (0.38, 0.06),
-        "sort": {
-            "button": (0.12, 0.91),
-            "Rarity": (0.12, 0.42),
-            "Lv": (0.12, 0.49),
-            "Date obtained": (0.12, 0.84),
-        },
-        "row_start_top": (0.096, 0.162),
-        "row_start_bottom": (0.1, 0.77),
-        "offset_x": 0.065,
-        "offset_y": 0.13796,
-        "rows": 5,
-        "cols": 9,
+    ASPECT_16_9: {
+        INV_TAB: (0.38, 0.06),
+        SORT_BUTTON: (0.12, 0.91),
+        SORT_RARITY: (0.12, 0.42),
+        SORT_LV: (0.12, 0.49),
+        SORT_DATE: (0.12, 0.84),
     }
 }

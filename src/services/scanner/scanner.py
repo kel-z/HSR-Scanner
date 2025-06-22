@@ -8,9 +8,51 @@ from pynput.keyboard import Key
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
+from config.const import (
+    ASCENSION_OFFSET_X,
+    ASCENSION_START,
+    ASPECT_16_9,
+    DETAILS_BUTTON,
+    EIDOLONS_BUTTON,
+    INV_TAB,
+    SORT_BUTTON,
+    TRACES,
+    TRACES_BUTTON,
+)
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
+from models.const import (
+    CHAR_FILTERS,
+    CHAR_LEVEL,
+    CHAR_NAME,
+    CHAR_PATH,
+    CHAR_TRACES,
+    CONFIG_CHARACTERS_KEY,
+    CONFIG_DEBUG,
+    CONFIG_DEBUG_OUTPUT_LOCATION,
+    CONFIG_INCLUDE_UID,
+    CONFIG_INVENTORY_KEY,
+    CONFIG_NAV_DELAY,
+    CONFIG_RECENT_RELICS_NUM,
+    CONFIG_SCAN_CHARACTERS,
+    CONFIG_SCAN_DELAY,
+    CONFIG_SCAN_LC,
+    CONFIG_SCAN_RELICS,
+    EIDOLON_IMAGES,
+    FILTERS,
+    HSR_SCANNER,
+    KEL_Z,
+    LEVEL,
+    MIN_LEVEL,
+    MIN_RARITY,
+    RARITY,
+    SORT_DATE,
+    SORT_LV,
+    SORT_RARITY,
+    TRACES_LEVELS,
+    TRACES_UNLOCKS,
+)
 from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
@@ -23,7 +65,7 @@ from .parsers.character_parser import CharacterParser
 from .parsers.light_cone_strategy import LightConeStrategy
 from .parsers.relic_strategy import RelicStrategy
 
-SUPPORTED_ASPECT_RATIOS = ["16:9"]
+SUPPORTED_ASPECT_RATIOS = [ASPECT_16_9]
 
 
 class InterruptedScanException(Exception):
@@ -53,9 +95,9 @@ class HSRScanner(QObject):
                 "Honkai: Star Rail",
                 "崩坏：星穹铁道",
                 "崩壞：星穹鐵道",
-                "붕괴:\u00A0스타레일",
+                "붕괴:\u00a0스타레일",
                 "崩壊：スターレイル",
-                "Honkai\u00A0: Star Rail",
+                "Honkai\u00a0: Star Rail",
             ]
         ):
             self._hwnd = win32gui.FindWindow("UnityWndClass", game_name)
@@ -82,8 +124,8 @@ class HSRScanner(QObject):
             self._hwnd,
             self.log_signal,
             self._aspect_ratio,
-            config["debug"],
-            config["debug_output_location"],
+            config[CONFIG_DEBUG],
+            config[CONFIG_DEBUG_OUTPUT_LOCATION],
         )
         self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
@@ -105,7 +147,7 @@ class HSRScanner(QObject):
         bring_window_to_foreground(self._hwnd)
 
         uid = None
-        if self._config["include_uid"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_INCLUDE_UID] and not self._interrupt_event.is_set():
             self._nav_sleep(1)
             uid_img = self._screenshot.screenshot_uid()
             uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
@@ -122,7 +164,7 @@ class HSRScanner(QObject):
                 self._log(f"UID: {uid}.")
 
         light_cones = []
-        if self._config["scan_light_cones"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_SCAN_LC] and not self._interrupt_event.is_set():
             self._log("Scanning light cones...")
             light_cones = self.scan_inventory(
                 LightConeStrategy(
@@ -130,7 +172,7 @@ class HSRScanner(QObject):
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
-                    self._config["debug"],
+                    self._config[CONFIG_DEBUG],
                 )
             )
             (
@@ -140,7 +182,7 @@ class HSRScanner(QObject):
             )
 
         relics = []
-        if self._config["scan_relics"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_SCAN_RELICS] and not self._interrupt_event.is_set():
             self._log("Scanning relics...")
             relics = self.scan_inventory(
                 RelicStrategy(
@@ -148,7 +190,7 @@ class HSRScanner(QObject):
                     self.log_signal,
                     self.update_signal,
                     self._interrupt_event,
-                    self._config["debug"],
+                    self._config[CONFIG_DEBUG],
                 )
             )
             (
@@ -158,7 +200,7 @@ class HSRScanner(QObject):
             )
 
         characters = []
-        if self._config["scan_characters"] and not self._interrupt_event.is_set():
+        if self._config[CONFIG_SCAN_CHARACTERS] and not self._interrupt_event.is_set():
             self._log("Scanning characters...")
             characters = self.scan_characters()
             (
@@ -176,20 +218,19 @@ class HSRScanner(QObject):
 
         return {
             "source": "HSR-Scanner",
-            "build": "v1.3.0",
+            "build": "v1.4.0",
             "version": 4,
             "metadata": {
                 "uid": int(uid) if uid else None,
                 "trailblazer": (
                     "Stelle"
-                    if QSettings("kel-z", "HSR-Scanner").value("is_stelle", True)
-                    == "true"
+                    if QSettings(KEL_Z, HSR_SCANNER).value("is_stelle", True) == "true"
                     else "Caelus"
                 ),
             },
-            "light_cones": await asyncio.gather(*light_cones),
-            "relics": await asyncio.gather(*relics),
-            "characters": await asyncio.gather(*characters),
+            "light_cones": [x for x in await asyncio.gather(*light_cones) if x],
+            "relics": [x for x in await asyncio.gather(*relics) if x],
+            "characters": [x for x in await asyncio.gather(*characters) if x],
         }
 
     def stop_scan(self) -> None:
@@ -210,14 +251,14 @@ class HSRScanner(QObject):
         self._nav_sleep(1)
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
-        self._nav.key_tap(self._config["inventory_key"])
+        self._nav.key_tap(self._config[CONFIG_INVENTORY_KEY])
         self._nav_sleep(1.5)
 
         # Get quantity
         max_retry = 5
         retry = 0
         while True:
-            self._nav.move_cursor_to(*nav_data["inv_tab"])
+            self._nav.move_cursor_to(*nav_data[INV_TAB])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(1.5)
@@ -251,121 +292,89 @@ class HSRScanner(QObject):
         current_sort_method = image_to_string(
             self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
         )
-        optimal_sort_method = "Date obtained"
+        optimal_sort_method = SORT_DATE
         if self._scan_mode != ScanMode.RECENT_RELICS.value:
             optimal_sort_method = strategy.get_optimal_sort_method(
-                self._config["filters"]
+                self._config[FILTERS]
             )
 
         if optimal_sort_method != current_sort_method:
             self._log(f"Sorting by {optimal_sort_method} (was {current_sort_method}).")
-            self._nav.move_cursor_to(*nav_data["sort"]["button"])
+            self._nav.move_cursor_to(*nav_data[SORT_BUTTON])
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(0.5)
-            self._nav.move_cursor_to(*nav_data["sort"][optimal_sort_method])
+            self._nav.move_cursor_to(*nav_data[optimal_sort_method])
             self._nav.click()
             current_sort_method = optimal_sort_method
             self._nav_sleep(0.5)
 
         tasks = set()
-        scanned_per_scroll = nav_data["rows"] * nav_data["cols"]
-        num_times_scrolled = 0
         scanned = 0
 
         def should_stop():
             if self._scan_mode == ScanMode.RECENT_RELICS.value:
                 return (
                     quantity_remaining <= 0
-                    or scanned >= self._config["recent_relics_num"]
+                    or scanned >= self._config[CONFIG_RECENT_RELICS_NUM]
                 )
             return quantity_remaining <= 0
 
         while not should_stop():
-            if (
-                quantity_remaining <= scanned_per_scroll
-                and not quantity <= scanned_per_scroll
-            ):
-                x, y = nav_data["row_start_bottom"]
-                todo_rows = self._ceildiv(quantity_remaining, nav_data["cols"]) - 1
-                y -= todo_rows * nav_data["offset_y"]
-            else:
-                x, y = nav_data["row_start_top"]
+            quantity_remaining -= 1
 
-            for _ in range(nav_data["rows"]):
-                for _ in range(nav_data["cols"]):
-                    if should_stop():
-                        break
+            # Get stats
+            stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
+            item_id = quantity - quantity_remaining
 
-                    # Next item
-                    self._nav.move_cursor_to(x, y)
-                    time.sleep(0.05)
-                    self._nav.click()
-                    self._scan_sleep(0.1)
-                    quantity_remaining -= 1
+            # Check if item satisfies filters
+            if FILTERS in self._config:
+                filter_results, stats_dict = strategy.check_filters(
+                    stats_dict,
+                    self._config[FILTERS],
+                    item_id,
+                )
+                if (
+                    current_sort_method == SORT_LV
+                    and MIN_LEVEL in filter_results
+                    and not filter_results[MIN_LEVEL]
+                ):
+                    quantity_remaining = 0
+                    self._log(
+                        f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
+                    )
+                    break
+                if (
+                    current_sort_method == SORT_RARITY
+                    and MIN_RARITY in filter_results
+                    and not filter_results[MIN_RARITY]
+                ):
+                    quantity_remaining = 0
+                    self._log(
+                        f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
+                    )
+                    break
+                if (
+                    self._scan_mode == ScanMode.RECENT_RELICS.value
+                    and current_sort_method == SORT_DATE
+                    and MIN_RARITY in filter_results
+                    and filter_results[MIN_RARITY]
+                ):
+                    scanned += 1
+                if not all(filter_results.values()):
+                    self._nav.key_tap("d")
+                    self._scan_sleep(0.05)
+                    continue
 
-                    # Get stats
-                    stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
-                    item_id = quantity - quantity_remaining
-                    x += nav_data["offset_x"]
+            # Update UI count
+            self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-                    # Check if item satisfies filters
-                    if "filters" in self._config:
-                        filter_results, stats_dict = strategy.check_filters(
-                            stats_dict,
-                            self._config["filters"],
-                            item_id,
-                        )
-                        if (
-                            current_sort_method == "Lv"
-                            and "min_level" in filter_results
-                            and not filter_results["min_level"]
-                        ):
-                            quantity_remaining = 0
-                            self._log(
-                                f"Reached minimum level filter (got level {stats_dict['level']})."
-                            )
-                            break
-                        if (
-                            current_sort_method == "Rarity"
-                            and "min_rarity" in filter_results
-                            and not filter_results["min_rarity"]
-                        ):
-                            quantity_remaining = 0
-                            self._log(
-                                f"Reached minimum rarity filter (got rarity {stats_dict['rarity']})."
-                            )
-                            break
-                        if (
-                            self._scan_mode == ScanMode.RECENT_RELICS.value
-                            and current_sort_method == "Date obtained"
-                            and "min_rarity" in filter_results
-                            and filter_results["min_rarity"]
-                        ):
-                            scanned += 1
-                        if not all(filter_results.values()):
-                            continue
+            task = asyncio.to_thread(strategy.parse, stats_dict, item_id)
+            tasks.add(task)
 
-                    # Update UI count
-                    self.update_signal.emit(strategy.SCAN_TYPE.value)
-
-                    task = asyncio.to_thread(strategy.parse, stats_dict, item_id)
-                    tasks.add(task)
-
-                # Next row
-                x = nav_data["row_start_top"][0]
-                y += nav_data["offset_y"]
-
-            if should_stop():
-                break
-
-            self._nav.scroll_page_down(num_times_scrolled)
-            num_times_scrolled += 1
-            self._log(
-                f"Scrolling inventory, page {num_times_scrolled + 1}.", LogLevel.TRACE
-            )
-
-            self._scan_sleep(0.5)
+            # Next item
+            self._nav.key_tap("d")
+            self._scan_sleep(0.05)
 
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
@@ -385,7 +394,7 @@ class HSRScanner(QObject):
             self.log_signal,
             self.update_signal,
             self._interrupt_event,
-            self._config["debug"],
+            self._config[CONFIG_DEBUG],
         )
         nav_data = CHARACTER_NAV_DATA[self._aspect_ratio]
 
@@ -393,55 +402,80 @@ class HSRScanner(QObject):
         bring_window_to_foreground(self._hwnd)
         self._nav_sleep(1)
 
-        # Locate and click databank button
-        self._log("Locating Data Bank button...", LogLevel.DEBUG)
-        haystack = self._screenshot.screenshot_screen()
-        needle = self._databank_img.resize(
-            # Scale image to match capture size
-            (
-                int(haystack.size[0] * 0.0296875),
-                int(haystack.size[1] * 0.05625),
-            )
-        )
-        self._nav.move_cursor_to_image(haystack, needle)
-        self._log(
-            f"Data Bank button found at {self._nav.get_mouse_position()}.",
-            LogLevel.DEBUG,
-        )
-        time.sleep(0.05)
-        self._nav.click()
-        self._nav_sleep(1)
-
-        # Get character count
-        max_retry = 5
-        retry = 0
+        # Enable hard retry for databank button
+        max_databank_retry = 2
+        databank_retry = 0
         while True:
-            character_total = self._screenshot.screenshot_character_count()
-            character_total = image_to_string(
-                character_total, "0123456789/", 7, True, preprocess_char_count_img
-            )
             try:
-                self._log(f"Character total: {character_total}.")
-                character_total = character_total.split("/")[0]
-                character_count = character_total = int(character_total)
-                break
-            except ValueError:
-                retry += 1
-                if retry > max_retry:
-                    raise ValueError(
-                        "Failed to parse character count from Data Bank screen."
-                        + (
-                            f' Got "{character_total}" instead.'
-                            if character_total
-                            else ""
-                        )
+                # Locate and click databank button
+                self._log("Locating Data Bank button...", LogLevel.DEBUG)
+                haystack = self._screenshot.screenshot_screen()
+                needle = self._databank_img.resize(
+                    # Scale image to match capture size
+                    (
+                        int(haystack.size[0] * 0.0296875),
+                        int(haystack.size[1] * 0.05625),
                     )
-                else:
-                    self._log(
-                        f"Failed to parse character count. Retrying... ({retry}/{max_retry})",
-                        LogLevel.WARNING,
-                    )
+                )
+                self._nav.move_cursor_to_image(haystack, needle)
+                self._log(
+                    f"Data Bank button found at {self._nav.get_mouse_position()}.",
+                    LogLevel.DEBUG,
+                )
+                time.sleep(0.05)
+                self._nav.click()
                 self._nav_sleep(1)
+
+                # Get character count
+                max_retry = 5
+                retry = 0
+                while True:
+                    character_total = self._screenshot.screenshot_character_count()
+                    character_total = image_to_string(
+                        character_total,
+                        "0123456789/",
+                        7,
+                        True,
+                        preprocess_char_count_img,
+                    )
+                    try:
+                        self._log(f"Character total: {character_total}.")
+                        character_total = int(character_total.split("/")[0])
+                        break
+                    except ValueError:
+                        retry += 1
+                        if retry > max_retry:
+                            self._log(
+                                "Failed to parse character count from Data Bank screen."
+                                + (
+                                    f' Got "{character_total}" instead.'
+                                    if character_total
+                                    else ""
+                                ),
+                                LogLevel.ERROR,
+                            )
+                            raise ValueError
+                        else:
+                            self._log(
+                                f"Failed to parse character count. Retrying... ({retry}/{max_retry})",
+                                LogLevel.WARNING,
+                            )
+                        self._nav_sleep(1)
+            except ValueError as e:
+                databank_retry += 1
+                if databank_retry > max_databank_retry:
+                    self._log(
+                        f"Failed to parse character count after {max_databank_retry} character scan restarts. Ending scan.",
+                        LogLevel.ERROR,
+                    )
+                    return set()
+                self._log(
+                    f"Restarting character count scan... ({databank_retry}/{max_databank_retry})",
+                    LogLevel.WARNING,
+                )
+                self._nav_sleep(1)
+                continue
+            break
 
         # Navigate to characters menu
         self._nav.key_tap(Key.esc)
@@ -450,233 +484,216 @@ class HSRScanner(QObject):
         self._nav_sleep(1.5)
         self._nav.key_tap("1")
         self._nav_sleep(0.2)
-        self._nav.key_tap(self._config["characters_key"])
+        self._nav.key_tap(self._config[CONFIG_CHARACTERS_KEY])
         self._nav_sleep(1)
 
         tasks = set()
         characters_seen = set()
-        while character_count > 0:
-            if character_count > nav_data["chars_per_scan"]:
-                character_x, character_y = nav_data["char_start"]
-            else:
-                character_x, character_y = nav_data["char_end"]
-                character_x -= nav_data["offset_x"] * (character_count - 1)
 
-            i_stop = min(character_count, nav_data["chars_per_scan"])
-            curr_page_res = [{} for _ in range(i_stop)]
+        res = [{} for _ in range(character_total)]
 
-            # Details tab
-            i = 0
-            self._nav.move_cursor_to(*nav_data["details_button"])
-            time.sleep(0.05)
-            self._nav.click()
-            self._nav_sleep(0.5)
-            prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
-            while i < i_stop:
-                self._nav.move_cursor_to(
-                    character_x + i * nav_data["offset_x"], character_y
-                )
-                time.sleep(0.05)
-                self._nav.click()
-                self._scan_sleep(0.3)
+        # Details tab
+        i = 0
+        self._nav.move_cursor_to(*nav_data[DETAILS_BUTTON])
+        time.sleep(0.05)
+        self._nav.click()
+        self._nav_sleep(0.5)
+        self._nav.enter_gamepad()
 
-                # Get name and path
-                character_name = ""
-                max_retry = 5
-                retry = 0
-                while retry < max_retry and (
-                    not character_name or character_name in characters_seen
-                ):
-                    try:
-                        (self._scan_sleep(0.7) if prev_trailblazer else None)
-                        character_name = (
-                            # this has a small delay, can basically be treated as a sleep
-                            self._get_character_name()
-                        )
-                        character_img = self._screenshot.screenshot_character()
+        prev_trailblazer = False  # https://github.com/kel-z/HSR-Scanner/issues/49#issuecomment-1936613741
+        max_retry = 3
+        while i < character_total:
+            # Get name and path
+            character_name = ""
+            retry = 0
+            while retry < max_retry and (
+                not character_name or character_name in characters_seen
+            ):
+                try:
+                    (self._scan_sleep(0.7) if prev_trailblazer else None)
+                    character_name = (
+                        # this has a small delay, can basically be treated as a sleep
+                        self._get_character_name()
+                    )
+                    character_img = self._screenshot.screenshot_character()
 
-                        # Trailblazer is the most prone to errors, need to ensure
-                        # that all the elements have loaded before taking screenshots
-                        # at the cost of small delay on Trailblazer
-                        is_trailblazer = char_parser.is_trailblazer(character_img)
-                        if is_trailblazer:
-                            self._scan_sleep(0.7)
-                            character_name = self._get_character_name()
+                    # Trailblazer is the most prone to errors, need to ensure
+                    # that all the elements have loaded before taking screenshots
+                    # at the cost of small delay on Trailblazer
+                    is_trailblazer = char_parser.is_trailblazer(character_img)
+                    if is_trailblazer:
+                        self._scan_sleep(0.7)
 
-                        path, character_name = map(
-                            str.strip, character_name.split("/")[:2]
-                        )
-                        character_name, path = char_parser.get_closest_name_and_path(
-                            character_name, path, is_trailblazer
-                        )
+                    path, character_name = map(str.strip, character_name.split("/")[:2])
+                    character_name, path = char_parser.get_closest_name_and_path(
+                        character_name, path, is_trailblazer
+                    )
 
-                        if character_name in characters_seen:
-                            self._log(
-                                f"Parsed duplicate character '{character_name}'. Retrying... ({retry + 1}/{max_retry})",
-                                LogLevel.WARNING,
-                            )
-                            self._scan_sleep(1)
-                    except Exception as e:
+                    if character_name in characters_seen:
                         self._log(
-                            f"Failed to parse character name. Got error: {e}. Retrying... ({retry + 1}/{max_retry})",
+                            f"Parsed duplicate character '{character_name}'. Retrying... ({retry + 1}/{max_retry})",
                             LogLevel.WARNING,
                         )
-                        character_name = ""
                         self._scan_sleep(1)
-                    retry += 1
-
-                if not character_name:
+                except Exception as e:
                     self._log(
-                        f"Failed to parse character name. Got '{character_name}' instead. Ending scan early.",
-                        LogLevel.ERROR,
+                        f"Failed to parse character name. Got error: {e}. Retrying... ({retry + 1}/{max_retry})",
+                        LogLevel.WARNING,
                     )
-                    return tasks
+                    character_name = ""
+                    self._scan_sleep(1)
+                retry += 1
 
-                if character_name in characters_seen:
-                    self._log(
-                        f"Duplicate character '{path} / {character_name}' scanned. Continuing scan anyway.",
-                        LogLevel.ERROR,
-                    )
-                else:
-                    characters_seen.add(character_name)
-                    self._log(
-                        f"Character {i + 1}: {path} / {character_name}", LogLevel.TRACE
-                    )
-                prev_trailblazer = character_name.startswith("Trailblazer")
+            if not character_name:
+                self._log(
+                    f"Failed to parse character name. Got '{character_name}' instead. Ending scan early.",
+                    LogLevel.ERROR,
+                )
+                return tasks
 
-                # Get ascension by counting ascension stars
-                ascension_pos = nav_data["ascension_start"]
-                ascension = 0
-                for _ in range(6):
-                    pixel = pyautogui.pixel(
-                        *self._nav.translate_percent_to_coords(*ascension_pos)
+            if character_name in characters_seen:
+                self._log(
+                    f"Duplicate character '{path} / {character_name}' scanned (Did you move your mouse during the scan?). Moving onto next character...",
+                    LogLevel.ERROR,
+                )
+                self._nav.enter_gamepad()
+                self._nav.press_gamepad_rb()
+                self._scan_sleep(0.3)
+                continue
+            else:
+                characters_seen.add(character_name)
+                self._log(
+                    f"Character {i + 1}: {path} / {character_name}", LogLevel.TRACE
+                )
+            prev_trailblazer = character_name.startswith("Trailblazer")
+
+            # Get ascension by counting ascension stars
+            ascension_pos = nav_data[ASCENSION_START]
+            ascension = 0
+            for _ in range(6):
+                pixel = pyautogui.pixel(
+                    *self._nav.translate_percent_to_coords(*ascension_pos)
+                )
+                dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
+                if dist > 100:
+                    break
+
+                ascension += 1
+                ascension_pos = (
+                    ascension_pos[0] + nav_data[ASCENSION_OFFSET_X],
+                    ascension_pos[1],
+                )
+
+            res[i] = {
+                "name": character_name,
+                "path": path,
+                "ascension": ascension,
+                "level": self._screenshot.screenshot_character_level(),
+            }
+
+            # Check if character satisfies level filter
+            min_level = self._config[FILTERS][CHAR_FILTERS].get(MIN_LEVEL, 1)
+            if min_level > 1:
+                res[i][CHAR_LEVEL] = character_level = char_parser.get_level(
+                    res[i][CHAR_LEVEL]
+                )
+                if character_level < min_level and i < 4:
+                    self._log(
+                        f"{character_name} is below minimum level filter (got level {character_level}). Skipping...",
+                        LogLevel.TRACE,
                     )
-                    dist = sum([(a - b) ** 2 for a, b in zip(pixel, (255, 222, 152))])
-                    if dist > 100:
+                    res[i] = {}
+
+                    # Don't go right if we are on the last character
+                    if i == character_total - 1:
                         break
-
-                    ascension += 1
-                    ascension_pos = (
-                        ascension_pos[0] + nav_data["ascension_offset_x"],
-                        ascension_pos[1],
-                    )
-
-                curr_page_res[i] = {
-                    "name": character_name,
-                    "path": path,
-                    "ascension": ascension,
-                    "level": self._screenshot.screenshot_character_level(),
-                }
-
-                # Check if character satisfies level filter
-                min_level = self._config["filters"]["character"].get("min_level", 1)
-                if min_level > 1:
-                    curr_page_res[i]["level"] = character_level = char_parser.get_level(
-                        curr_page_res[i]["level"]
-                    )
-                    if (
-                        character_level < min_level
-                        and character_total - character_count < 4
-                    ):
-                        self._log(
-                            f"{character_name} is below minimum level filter (got level {character_level}). Skipping...",
-                            LogLevel.TRACE,
-                        )
-                        curr_page_res[i] = {}
-                        i += 1
-                        continue
-                    elif character_level < min_level:
-                        self._log(
-                            f"Reached minimum level filter (got level {character_level} for {character_name}).",
-                        )
-                        character_count = 0
-                        i_stop = i
-                        curr_page_res = curr_page_res[:i]
-                        break
-
-                # Update UI count
-                self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
-                i += 1
-
-            self._log(
-                f"Page {self._ceildiv(len(characters_seen), nav_data['chars_per_scan'])}: {', '.join([c['name'] for c in curr_page_res if c])}",
-                LogLevel.TRACE,
-            )
-
-            # Traces tab
-            i = 0
-            self._nav.move_cursor_to(*nav_data["traces_button"])
-            time.sleep(0.05)
-            self._nav.click()
-            self._nav_sleep(0.4)
-            while i < i_stop:
-                if not curr_page_res[i]:
                     i += 1
+                    self._nav.press_gamepad_rb()
+                    self._scan_sleep(0.1)
                     continue
-                self._nav.move_cursor_to(
-                    character_x + i * nav_data["offset_x"], character_y
-                )
-                time.sleep(0.05)
-                self._nav.click()
-                self._scan_sleep(0.6)
-                path_key = curr_page_res[i]["path"].split(" ")[-1].lower()
-                traces_dict = self._screenshot.screenshot_character_traces(path_key)
-                curr_page_res[i]["traces"] = {
-                    "levels": traces_dict,
-                    "unlocks": {},
-                }
-                for k, v in nav_data["traces"][path_key].items():
-                    # Trace is unlocked if pixel is white
-                    pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
-                    dist = min(
-                        sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
-                        sum([(a - b) ** 2 for a, b in zip(pixel, (178, 200, 255))]),
+                elif character_level < min_level:
+                    self._log(
+                        f"Reached minimum level filter (got level {character_level} for {character_name}).",
                     )
-                    curr_page_res[i]["traces"]["unlocks"][k] = dist < 3000
-                i += 1
+                    res = res[:i]
+                    i -= 1
+                    self._nav.press_gamepad_lb()
+                    self._scan_sleep(0.1)
+                    break
 
-            # Eidolons tab
-            i = 0
-            self._nav.move_cursor_to(*nav_data["eidolons_button"])
-            time.sleep(0.05)
-            self._nav.click()
-            self._nav_sleep(1.5 if character_total == character_count else 0.9)
-            while i < i_stop:
-                if not curr_page_res[i]:
-                    i += 1
-                    continue
-                self._nav.move_cursor_to(
-                    character_x + i * nav_data["offset_x"], character_y
+            # Update UI count
+            self.update_signal.emit(IncrementType.CHARACTER_ADD.value)
+
+            # Don't go right if we are on the last character
+            if i == character_total - 1:
+                break
+            i += 1
+            self._nav.press_gamepad_rb()
+            self._scan_sleep(0.3)
+        self._nav.exit_gamepad()
+
+        # Traces tab
+        self._nav.move_cursor_to(*nav_data[TRACES_BUTTON])
+        time.sleep(0.05)
+        self._nav.click()
+        self._nav_sleep(2)
+        self._nav.enter_gamepad()
+        while i >= 0:
+            if not res[i]:
+                # Don't go left if we are on the first character
+                if i == 0:
+                    break
+                i -= 1
+                self._nav.press_gamepad_lb()
+                self._scan_sleep(0.1)
+                continue
+            path_key = res[i][CHAR_PATH].split(" ")[-1].lower()
+            traces_dict = self._screenshot.screenshot_character_traces(path_key)
+            res[i][CHAR_TRACES] = {
+                TRACES_LEVELS: traces_dict,
+                TRACES_UNLOCKS: {},
+            }
+            for k, v in nav_data[TRACES][path_key].items():
+                # Trace is unlocked if pixel is white
+                pixel = pyautogui.pixel(*self._nav.translate_percent_to_coords(*v))
+                dist = min(
+                    sum([(a - b) ** 2 for a, b in zip(pixel, (255, 255, 255))]),
+                    sum([(a - b) ** 2 for a, b in zip(pixel, (178, 200, 255))]),
                 )
-                time.sleep(0.05)
-                self._nav.click()
-                self._scan_sleep(0.5)
-                curr_page_res[i][
-                    "eidolon_images"
-                ] = self._screenshot.screenshot_character_eidolons()
+                res[i][CHAR_TRACES][TRACES_UNLOCKS][k] = dist < 3000
+
+            # Don't go left if we are on the first character
+            if i == 0:
+                break
+            i -= 1
+            self._nav.press_gamepad_lb()
+            self._scan_sleep(0.6)
+        self._nav.exit_gamepad()
+
+        # Eidolons tab
+        self._nav.move_cursor_to(*nav_data[EIDOLONS_BUTTON])
+        time.sleep(0.05)
+        self._nav.click()
+        self._nav_sleep(1.5)
+        self._nav.enter_gamepad()
+        while i < len(res):
+            if not res[i]:
                 i += 1
+                self._nav.press_gamepad_rb()
+                self._scan_sleep(0.1)
+                continue
+            res[i][EIDOLON_IMAGES] = self._screenshot.screenshot_character_eidolons()
+            i += 1
+            self._nav.press_gamepad_rb()
+            self._scan_sleep(0.5)
+        self._nav.exit_gamepad()
 
-            for stats_dict in curr_page_res:
-                character_count -= 1
-                if not stats_dict:
-                    continue
-                task = asyncio.to_thread(char_parser.parse, stats_dict)
-                tasks.add(task)
-
-            # Drag to next page
-            if character_count > 0:
-                character_x, character_y = nav_data["char_start"]
-                character_x += nav_data["offset_x"] * nav_data["chars_per_scan"]
-                self._nav.move_cursor_to(character_x, character_y)
-                time.sleep(0.05)
-                self._nav.click()
-                time.sleep(0.05)
-                self._nav.drag_scroll(
-                    character_x,
-                    character_y,
-                    nav_data["char_start"][0] - 0.031,
-                    character_y,
-                )
+        # Queue character data for parsing
+        for stats_dict in res:
+            if not stats_dict:
+                continue
+            task = asyncio.to_thread(char_parser.parse, stats_dict)
+            tasks.add(task)
 
         self._nav_sleep(1)
         self._nav.key_tap(Key.esc)
@@ -691,7 +708,7 @@ class HSRScanner(QObject):
         :param msg: The message to log
         :param level: The log level
         """
-        if self._config["debug"] or level in [
+        if self._config[CONFIG_DEBUG] or level in [
             LogLevel.INFO,
             LogLevel.WARNING,
             LogLevel.ERROR,
@@ -716,7 +733,7 @@ class HSRScanner(QObject):
         :param seconds: The amount of time to sleep
         :raises InterruptedScanException: Thrown if the scan is interrupted
         """
-        time.sleep(seconds + self._config["nav_delay"])
+        time.sleep(seconds + self._config[CONFIG_NAV_DELAY])
         if self._interrupt_event.is_set():
             raise InterruptedScanException()
 
@@ -726,7 +743,7 @@ class HSRScanner(QObject):
         :param seconds: The amount of time to sleep
         :raises InterruptedScanException: Thrown if the scan is interrupted
         """
-        time.sleep(seconds + self._config["scan_delay"])
+        time.sleep(seconds + self._config[CONFIG_SCAN_DELAY])
         if self._interrupt_event.is_set():
             raise InterruptedScanException()
 

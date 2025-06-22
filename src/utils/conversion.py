@@ -1,5 +1,47 @@
 from typing import Callable
 
+from models.const import (
+    ABILITY_1,
+    ABILITY_2,
+    ABILITY_3,
+    BASIC,
+    CHAR_ASCENSION,
+    CHAR_EIDOLON,
+    CHAR_ID,
+    CHAR_LEVEL,
+    CHAR_SKILLS,
+    CHAR_TRACES,
+    LC_ASCENSION,
+    LC_LEVEL,
+    LC_LOCATION,
+    LC_LOCK,
+    LC_NAME,
+    LC_SUPERIMPOSITION,
+    RELIC_DISCARD,
+    RELIC_LEVEL,
+    RELIC_LOCATION,
+    RELIC_LOCK,
+    RELIC_MAINSTAT,
+    RELIC_NAME,
+    RELIC_RARITY,
+    RELIC_SLOT,
+    RELIC_SUBSTAT_NAME,
+    RELIC_SUBSTAT_VALUE,
+    RELIC_SUBSTATS,
+    SKILL,
+    STAT_1,
+    STAT_10,
+    STAT_2,
+    STAT_3,
+    STAT_4,
+    STAT_5,
+    STAT_6,
+    STAT_7,
+    STAT_8,
+    STAT_9,
+    TALENT,
+    ULT,
+)
 from models.game_data import GameData
 
 SRO_SLOT_MAP = {
@@ -92,30 +134,30 @@ def _convert_characters_sro(
     formatted_characters = []
     for character in characters:
         res = {
-            "key": character_key_fn(character["id"]),
-            "level": character["level"],
-            "eidolon": character["eidolon"],
-            "ascension": character["ascension"],
-            "basic": character["skills"]["basic"],
-            "skill": character["skills"]["skill"],
-            "ult": character["skills"]["ult"],
-            "talent": character["skills"]["talent"],
+            "key": character_key_fn(character[CHAR_ID]),
+            "level": character[CHAR_LEVEL],
+            "eidolon": character[CHAR_EIDOLON],
+            "ascension": character[CHAR_ASCENSION],
+            "basic": character[CHAR_SKILLS][BASIC],
+            "skill": character[CHAR_SKILLS][SKILL],
+            "ult": character[CHAR_SKILLS][ULT],
+            "talent": character[CHAR_SKILLS][TALENT],
             "bonusAbilities": {
-                1: character["traces"]["ability_1"],
-                2: character["traces"]["ability_2"],
-                3: character["traces"]["ability_3"],
+                1: character[CHAR_TRACES][ABILITY_1],
+                2: character[CHAR_TRACES][ABILITY_2],
+                3: character[CHAR_TRACES][ABILITY_3],
             },
             "statBoosts": {
-                1: character["traces"]["stat_1"],
-                2: character["traces"]["stat_2"],
-                3: character["traces"]["stat_3"],
-                4: character["traces"]["stat_4"],
-                5: character["traces"]["stat_5"],
-                6: character["traces"]["stat_6"],
-                7: character["traces"]["stat_7"],
-                8: character["traces"]["stat_8"],
-                9: character["traces"]["stat_9"],
-                10: character["traces"]["stat_10"],
+                1: character[CHAR_TRACES][STAT_1],
+                2: character[CHAR_TRACES][STAT_2],
+                3: character[CHAR_TRACES][STAT_3],
+                4: character[CHAR_TRACES][STAT_4],
+                5: character[CHAR_TRACES][STAT_5],
+                6: character[CHAR_TRACES][STAT_6],
+                7: character[CHAR_TRACES][STAT_7],
+                8: character[CHAR_TRACES][STAT_8],
+                9: character[CHAR_TRACES][STAT_9],
+                10: character[CHAR_TRACES][STAT_10],
             },
         }
         formatted_characters.append(res)
@@ -135,21 +177,21 @@ def _convert_relics_sro(
     """
     formatted_relics = []
     for relic in relics:
-        mainStatKey = SRO_MAIN_STAT_MAP[relic["mainstat"]]
-        if relic["slot"] not in ["Head", "Hands"] and relic["mainstat"] != "SPD":
-            mainStatKey += "_"
+        mainstat = SRO_MAIN_STAT_MAP[relic[RELIC_MAINSTAT]]
+        if relic[RELIC_SLOT] not in ["Head", "Hands"] and relic["mainstat"] != "SPD":
+            mainstat += "_"
 
         substats = []
-        for substat in relic["substats"]:
+        for substat in relic[RELIC_SUBSTATS]:
             try:
                 value = (
-                    round(substat["value"] / 100, 3)
-                    if substat["key"].endswith("_")
-                    else substat["value"]
+                    round(substat[RELIC_SUBSTAT_VALUE] / 100, 3)
+                    if substat[RELIC_SUBSTAT_NAME].endswith("_")
+                    else substat[RELIC_SUBSTAT_VALUE]
                 )
                 substats.append(
                     {
-                        "key": SRO_SUB_STAT_MAP[substat["key"]],
+                        "key": SRO_SUB_STAT_MAP[substat[RELIC_SUBSTAT_NAME]],
                         "value": value,
                     }
                 )
@@ -157,14 +199,14 @@ def _convert_relics_sro(
                 pass
 
         res = {
-            "setKey": sro_mappings["relic_sets"][relic["name"]],
-            "slotKey": SRO_SLOT_MAP[relic["slot"]],
-            "level": relic["level"],
-            "rarity": relic["rarity"],
-            "mainStatKey": mainStatKey,
-            "location": character_key_fn(relic["location"]),
-            "lock": relic["lock"],
-            "discard": relic["discard"],
+            "setKey": sro_mappings["relic_sets"][relic[RELIC_NAME]],
+            "slotKey": SRO_SLOT_MAP[relic[RELIC_SLOT]],
+            "level": relic[RELIC_LEVEL],
+            "rarity": relic[RELIC_RARITY],
+            "mainstat": mainstat,
+            "location": character_key_fn(relic[RELIC_LOCATION]),
+            "lock": relic[RELIC_LOCK],
+            "discard": relic[RELIC_DISCARD],
             "substats": substats,
         }
         formatted_relics.append(res)
@@ -185,12 +227,12 @@ def _convert_light_cones_sro(
     formatted_light_cones = []
     for light_cone in light_cones:
         res = {
-            "key": sro_mappings["light_cones"][light_cone["name"]],
-            "level": light_cone["level"],
-            "ascension": light_cone["ascension"],
-            "superimpose": light_cone["superimposition"],
-            "location": character_key_fn(light_cone["location"]),
-            "lock": light_cone["lock"],
+            "key": sro_mappings["light_cones"][light_cone[LC_NAME]],
+            "level": light_cone[LC_LEVEL],
+            "ascension": light_cone[LC_ASCENSION],
+            "superimpose": light_cone[LC_SUPERIMPOSITION],
+            "location": character_key_fn(light_cone[LC_LOCATION]),
+            "lock": light_cone[LC_LOCK],
         }
         formatted_light_cones.append(res)
 
