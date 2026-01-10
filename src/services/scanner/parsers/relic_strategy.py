@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image as PILImage
 from PIL.Image import Image
-from pyautogui import locate
+from pyautogui import locate, ImageNotFoundException
 
 from config.const import EQUIPPED, EQUIPPED_AVATAR, EQUIPPED_AVATAR_OFFSET, LOCK
 from config.relic_scan import RELIC_NAV_DATA
@@ -134,7 +134,7 @@ class RelicStrategy(BaseParseStrategy):
 
         if key == RELIC_NAME:
             return image_to_string(
-                data, "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-", 6
+                data, "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-", 6
             )
         elif key == RELIC_LEVEL:
             return image_to_string(data, "0123456789S", 7, True).replace("S", "5")
@@ -259,6 +259,8 @@ class RelicStrategy(BaseParseStrategy):
             try:
                 lock_img = self._lock_icon.resize((min_dim, min_dim))
                 lock = locate(lock_img, lock, confidence=0.3) is not None
+            except ImageNotFoundException:
+                lock = False
             except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
                 self._log(
                     f"Relic UID {uid}: Failed to parse lock. Setting to False.",
@@ -269,6 +271,8 @@ class RelicStrategy(BaseParseStrategy):
             try:
                 discard_img = self._discard_icon.resize((min_dim, min_dim))
                 discard = locate(discard_img, discard, confidence=0.3) is not None
+            except ImageNotFoundException:
+                discard = False
             except Exception:
                 self._log(
                     f"Relic UID {uid}: Failed to parse discard. Setting to False.",

@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from PIL import Image as PILImage
 from PIL.Image import Image
-from pyautogui import locate
+from pyautogui import locate, ImageNotFoundException
 from PyQt6.QtCore import QSettings, pyqtBoundSignal
 
 from enums.increment_type import IncrementType
@@ -263,12 +263,15 @@ class CharacterParser:
         """
         for k, trailblazer_img in self._trailblazer_imgs.items():
             trailblazer_img = trailblazer_img.resize(character_img.size)
-            if locate(character_img, trailblazer_img, confidence=0.8) is not None:
-                QSettings(KEL_Z, HSR_SCANNER).setValue(IS_STELLE, k == "F")
-                self._log(
-                    f'{"Stelle" if k == "F" else "Caelus"} detected.', LogLevel.DEBUG
-                )
-                return True
+            try:
+                if locate(character_img, trailblazer_img, confidence=0.8):
+                    QSettings(KEL_Z, HSR_SCANNER).setValue(IS_STELLE, k == "F")
+                    self._log(
+                        f'{"Stelle" if k == "F" else "Caelus"} detected.', LogLevel.DEBUG
+                    )
+                    return True
+            except ImageNotFoundException:
+                pass
 
         return False
 

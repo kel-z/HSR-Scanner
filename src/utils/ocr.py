@@ -2,7 +2,7 @@ import os
 
 import cv2
 import numpy as np
-import pytesseract
+from utils import patched_pytesseract as pytesseract
 from PIL import Image as PILImage
 from PIL.Image import Image
 
@@ -10,8 +10,8 @@ from utils.data import resource_path
 
 # set environment variables for Tesseract
 os.environ["TESSDATA_PREFIX"] = resource_path("assets/tesseract/tessdata")
-pytesseract.pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
-
+pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
+DIN_ALTERNATE = "DIN-Alternate"
 
 def preprocess_img(img: Image) -> Image:
     """Generic image preprocessing function
@@ -41,14 +41,14 @@ def image_to_string(
     :param strip_text: The flag to strip text, defaults to True
     :return: The string representation of the image
     """
-    config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm} -l DIN-Alternate'
+    config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
 
     res = ""
     if not force_preprocess:
-        res = pytesseract.image_to_string(img, config=config)
+        res = pytesseract.image_to_string(img, config=config, lang=DIN_ALTERNATE)
 
     if not res.strip():
-        res = pytesseract.image_to_string(preprocess_func(img), config=config)
+        res = pytesseract.image_to_string(preprocess_func(img), config=config, lang=DIN_ALTERNATE)
 
     if remove_newline:
         res = res.replace("\n", " ")
