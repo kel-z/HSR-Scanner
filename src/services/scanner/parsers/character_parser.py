@@ -7,6 +7,7 @@ from PIL.Image import Image
 from pyautogui import locate, ImageNotFoundException
 from PyQt6.QtCore import QSettings, pyqtBoundSignal
 
+from config.const import ELATION
 from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from models.const import (
@@ -105,6 +106,9 @@ class CharacterParser:
                     SKILL: 0,
                     TALENT: 0,
                 }
+
+            if path == "Elation":
+                character[CHAR_SKILLS][ELATION] = 0
 
             level = stats_dict[CHAR_LEVEL]
             try:

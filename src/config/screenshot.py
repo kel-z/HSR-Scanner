@@ -6,6 +6,7 @@ from config.const import (
     CHEST,
     COUNT,
     DESTRUCTION,
+    ELATION,
     EQUIPPED,
     EQUIPPED_AVATAR,
     EQUIPPED_AVATAR_OFFSET,
@@ -116,6 +117,13 @@ SCREENSHOT_COORDS = {
                     CHAR_MEMOSPRITE + "_" + SKILL: (0.59, 0.5486111111111112),
                     CHAR_MEMOSPRITE + "_" + TALENT: (0.59, 0.3862777777777778),
                 },
+                ELATION: {
+                    BASIC: (0.5057291666666667, 0.35),
+                    SKILL: (0.6520833333333333, 0.35),
+                    ULT: (0.5776041666666667, 0.45740740740740743),
+                    TALENT: (0.5776041666666667, 0.5944444444444444),
+                    ELATION: (0.5776041666666667, 0.29907407407407405)
+                }
             },
         },
         # stats screenshot of selected item in inventory screen

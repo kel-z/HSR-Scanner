@@ -36,6 +36,7 @@ BASIC = "basic"
 SKILL = "skill"
 ULT = "ult"
 TALENT = "talent"
+ELATION = "elation"
 
 TRACES_UNLOCKS = "unlocks"
 TRACES_LEVELS = "levels"
