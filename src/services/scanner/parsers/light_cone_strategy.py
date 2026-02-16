@@ -18,7 +18,7 @@ from models.const import (
 from type_defs.stats_dict import LightConeDict
 
 from PIL.Image import Image
-from pyautogui import locate
+from pyautogui import locate, ImageNotFoundException
 
 from config.light_cone_scan import LIGHT_CONE_NAV_DATA
 from enums.increment_type import IncrementType
@@ -137,7 +137,7 @@ class LightConeStrategy(BaseParseStrategy):
             name, _ = self._game_data.get_closest_light_cone_name(
                 image_to_string(
                     data,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ 'abcedfghijklmnopqrstuvwxyz-",
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
                     6,
                 )
             )
@@ -223,6 +223,8 @@ class LightConeStrategy(BaseParseStrategy):
 
                 # Check if locked by image matching
                 lock = locate(locked, lock, confidence=0.1) is not None
+            except ImageNotFoundException:
+                lock = False
             except Exception:  # https://github.com/kel-z/HSR-Scanner/issues/41
                 self._log(
                     f"Light Cone UID {uid}: Failed to parse lock. Setting to False.",

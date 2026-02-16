@@ -12,9 +12,9 @@ from PyQt6.QtCore import QSettings
 
 from models.const import HSR_SCANNER, IS_STELLE, KEL_Z
 
-GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v5/output/min/game_data_with_icons.json"
+GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v6/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
-    "https://raw.githubusercontent.com/kel-z/HSR-Data/v5/output/min/sro_key_map.json"
+    "https://raw.githubusercontent.com/kel-z/HSR-Data/v6/output/min/sro_key_map.json"
 )
 
 RELIC_MAIN_STATS = {
