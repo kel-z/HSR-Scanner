@@ -246,11 +246,11 @@ class CharacterParser:
         else:
             character_name, min_dist = self._game_data.get_closest_character_name(name)
             self._log(
-                f'Got character name "{character_name}" for string "{name}" with distance {min_dist} out of max 5.',
+                f'Got character name "{character_name}" for string "{name}" with distance {min_dist} out of max 3.',
                 LogLevel.TRACE,
             )
 
-            if int(min_dist) > 5:
+            if int(min_dist) > 3:
                 raise Exception(
                     f'Failed to get a character name: got "{character_name}".'
                 )

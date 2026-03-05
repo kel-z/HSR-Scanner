@@ -1,4 +1,6 @@
 import os
+import sys
+import threading
 
 import cv2
 import numpy as np
@@ -10,8 +12,14 @@ from utils.data import resource_path
 
 # set environment variables for Tesseract
 os.environ["TESSDATA_PREFIX"] = resource_path("assets/tesseract/tessdata")
-pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
+if sys.platform == "win32":
+    pytesseract.tesseract_cmd = resource_path("assets/tesseract/tesseract.exe")
+else:
+    pytesseract.tesseract_cmd = "tesseract"
 DIN_ALTERNATE = "DIN-Alternate"
+
+# Limit concurrent Tesseract processes to prevent system overload
+OCR_SEMAPHORE = threading.Semaphore(10)
 
 def preprocess_img(img: Image) -> Image:
     """Generic image preprocessing function
@@ -30,6 +38,7 @@ def image_to_string(
     force_preprocess=False,
     preprocess_func=preprocess_img,
     remove_newline=True,
+    lang=None,
 ) -> str:
     """Convert image to string
 
@@ -38,17 +47,63 @@ def image_to_string(
     :param psm: The page segmentation mode to use
     :param force_preprocess: The flag to force preprocessing, defaults to False
     :param preprocess_func: The preprocessing function to use, defaults to None
-    :param strip_text: The flag to strip text, defaults to True
     :return: The string representation of the image
     """
-    config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
+    if lang is None:
+        lang = DIN_ALTERNATE
+
+    tessdata_dir = resource_path("assets/tesseract/tessdata")
+
+    # Check which requested languages are bundled locally.
+    available_langs = []
+    for l in lang.split("+"):
+        if os.path.exists(os.path.join(tessdata_dir, f"{l}.traineddata")):
+            available_langs.append(l)
+
+    # Local OCR attempt uses bundled tessdata first.
+    final_lang = "+".join(available_langs) if available_langs else DIN_ALTERNATE
+    local_config = f'--tessdata-dir "{tessdata_dir}" -c tessedit_char_whitelist="{whitelist}" --psm {psm}'
+    system_config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
+
+    # If local tessdata is missing requested languages (e.g. eng), try system tessdata as fallback.
+    attempts: list[tuple[str, str]] = [(local_config, final_lang)]
+    if lang != final_lang:
+        attempts.append((system_config, lang))
+    if "eng" in lang.split("+"):
+        attempts.append((system_config, "eng"))
+
+    # Keep original order while removing duplicates.
+    dedup_attempts = []
+    seen_attempts = set()
+    for config, config_lang in attempts:
+        key = (config, config_lang)
+        if key not in seen_attempts:
+            seen_attempts.add(key)
+            dedup_attempts.append((config, config_lang))
+
+    def _ocr_with_fallback(target_img: Image) -> str:
+        last_res = ""
+        for config, config_lang in dedup_attempts:
+            try:
+                last_res = pytesseract.image_to_string(
+                    target_img, config=config, lang=config_lang
+                )
+            except Exception:
+                # Continue to the next OCR source if this language/config is unavailable.
+                continue
+
+            if last_res.strip():
+                return last_res
+
+        return last_res
 
     res = ""
-    if not force_preprocess:
-        res = pytesseract.image_to_string(img, config=config, lang=DIN_ALTERNATE)
+    with OCR_SEMAPHORE:
+        if not force_preprocess:
+            res = _ocr_with_fallback(img)
 
-    if not res.strip():
-        res = pytesseract.image_to_string(preprocess_func(img), config=config, lang=DIN_ALTERNATE)
+        if not res.strip():
+            res = _ocr_with_fallback(preprocess_func(img))
 
     if remove_newline:
         res = res.replace("\n", " ")
@@ -108,6 +163,15 @@ def preprocess_equipped_img(img: Image) -> Image:
     return _preprocess_img_by_colour_filter(img, (202, 177, 134), 75)
 
 
+def preprocess_level_img(img: Image) -> Image:
+    """Preprocess level image
+
+    :param img: The image to preprocess
+    :return: The preprocessed image
+    """
+    return _preprocess_img_by_colour_filter(img, (255, 255, 255), 100)
+
+
 def preprocess_main_stat_img(img: Image) -> Image:
     """Preprocess main stat image
 
@@ -123,7 +187,12 @@ def preprocess_sub_stat_img(img: Image) -> Image:
     :param img: The image to preprocess
     :return: The preprocessed image
     """
-    img = _preprocess_img_by_colour_filter(img, (255, 255, 255), 110)
+    # Even wider range for grayed-out inactive substats
+    img = _preprocess_img_by_colour_filter(
+        img,
+        [(255, 255, 255), (140, 140, 140)],
+        [120, 80],
+    )
     return img
 
 
@@ -178,11 +247,15 @@ def _preprocess_img_by_colour_filter(
     img_arr = cv2.bitwise_and(img_arr, img_arr, mask=mask)  # type: ignore
     img_arr = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY)  # type: ignore
 
+    # UPSCALE for better OCR
+    height, width = img_arr.shape[:2]
+    img_arr = cv2.resize(img_arr, (width * 3, height * 3), interpolation=cv2.INTER_CUBIC)
+
     # blur
     img_arr = cv2.GaussianBlur(img_arr, (3, 3), 1)  # type: ignore
 
-    # brighten image
-    img_arr = cv2.convertScaleAbs(img_arr, alpha=2, beta=0)  # type: ignore
+    # better thresholding
+    _, img_arr = cv2.threshold(img_arr, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # invert
     img_arr = 255 - img_arr

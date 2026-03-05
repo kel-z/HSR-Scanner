@@ -173,6 +173,7 @@ class HSRScanner(QObject):
                     self.update_signal,
                     self._interrupt_event,
                     self._config[CONFIG_DEBUG],
+                    self._config[CONFIG_DEBUG_OUTPUT_LOCATION],
                 )
             )
             (
@@ -191,6 +192,7 @@ class HSRScanner(QObject):
                     self.update_signal,
                     self._interrupt_event,
                     self._config[CONFIG_DEBUG],
+                    self._config[CONFIG_DEBUG_OUTPUT_LOCATION],
                 )
             )
             (
