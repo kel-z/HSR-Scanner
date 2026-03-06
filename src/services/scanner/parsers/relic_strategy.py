@@ -606,18 +606,16 @@ class RelicStrategy(BaseParseStrategy):
 
         # check valid number of substats
         substats_len = len(substats)
-        # Game update: all relics now have 4 substats (one might be inactive/grayed)
-        # We still calculate "expected" for internal validation of roll totals
-        expected_substats = min(rarity - 2 + int(level / 3), 4)
-        if substats_len < 4:
+        min_substats = min(rarity - 2 + int(level / 3), 4)
+        if substats_len < min_substats:
             self._log(
-                f"Relic UID {uid} has {substats_len} substat(s), but the minimum for modern relics is 4.",
+                f"Relic UID {uid} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}.",
                 LogLevel.ERROR,
             )
             return
 
         # check valid roll value total
-        min_roll_value = round(expected_substats * 0.8, 1)
+        min_roll_value = round(min_substats * 0.8, 1)
         max_roll_value = round(rarity - 1 + int(level / 3), 1)
         total = 0
         for substat in substats:
