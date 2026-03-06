@@ -23,6 +23,7 @@ from models.const import (
     CONFIG_MIN_CHAR_LEVEL,
     CONFIG_MIN_LC_LEVEL,
     CONFIG_MIN_LC_RARITY,
+    CONFIG_OCR_CONCURRENCY,
     CONFIG_MIN_RELIC_LEVEL,
     CONFIG_MIN_RELIC_RARITY,
     CONFIG_NAV_DELAY,
@@ -35,6 +36,7 @@ from models.const import (
     CONFIG_SCAN_LC,
     CONFIG_SCAN_RELICS,
     CONFIG_SRO_FORMAT,
+    DEFAULT_OCR_CONCURRENCY,
     FILTERS,
     HSR_SCANNER,
     KEL_Z,
@@ -280,6 +282,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(CONFIG_RECENT_RELICS_NUM, 8)
         self._settings.setValue(CONFIG_RECENT_RELICS_FIVE_STAR, True)
         self._settings.setValue(CONFIG_DEBUG_MODE, False)
+        self._settings.setValue(CONFIG_OCR_CONCURRENCY, DEFAULT_OCR_CONCURRENCY)
         self._settings.setValue(CONFIG_INCLUDE_UID, False)
         self._settings.setValue(CONFIG_PLAY_SOUND, True)
         self.load_settings()
@@ -454,6 +457,18 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # debug mode
         config[CONFIG_DEBUG] = self.checkBoxDebugMode.isChecked()
         config[CONFIG_DEBUG_OUTPUT_LOCATION] = None
+
+        try:
+            config[CONFIG_OCR_CONCURRENCY] = max(
+                1,
+                int(
+                    self._settings.value(
+                        CONFIG_OCR_CONCURRENCY, DEFAULT_OCR_CONCURRENCY
+                    )
+                ),
+            )
+        except (TypeError, ValueError):
+            config[CONFIG_OCR_CONCURRENCY] = DEFAULT_OCR_CONCURRENCY
 
         if config[CONFIG_DEBUG]:
             config[CONFIG_DEBUG_OUTPUT_LOCATION] = create_debug_folder(

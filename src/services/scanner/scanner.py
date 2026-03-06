@@ -34,6 +34,7 @@ from models.const import (
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_NAV_DELAY,
+    CONFIG_OCR_CONCURRENCY,
     CONFIG_RECENT_RELICS_NUM,
     CONFIG_SCAN_CHARACTERS,
     CONFIG_SCAN_DELAY,
@@ -57,7 +58,12 @@ from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
 from utils.navigation import Navigation
-from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
+from utils.ocr import (
+    image_to_string,
+    preprocess_char_count_img,
+    preprocess_uid_img,
+    set_ocr_concurrency,
+)
 from utils.screenshot import Screenshot
 from utils.window import bring_window_to_foreground
 
@@ -111,6 +117,7 @@ class HSRScanner(QObject):
         self._config = config
         self._game_data = game_data
         self._scan_mode = scan_mode
+        set_ocr_concurrency(self._config.get(CONFIG_OCR_CONCURRENCY))
 
         self._nav = Navigation(self._hwnd)
 

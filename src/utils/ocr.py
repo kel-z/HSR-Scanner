@@ -8,6 +8,7 @@ from utils import patched_pytesseract as pytesseract
 from PIL import Image as PILImage
 from PIL.Image import Image
 
+from models.const import DEFAULT_OCR_CONCURRENCY
 from utils.data import resource_path
 
 # set environment variables for Tesseract
@@ -19,7 +20,23 @@ else:
 DIN_ALTERNATE = "DIN-Alternate"
 
 # Limit concurrent Tesseract processes to prevent system overload
-OCR_SEMAPHORE = threading.Semaphore(10)
+OCR_SEMAPHORE = threading.Semaphore(DEFAULT_OCR_CONCURRENCY)
+
+
+def set_ocr_concurrency(limit: int | None) -> int:
+    """Set the maximum number of concurrent OCR calls."""
+    global OCR_SEMAPHORE
+
+    try:
+        parsed_limit = int(limit) if limit is not None else DEFAULT_OCR_CONCURRENCY
+    except (TypeError, ValueError):
+        parsed_limit = DEFAULT_OCR_CONCURRENCY
+
+    parsed_limit = max(1, parsed_limit)
+    OCR_SEMAPHORE = threading.Semaphore(parsed_limit)
+
+    return parsed_limit
+
 
 def preprocess_img(img: Image) -> Image:
     """Generic image preprocessing function
