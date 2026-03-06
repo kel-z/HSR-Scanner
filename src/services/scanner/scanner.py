@@ -1,5 +1,6 @@
 import asyncio
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import pyautogui
 import win32gui
@@ -117,7 +118,9 @@ class HSRScanner(QObject):
         self._config = config
         self._game_data = game_data
         self._scan_mode = scan_mode
-        set_ocr_concurrency(self._config.get(CONFIG_OCR_CONCURRENCY))
+        self._ocr_concurrency = set_ocr_concurrency(
+            self._config.get(CONFIG_OCR_CONCURRENCY)
+        )
 
         self._nav = Navigation(self._hwnd)
 
@@ -138,6 +141,18 @@ class HSRScanner(QObject):
 
         self._interrupt_event = asyncio.Event()
 
+    @property
+    def ocr_concurrency(self) -> int:
+        """Return the resolved OCR concurrency limit for this scan."""
+        return self._ocr_concurrency
+
+    def create_executor(self) -> ThreadPoolExecutor:
+        """Create the executor used by asyncio.to_thread during OCR parsing."""
+        return ThreadPoolExecutor(
+            max_workers=self._ocr_concurrency,
+            thread_name_prefix="hsr-scanner-ocr",
+        )
+
     async def start_scan(self) -> dict:
         """Starts the scan
 
@@ -145,6 +160,10 @@ class HSRScanner(QObject):
         :return: The scan results
         """
         self._log("Config: " + str(self._config), LogLevel.DEBUG)
+        self._log(
+            f"OCR concurrency limit: {self._ocr_concurrency}",
+            LogLevel.DEBUG,
+        )
 
         if not self._is_en:
             self._log(

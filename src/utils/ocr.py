@@ -10,6 +10,7 @@ from PIL.Image import Image
 
 from models.const import DEFAULT_OCR_CONCURRENCY
 from utils.data import resource_path
+from utils.ocr_threads import clamp_thread_count
 
 # set environment variables for Tesseract
 os.environ["TESSDATA_PREFIX"] = resource_path("assets/tesseract/tessdata")
@@ -26,13 +27,8 @@ OCR_SEMAPHORE = threading.Semaphore(DEFAULT_OCR_CONCURRENCY)
 def set_ocr_concurrency(limit: int | None) -> int:
     """Set the maximum number of concurrent OCR calls."""
     global OCR_SEMAPHORE
-
-    try:
-        parsed_limit = int(limit) if limit is not None else DEFAULT_OCR_CONCURRENCY
-    except (TypeError, ValueError):
-        parsed_limit = DEFAULT_OCR_CONCURRENCY
-
-    parsed_limit = max(1, parsed_limit)
+    resolved_limit = DEFAULT_OCR_CONCURRENCY if limit is None else limit
+    parsed_limit = clamp_thread_count(resolved_limit)
     OCR_SEMAPHORE = threading.Semaphore(parsed_limit)
 
     return parsed_limit

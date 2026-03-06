@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import closing
 import datetime
 import sys
 import traceback
@@ -36,7 +37,6 @@ from models.const import (
     CONFIG_SCAN_LC,
     CONFIG_SCAN_RELICS,
     CONFIG_SRO_FORMAT,
-    DEFAULT_OCR_CONCURRENCY,
     FILTERS,
     HSR_SCANNER,
     KEL_Z,
@@ -56,11 +56,19 @@ from utils.data import (
     save_to_json,
     save_to_txt,
 )
+from utils.ocr_threads import (
+    clamp_thread_count,
+    get_host_thread_count,
+    percent_from_threads,
+    threads_from_percent,
+)
 from utils.window import bring_window_to_foreground, flash_window
 
 
 class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     """HSRScannerUI handles the UI for the HSR Scanner application"""
+
+    OCR_CONCURRENCY_DEFAULT_PERCENT = 75
 
     def __init__(self) -> None:
         """Constructor"""
@@ -70,6 +78,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._listener = InterruptListener()
         self._is_running = False
         self._settings = QSettings(KEL_Z, HSR_SCANNER)
+        self._host_threads = get_host_thread_count()
+        self._ocr_concurrency_threads = threads_from_percent(
+            self.OCR_CONCURRENCY_DEFAULT_PERCENT, self._host_threads
+        )
 
         # fetch game data
         self._fetch_game_data_thread = FetchGameDataThread()
@@ -142,6 +154,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.pushButtonChangeLocation.clicked.connect(self.change_output_location)
         self.pushButtonOpenLocation.clicked.connect(self.open_output_location)
         self.pushButtonRestoreDefaults.clicked.connect(self.reset_settings)
+        self.horizontalSliderOCRConcurrency.valueChanged.connect(
+            self.handle_ocr_concurrency_slider
+        )
 
         self.load_settings()
 
@@ -220,6 +235,21 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self._settings.value(CONFIG_PLAY_SOUND, True) == "true"
         )
 
+        saved_ocr_concurrency = self._settings.value(CONFIG_OCR_CONCURRENCY, None)
+        if saved_ocr_concurrency is None:
+            default_threads = self._get_default_ocr_concurrency_threads()
+            self._settings.setValue(CONFIG_OCR_CONCURRENCY, default_threads)
+            self._set_ocr_concurrency_controls(
+                self.OCR_CONCURRENCY_DEFAULT_PERCENT, default_threads
+            )
+            return
+
+        resolved_threads = clamp_thread_count(saved_ocr_concurrency, self._host_threads)
+        resolved_percent = percent_from_threads(resolved_threads, self._host_threads)
+        if str(saved_ocr_concurrency) != str(resolved_threads):
+            self._settings.setValue(CONFIG_OCR_CONCURRENCY, resolved_threads)
+        self._set_ocr_concurrency_controls(resolved_percent, resolved_threads)
+
     def save_settings(self) -> None:
         """Saves the settings for the scan"""
         self._settings.setValue(
@@ -262,9 +292,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self._settings.setValue(CONFIG_INCLUDE_UID, self.checkBoxIncludeUid.isChecked())
         self._settings.setValue(CONFIG_PLAY_SOUND, self.checkBoxPlaySound.isChecked())
+        self._settings.setValue(CONFIG_OCR_CONCURRENCY, self._ocr_concurrency_threads)
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
+        default_ocr_threads = self._get_default_ocr_concurrency_threads()
         self._settings.setValue(CONFIG_OUTPUT_LOCATION, executable_path("StarRailData"))
         self._settings.setValue(CONFIG_INVENTORY_KEY, "b")
         self._settings.setValue(CONFIG_CHARACTERS_KEY, "c")
@@ -282,10 +314,14 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(CONFIG_RECENT_RELICS_NUM, 8)
         self._settings.setValue(CONFIG_RECENT_RELICS_FIVE_STAR, True)
         self._settings.setValue(CONFIG_DEBUG_MODE, False)
-        self._settings.setValue(CONFIG_OCR_CONCURRENCY, DEFAULT_OCR_CONCURRENCY)
+        self._settings.setValue(CONFIG_OCR_CONCURRENCY, default_ocr_threads)
         self._settings.setValue(CONFIG_INCLUDE_UID, False)
         self._settings.setValue(CONFIG_PLAY_SOUND, True)
         self.load_settings()
+        self._set_ocr_concurrency_controls(
+            self.OCR_CONCURRENCY_DEFAULT_PERCENT,
+            default_ocr_threads,
+        )
 
     def reset_fields(self) -> None:
         """Resets the fields on the UI"""
@@ -457,18 +493,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # debug mode
         config[CONFIG_DEBUG] = self.checkBoxDebugMode.isChecked()
         config[CONFIG_DEBUG_OUTPUT_LOCATION] = None
-
-        try:
-            config[CONFIG_OCR_CONCURRENCY] = max(
-                1,
-                int(
-                    self._settings.value(
-                        CONFIG_OCR_CONCURRENCY, DEFAULT_OCR_CONCURRENCY
-                    )
-                ),
-            )
-        except (TypeError, ValueError):
-            config[CONFIG_OCR_CONCURRENCY] = DEFAULT_OCR_CONCURRENCY
+        config[CONFIG_OCR_CONCURRENCY] = self._ocr_concurrency_threads
 
         if config[CONFIG_DEBUG]:
             config[CONFIG_DEBUG_OUTPUT_LOCATION] = create_debug_folder(
@@ -541,6 +566,31 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         flash_window(self._hwnd)
         if self.checkBoxPlaySound.isChecked():
             winsound.MessageBeep()
+
+    def _get_default_ocr_concurrency_threads(self) -> int:
+        """Return the default OCR concurrency for the current host."""
+        return threads_from_percent(
+            self.OCR_CONCURRENCY_DEFAULT_PERCENT,
+            self._host_threads,
+        )
+
+    def _set_ocr_concurrency_controls(self, percent: int, threads: int) -> None:
+        """Sync the OCR slider, cached thread count, and readout label."""
+        self._ocr_concurrency_threads = clamp_thread_count(threads, self._host_threads)
+        self.horizontalSliderOCRConcurrency.blockSignals(True)
+        self.horizontalSliderOCRConcurrency.setValue(max(1, min(int(percent), 100)))
+        self.horizontalSliderOCRConcurrency.blockSignals(False)
+        thread_label = "thread" if self._ocr_concurrency_threads == 1 else "threads"
+        self.labelOCRConcurrencyValue.setText(
+            f"{self.horizontalSliderOCRConcurrency.value()}% ({self._ocr_concurrency_threads} {thread_label})"
+        )
+
+    def handle_ocr_concurrency_slider(self, percent: int) -> None:
+        """Update OCR concurrency display when the slider moves."""
+        self._set_ocr_concurrency_controls(
+            percent,
+            threads_from_percent(percent, self._host_threads),
+        )
 
     def increment_progress(self, enum: IncrementType) -> None:
         """Increments the number on the UI based on the enum
@@ -679,7 +729,15 @@ class ScannerThread(QThread):
     def run(self) -> None:
         """Runs the scan"""
         try:
-            res = asyncio.run(self._scanner.start_scan())
+            with closing(self._scanner.create_executor()) as executor:
+                loop = asyncio.new_event_loop()
+                try:
+                    asyncio.set_event_loop(loop)
+                    loop.set_default_executor(executor)
+                    res = loop.run_until_complete(self._scanner.start_scan())
+                finally:
+                    asyncio.set_event_loop(None)
+                    loop.close()
             if self._interrupt_requested:
                 self.error_signal.emit("Scan cancelled by user.")
             else:
