@@ -62,6 +62,7 @@ RELIC_RARITY = RARITY
 RELIC_LEVEL = LEVEL
 RELIC_MAINSTAT = "mainstat"
 RELIC_SUBSTATS = "substats"
+RELIC_UNACTIVATED_SUBSTATS = "unactivated_substats"
 RELIC_LOCATION = "location"
 RELIC_LOCK = "lock"
 RELIC_DISCARD = "discard"

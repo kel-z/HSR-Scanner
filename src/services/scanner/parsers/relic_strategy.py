@@ -25,6 +25,7 @@ from models.const import (
     RELIC_SET_ID,
     RELIC_SLOT,
     RELIC_SUBSTAT_NAME,
+    RELIC_UNACTIVATED_SUBSTATS,
     RELIC_SUBSTAT_VALUE,
     RELIC_SUBSTAT_VALUES,
     RELIC_SUBSTATS,
@@ -82,19 +83,19 @@ class RelicStrategy(BaseParseStrategy):
         """
         if not self._debug:
             return
-            
+
         import os
         from datetime import datetime
-        
+
         # Save into the active scan debug folder when available.
         # Fallback to cwd so parser-only runs still work.
         base_dir = self._debug_output_location or os.getcwd()
         debug_dir = os.path.join(base_dir, "failures")
         os.makedirs(debug_dir, exist_ok=True)
-        
+
         filename = f"relic_{uid}_{suffix}_{datetime.now().strftime('%H%M%S_%f')}.png"
         path = os.path.join(debug_dir, filename)
-        
+
         try:
             img.save(path)
             self._log(f"Saved failure image for Relic UID {uid}: {path}", LogLevel.DEBUG)
@@ -195,7 +196,9 @@ class RelicStrategy(BaseParseStrategy):
                             LogLevel.ERROR,
                         )
                         if isinstance(stats_dict[RELIC_LEVEL], Image):
-                            self._save_debug_image(stats_dict[RELIC_LEVEL], uid, "level_filter_failed")
+                            self._save_debug_image(
+                                stats_dict[RELIC_LEVEL], uid, "level_filter_failed"
+                            )
                         stats_dict[RELIC_LEVEL] = 0
                         filter_results[key] = True
                         continue
@@ -338,7 +341,7 @@ class RelicStrategy(BaseParseStrategy):
             # Fix OCR errors
             name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
             main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)  # type: ignore
-            
+
             parsed_level = self._parse_level_int(level)
             if parsed_level is None:
                 self._log(
@@ -346,18 +349,22 @@ class RelicStrategy(BaseParseStrategy):
                     LogLevel.ERROR,
                 )
                 if isinstance(raw_stats.get(RELIC_LEVEL), Image):
-                    self._save_debug_image(raw_stats[RELIC_LEVEL], uid, "level_parse_failed")
+                    self._save_debug_image(
+                        raw_stats[RELIC_LEVEL], uid, "level_parse_failed"
+                    )
                 level = 0
             else:
                 level = parsed_level
-            
+
             if not name:
                 self._log(
                     f'Relic UID {uid}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
                     LogLevel.ERROR,
                 )
                 if isinstance(raw_stats.get(RELIC_NAME), Image):
-                    self._save_debug_image(raw_stats[RELIC_NAME], uid, "name_extract_failed")
+                    self._save_debug_image(
+                        raw_stats[RELIC_NAME], uid, "name_extract_failed"
+                    )
                 name = "Musketeer's Wild Wheat Felt Hat"
 
             # Substats
@@ -368,7 +375,9 @@ class RelicStrategy(BaseParseStrategy):
             substat_names = substat_names.split("\n")  # type: ignore
             substat_vals = substat_vals.split("\n")  # type: ignore
 
-            substats_res = self._parse_substats(substat_names, substat_vals, uid, raw_stats)
+            substats_res, unactivated_substats_res = self._parse_substats(
+                substat_names, substat_vals, uid, raw_stats
+            )
             self._validate_substats(substats_res, rarity, level, uid, raw_stats)  # type: ignore
             self._sort_substats(substats_res, uid)
 
@@ -421,6 +430,7 @@ class RelicStrategy(BaseParseStrategy):
                 RELIC_LEVEL: level,
                 RELIC_MAINSTAT: main_stat_key,
                 RELIC_SUBSTATS: substats_res,
+                RELIC_UNACTIVATED_SUBSTATS: unactivated_substats_res,
                 RELIC_LOCATION: location,
                 LOCK: lock,
                 RELIC_DISCARD: discard,
@@ -438,15 +448,19 @@ class RelicStrategy(BaseParseStrategy):
             return {}
 
     def _parse_substats(
-        self, names: list[str], vals: list[str], uid: int, stats_dict: RelicDict = None
-    ) -> list[dict[str, int | float]]:
+        self,
+        names: list[str],
+        vals: list[str],
+        uid: int,
+        stats_dict: RelicDict | None = None,
+    ) -> tuple[list[dict[str, int | float]], list[dict[str, int | float]]]:
         """Parses the substats
 
         :param names: The substat names
         :param vals: The substat values
         :param uid: The relic UID
         :param stats_dict: The stats dictionary (optional, for debug images)
-        :return: The parsed substats
+        :return: A tuple of active and unactivated substats
         """
         self._log(
             f"Relic UID {uid}: Parsing substats. Substats: {names}, Values: {vals}",
@@ -457,7 +471,8 @@ class RelicStrategy(BaseParseStrategy):
         names = [n.strip() for n in names if n.strip()]
         vals = [v.strip() for v in vals if v.strip()]
 
-        substats = []
+        active_substats = []
+        unactivated_substats = []
         # Only non-ambiguous percent stats can be inferred without an explicit '%' symbol.
         percentage_name_hints = {
             "HP_",
@@ -476,6 +491,7 @@ class RelicStrategy(BaseParseStrategy):
         }
         for i in range(len(names)):
             raw_name = names[i]
+            is_unactivated = "(" in raw_name
             # Strip inactive/grayed-out text from game update (e.g. " (+3 to activate)")
             name = raw_name
             if "(" in name:
@@ -504,7 +520,7 @@ class RelicStrategy(BaseParseStrategy):
             try:
                 # Cleanup common OCR value issues
                 val = val.replace("S", "5").replace(",", ".")
-                
+
                 # Heuristic: if a value ends in .30, .40, .10 etc, it's likely a misread percentage (e.g. 4.3% -> 4.30)
                 # But ONLY apply this if we already know the stat is a percentage based on the name from game database.
                 name_is_percentage = name in percentage_name_hints
@@ -520,23 +536,27 @@ class RelicStrategy(BaseParseStrategy):
                     or missing_percent_on_flat
                     or (name_is_percentage and len(val) > 3 and val.endswith("0") and "." in val)
                 )
-                
+
                 if is_percentage:
                     # Strip everything after and including the % or the suspect trailing zero
                     clean_val = val
                     if "%" in clean_val:
                         clean_val = clean_val[: clean_val.index("%")]
-                    elif clean_val.endswith("0") and not val.endswith(".0"): # Avoid converting 16.0 -> 1.6
+                    elif clean_val.endswith("0") and not val.endswith(".0"):
+                        # Avoid converting 16.0 -> 1.6
                         clean_val = clean_val[:-1]
-                    
+
                     val = float(clean_val)
                     if not name.endswith("_"):
                         name += "_"
                 else:
-                    val = int(float(val)) # float then int handles "16.0" strings
-                
-                # IMPORTANT: Only append if name is valid (already cleaned by fuzzy match)
-                substats.append({"key": name, "value": val})
+                    val = int(float(val))  # float then int handles "16.0" strings
+
+                parsed_substat = {"key": name, "value": val}
+                if is_unactivated:
+                    unactivated_substats.append(parsed_substat)
+                else:
+                    active_substats.append(parsed_substat)
             except (ValueError, TypeError):
                 self._log(
                     f"Relic UID {uid}: Failed to parse value '{val}' for substat '{name}' (Index {i}). Full value list: {vals}",
@@ -545,7 +565,7 @@ class RelicStrategy(BaseParseStrategy):
                 if stats_dict and isinstance(stats_dict.get(RELIC_SUBSTAT_VALUES), Image):
                     self._save_debug_image(stats_dict[RELIC_SUBSTAT_VALUES], uid, f"substat_value_{i}_failed")
 
-        return substats
+        return active_substats, unactivated_substats
 
     def _validate_substat(self, substat: dict[str, int | float], rarity: int) -> bool:
         """Validates the substat
@@ -572,7 +592,7 @@ class RelicStrategy(BaseParseStrategy):
         rarity: int,
         level: int,
         uid: int,
-        stats_dict: RelicDict = None,
+        stats_dict: RelicDict | None = None,
     ) -> None:
         """Rudimentary substat validation on number of substats based on rarity and level
 
