@@ -1,5 +1,4 @@
 import asyncio
-from contextlib import closing
 import datetime
 import sys
 import traceback
@@ -729,15 +728,16 @@ class ScannerThread(QThread):
     def run(self) -> None:
         """Runs the scan"""
         try:
-            with closing(self._scanner.create_executor()) as executor:
-                loop = asyncio.new_event_loop()
-                try:
-                    asyncio.set_event_loop(loop)
-                    loop.set_default_executor(executor)
-                    res = loop.run_until_complete(self._scanner.start_scan())
-                finally:
-                    asyncio.set_event_loop(None)
-                    loop.close()
+            executor = self._scanner.create_executor()
+            loop = asyncio.new_event_loop()
+            try:
+                asyncio.set_event_loop(loop)
+                loop.set_default_executor(executor)
+                res = loop.run_until_complete(self._scanner.start_scan())
+            finally:
+                asyncio.set_event_loop(None)
+                loop.close()
+                executor.shutdown(wait=True)
             if self._interrupt_requested:
                 self.error_signal.emit("Scan cancelled by user.")
             else:
