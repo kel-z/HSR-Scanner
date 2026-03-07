@@ -15,6 +15,7 @@ from config.const import (
     ASPECT_16_9,
     DETAILS_BUTTON,
     EIDOLONS_BUTTON,
+    FIRST_ITEM,
     INV_TAB,
     SORT_BUTTON,
     TRACES,
@@ -152,6 +153,13 @@ class HSRScanner(QObject):
             max_workers=self._ocr_concurrency,
             thread_name_prefix="hsr-scanner-ocr",
         )
+
+    def _select_first_inventory_item(self, nav_data: dict) -> None:
+        """Click the top-left inventory slot to anchor keyboard navigation."""
+        self._nav.move_cursor_to(*nav_data[FIRST_ITEM])
+        time.sleep(0.05)
+        self._nav.click()
+        self._scan_sleep(0.05)
 
     async def start_scan(self) -> dict:
         """Starts the scan
@@ -336,6 +344,7 @@ class HSRScanner(QObject):
             self._nav.click()
             current_sort_method = optimal_sort_method
             self._nav_sleep(0.5)
+            self._select_first_inventory_item(nav_data)
 
         tasks = set()
         scanned = 0
