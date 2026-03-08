@@ -255,7 +255,7 @@ class HSRScanner(QObject):
         return {
             "source": "HSR-Scanner",
             "build": "v1.4.1",
-            "version": 5,
+            "version": 4,
             "metadata": {
                 "uid": int(uid) if uid else None,
                 "trailblazer": (

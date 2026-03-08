@@ -54,7 +54,6 @@ The output is loosely based off of Genshin's `.GOOD` export format. If a breakin
 - If the Trailblazer variant was not determinable during the scan or previous scans, it will default to `Stelle`.
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
-- Substats are sorted in the order of: `HP, ATK, DEF, HP%, ATK%, DEF%, SPD, CRIT Rate, CRIT DMG, Effect Hit Rate, Effect RES, Break Effect`. This ordering applies for every relic with the exception of newly upgraded relics, which gets fixed when the user logs out and logs back in. As a result, the scanner will automatically sort the substats before generating the output.
 - Unrevealed gray relic substats are exported separately under `unactivated_substats` so `substats` only contains active rolls.
 - The `_uid` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For `Dan Heng • Imbibitor Lunae`, the character `•` will appear as `\u2022` in the JSON output. This is the Unicode representation of the character and is a normal behaviour when special characters are included in JSON. Most modern environments will automatically render `\u2022` as `•` when displaying or processing the JSON.
@@ -70,7 +69,7 @@ Current output sample:
 {
     "source": "HSR-Scanner",
     "build": "v1.4.1",
-    "version": 5,
+    "version": 4,
     "metadata": {
         "uid": 601869216,
         "trailblazer": "Stelle"

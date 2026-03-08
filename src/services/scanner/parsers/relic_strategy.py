@@ -379,7 +379,6 @@ class RelicStrategy(BaseParseStrategy):
                 substat_names, substat_vals, uid, raw_stats
             )
             self._validate_substats(substats_res, rarity, level, uid, raw_stats)  # type: ignore
-            self._sort_substats(substats_res, uid)
 
             # Set and slot
             metadata = self._game_data.get_relic_meta_data(name)
@@ -654,43 +653,6 @@ class RelicStrategy(BaseParseStrategy):
             self._log(
                 f"Relic UID {uid} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
                 LogLevel.ERROR,
-            )
-
-    def _sort_substats(self, substats: list[dict[str, int | float]], uid: int) -> None:
-        """Sorts the substats
-
-        :param substats: The substats
-        :param uid: The relic UID
-        """
-        SORT_ORDER = [
-            "HP",
-            "ATK",
-            "DEF",
-            "HP_",
-            "ATK_",
-            "DEF_",
-            "SPD",
-            "CRIT Rate_",
-            "CRIT DMG_",
-            "Effect Hit Rate_",
-            "Effect RES_",
-            "Break Effect_",
-        ]
-        original = substats.copy()
-        try:
-            substats.sort(key=lambda x: SORT_ORDER.index(str(x[RELIC_SUBSTAT_NAME])))
-        except ValueError as e:
-            # This happens if a substat key is not in the SORT_ORDER list
-            unknown_key = str(e).split("'")[1] if "'" in str(e) else "unknown"
-            self._log(
-                f"Relic UID {uid}: Cannot sort substats. Unknown key: {unknown_key}.",
-                LogLevel.ERROR,
-            )
-            return
-
-        if original != substats:
-            self._log(
-                f"Relic UID {uid}: Newly upgraded relic detected. Substats have been sorted.",
             )
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
