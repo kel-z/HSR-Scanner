@@ -1,5 +1,6 @@
 import asyncio
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import pyautogui
 import win32gui
@@ -14,6 +15,7 @@ from config.const import (
     ASPECT_16_9,
     DETAILS_BUTTON,
     EIDOLONS_BUTTON,
+    FIRST_ITEM,
     INV_TAB,
     SORT_BUTTON,
     TRACES,
@@ -34,6 +36,7 @@ from models.const import (
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_NAV_DELAY,
+    CONFIG_OCR_CONCURRENCY,
     CONFIG_RECENT_RELICS_NUM,
     CONFIG_SCAN_CHARACTERS,
     CONFIG_SCAN_DELAY,
@@ -57,7 +60,12 @@ from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
 from utils.navigation import Navigation
-from utils.ocr import image_to_string, preprocess_char_count_img, preprocess_uid_img
+from utils.ocr import (
+    image_to_string,
+    preprocess_char_count_img,
+    preprocess_uid_img,
+    set_ocr_concurrency,
+)
 from utils.screenshot import Screenshot
 from utils.window import bring_window_to_foreground
 
@@ -111,6 +119,9 @@ class HSRScanner(QObject):
         self._config = config
         self._game_data = game_data
         self._scan_mode = scan_mode
+        self._ocr_concurrency = set_ocr_concurrency(
+            self._config.get(CONFIG_OCR_CONCURRENCY)
+        )
 
         self._nav = Navigation(self._hwnd)
 
@@ -131,6 +142,25 @@ class HSRScanner(QObject):
 
         self._interrupt_event = asyncio.Event()
 
+    @property
+    def ocr_concurrency(self) -> int:
+        """Return the resolved OCR concurrency limit for this scan."""
+        return self._ocr_concurrency
+
+    def create_executor(self) -> ThreadPoolExecutor:
+        """Create the executor used by asyncio.to_thread during OCR parsing."""
+        return ThreadPoolExecutor(
+            max_workers=self._ocr_concurrency,
+            thread_name_prefix="hsr-scanner-ocr",
+        )
+
+    def _select_first_inventory_item(self, nav_data: dict) -> None:
+        """Click the top-left inventory slot to anchor keyboard navigation."""
+        self._nav.move_cursor_to(*nav_data[FIRST_ITEM])
+        time.sleep(0.05)
+        self._nav.click()
+        self._scan_sleep(0.05)
+
     async def start_scan(self) -> dict:
         """Starts the scan
 
@@ -138,6 +168,10 @@ class HSRScanner(QObject):
         :return: The scan results
         """
         self._log("Config: " + str(self._config), LogLevel.DEBUG)
+        self._log(
+            f"OCR concurrency limit: {self._ocr_concurrency}",
+            LogLevel.DEBUG,
+        )
 
         if not self._is_en:
             self._log(
@@ -173,6 +207,7 @@ class HSRScanner(QObject):
                     self.update_signal,
                     self._interrupt_event,
                     self._config[CONFIG_DEBUG],
+                    self._config[CONFIG_DEBUG_OUTPUT_LOCATION],
                 )
             )
             (
@@ -191,6 +226,7 @@ class HSRScanner(QObject):
                     self.update_signal,
                     self._interrupt_event,
                     self._config[CONFIG_DEBUG],
+                    self._config[CONFIG_DEBUG_OUTPUT_LOCATION],
                 )
             )
             (
@@ -308,6 +344,7 @@ class HSRScanner(QObject):
             self._nav.click()
             current_sort_method = optimal_sort_method
             self._nav_sleep(0.5)
+            self._select_first_inventory_item(nav_data)
 
         tasks = set()
         scanned = 0

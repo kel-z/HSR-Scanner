@@ -139,8 +139,8 @@ SCREENSHOT_COORDS = {
             LOCK: (0.896, 0.321, 0.97, 0.365),
         },
         RELIC: {
-            RELIC_NAME: (0, 0, 1, 0.09),
-            RELIC_LEVEL: (0.115, 0.25, 0.23, 0.3),
+            RELIC_NAME: (0, 0, 0.8, 0.09),
+            RELIC_LEVEL: (0.115, 0.25, 0.28, 0.32),
             RELIC_DISCARD: (0.865, 0.253, 0.935, 0.293),
             LOCK: (0.865, 0.191, 0.935, 0.23),
             RELIC_RARITY: (0.07, 0.15, 0.2, 0.22),
@@ -148,8 +148,8 @@ SCREENSHOT_COORDS = {
             EQUIPPED_AVATAR: (0.3505, 0.916, 0.4375, 0.966675),
             EQUIPPED_AVATAR_OFFSET: (0.3905, 0.916, 0.4775, 0.966675),
             RELIC_MAINSTAT: (0.11, 0.358, 0.7, 0.4),
-            RELIC_SUBSTAT_NAMES: (0.11, 0.4, 0.5, 0.6),
-            RELIC_SUBSTAT_VALUES: (0.775, 0.4, 0.975, 0.6),
+            RELIC_SUBSTAT_NAMES: (0.11, 0.4, 0.5, 0.58),
+            RELIC_SUBSTAT_VALUES: (0.775, 0.4, 0.975, 0.58),
         },
     }
 }
