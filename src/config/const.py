@@ -12,6 +12,7 @@ TRACES = "traces"
 # Relic and light cone navigation data keys
 INV_TAB = "inv_tab"
 SORT_BUTTON = "button"
+FIRST_ITEM = "first_item"
 
 # Screenshot coordinate keys
 QUANTITY = "quantity"

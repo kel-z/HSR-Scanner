@@ -24,6 +24,7 @@ class BaseParseStrategy(ABC):
         update_signal: pyqtBoundSignal,
         interrupt_event: Event,
         debug: bool = False,
+        debug_output_location: str | None = None,
     ) -> None:
         """Constructor
 
@@ -32,12 +33,14 @@ class BaseParseStrategy(ABC):
         :param update_signal: The update signal
         :param interrupt_event: The interrupt event
         :param debug: Debug flag
+        :param debug_output_location: Optional debug output folder for artifacts
         """
         self._game_data = game_data
         self._log_signal = log_signal
         self._update_signal = update_signal
         self._interrupt_event = interrupt_event
         self._debug = debug
+        self._debug_output_location = debug_output_location
         self._lock_icon = PILImage.open(resource_path(LOCK_ICON_PATH))
 
     @abstractmethod

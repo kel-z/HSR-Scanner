@@ -3,7 +3,7 @@ from functools import cached_property
 from io import BytesIO
 
 import cv2
-import Levenshtein
+from rapidfuzz import process, fuzz
 import numpy as np
 import requests
 from PIL import Image as PILImage
@@ -266,18 +266,39 @@ class GameData:
         if name in targets:
             return name, 0
 
-        min_dist = 100
-        min_name = ""
+        # Create a mapping of "clean name" -> "original target key"
+        # This handles the ID#Name format and ensures we match against keys if targets is a dict
+        choices = {}
         for t in targets:
             to_compare = t
             if "#" in t:
                 to_compare = t.split("#")[1]
-            dist = Levenshtein.distance(name, to_compare, weights=(1, 1, 2))
-            if dist < min_dist:
-                min_dist = dist
-                min_name = t
+            choices[to_compare] = t
 
-        return min_name, min_dist
+        # RapidFuzz extractOne returns (match_value, score, match_key)
+        res = process.extractOne(name, choices.keys(), scorer=fuzz.WRatio)
+        if res:
+            clean_match, score, _ = res
+            original_target = choices[clean_match]
+            
+            # Map score (0-100) to distance (0-10) for compatibility
+            # Higher score = lower distance
+            if score > 98:
+                dist = 0
+            elif score > 90:
+                dist = 1
+            elif score > 80:
+                dist = 2
+            elif score > 70:
+                dist = 3
+            elif score > 60:
+                dist = 5
+            else:
+                dist = 10
+            
+            return str(original_target), dist
+        
+        return name, 100
 
     @cached_property
     def _get_character_keys(self) -> list:
