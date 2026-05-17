@@ -58,6 +58,7 @@ PATHS = {
     "Nihility",
     "Abundance",
     "Remembrance",
+    "Elation",
 }
 
 
@@ -275,12 +276,12 @@ class GameData:
                 to_compare = t.split("#")[1]
             choices[to_compare] = t
 
-        # RapidFuzz extractOne returns (match_value, score, match_key)
-        res = process.extractOne(name, choices.keys(), scorer=fuzz.WRatio)
+        # RapidFuzz extractOne returns (match_value, score, match_key).
+        res = process.extractOne(name, choices.keys(), scorer=fuzz.ratio)
         if res:
             clean_match, score, _ = res
             original_target = choices[clean_match]
-            
+
             # Map score (0-100) to distance (0-10) for compatibility
             # Higher score = lower distance
             if score > 98:
@@ -295,9 +296,9 @@ class GameData:
                 dist = 5
             else:
                 dist = 10
-            
+
             return str(original_target), dist
-        
+
         return name, 100
 
     @cached_property

@@ -760,7 +760,7 @@ class HSRScanner(QObject):
         character_name_img = self._screenshot.screenshot_character_name()
         return image_to_string(
             character_name_img,
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/7&",
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/79&",
             7,
         )
 
