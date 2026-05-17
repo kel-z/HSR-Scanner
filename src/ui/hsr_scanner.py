@@ -359,18 +359,18 @@ class Ui_MainWindow(object):
         self.checkBoxSroFormat = QtWidgets.QCheckBox(parent=self.verticalLayoutWidget)
         self.checkBoxSroFormat.setObjectName("checkBoxSroFormat")
         self.verticalLayout_2.addWidget(self.checkBoxSroFormat)
-        self.groupBox_10 = QtWidgets.QGroupBox(parent=self.Configure)
-        self.groupBox_10.setGeometry(QtCore.QRect(10, 280, 411, 71))
-        self.groupBox_10.setObjectName("groupBox_10")
-        self.gridLayoutWidget_3 = QtWidgets.QWidget(parent=self.groupBox_10)
+        self.groupBox_101 = QtWidgets.QGroupBox(parent=self.Configure)
+        self.groupBox_101.setGeometry(QtCore.QRect(10, 280, 411, 71))
+        self.groupBox_101.setObjectName("groupBox_101")
+        self.gridLayoutWidget_3 = QtWidgets.QWidget(parent=self.groupBox_101)
         self.gridLayoutWidget_3.setGeometry(QtCore.QRect(10, 20, 391, 41))
         self.gridLayoutWidget_3.setObjectName("gridLayoutWidget_3")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.gridLayoutWidget_3)
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.label_17 = QtWidgets.QLabel(parent=self.gridLayoutWidget_3)
-        self.label_17.setObjectName("label_17")
-        self.gridLayout_3.addWidget(self.label_17, 0, 0, 1, 1)
+        self.label_171 = QtWidgets.QLabel(parent=self.gridLayoutWidget_3)
+        self.label_171.setObjectName("label_171")
+        self.gridLayout_3.addWidget(self.label_171, 0, 0, 1, 1)
         self.horizontalSliderOCRConcurrency = QtWidgets.QSlider(parent=self.gridLayoutWidget_3)
         self.horizontalSliderOCRConcurrency.setMinimum(1)
         self.horizontalSliderOCRConcurrency.setMaximum(100)
@@ -470,7 +470,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.4.1"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "HSR Scanner v1.5.0"))
         self.formGroupBox.setTitle(_translate("MainWindow", "Items to scan"))
         self.checkBoxScanLightCones.setText(_translate("MainWindow", "Light Cones"))
         self.checkBoxScanRelics.setText(_translate("MainWindow", "Relics"))
@@ -506,7 +506,7 @@ class Ui_MainWindow(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.4.1</span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; text-decoration: underline;\">HSR SCANNER v1.5.0</span></p>\n"
 "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8.25pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt; text-decoration: underline;\">HOW TO RUN</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8.25pt;\">1. Set text language to English</span></p>\n"
@@ -556,8 +556,8 @@ class Ui_MainWindow(object):
         self.checkBoxDebugMode.setText(_translate("MainWindow", "Debug mode"))
         self.checkBoxSroFormat.setToolTip(_translate("MainWindow", "Star Rail Optimizer"))
         self.checkBoxSroFormat.setText(_translate("MainWindow", "Also export in SRO format"))
-        self.groupBox_10.setTitle(_translate("MainWindow", "Performance"))
-        self.label_17.setText(_translate("MainWindow", "OCR concurrency:"))
+        self.groupBox_101.setTitle(_translate("MainWindow", "Performance"))
+        self.label_171.setText(_translate("MainWindow", "OCR concurrency:"))
         self.labelOCRConcurrencyValue.setText(_translate("MainWindow", "75% (1 thread)"))
         self.groupBox_9.setTitle(_translate("MainWindow", "Additional Delay"))
         self.label_11.setToolTip(_translate("MainWindow", "Navigating between different pages (inventory, character details, etc.)"))
