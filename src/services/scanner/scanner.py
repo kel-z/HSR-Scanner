@@ -1,4 +1,5 @@
 import asyncio
+import math
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -37,12 +38,14 @@ from models.const import (
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_NAV_DELAY,
+    CONFIG_OCR_BATCH_SIZE,
     CONFIG_OCR_CONCURRENCY,
     CONFIG_RECENT_RELICS_NUM,
     CONFIG_SCAN_CHARACTERS,
     CONFIG_SCAN_DELAY,
     CONFIG_SCAN_LC,
     CONFIG_SCAN_RELICS,
+    DEFAULT_OCR_BATCH_SIZE,
     EIDOLON_IMAGES,
     FILTERS,
     HSR_SCANNER,
@@ -133,6 +136,9 @@ class HSRScanner(QObject):
         self._ocr_concurrency = set_ocr_concurrency(
             self._config.get(CONFIG_OCR_CONCURRENCY)
         )
+        self._ocr_batch_size = self._resolve_ocr_batch_size(
+            self._config.get(CONFIG_OCR_BATCH_SIZE)
+        )
 
         self._nav = Navigation(self._hwnd)
 
@@ -202,6 +208,10 @@ class HSRScanner(QObject):
         self._log("Config: " + str(self._config), LogLevel.DEBUG)
         self._log(
             f"OCR concurrency limit: {self._ocr_concurrency}",
+            LogLevel.DEBUG,
+        )
+        self._log(
+            f"OCR batch size: {self._ocr_batch_size} crops per Tesseract call",
             LogLevel.DEBUG,
         )
 
@@ -283,13 +293,18 @@ class HSRScanner(QObject):
             await asyncio.gather(*light_cones, *relics, *characters)
             return {}
 
+        self._return_to_escape_screen()
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")
 
         ocr_process_start = time.perf_counter()
-        light_cone_results = [x for x in await asyncio.gather(*light_cones) if x]
-        relic_results = [x for x in await asyncio.gather(*relics) if x]
-        character_results = [x for x in await asyncio.gather(*characters) if x]
+        light_cone_results = self._flatten_scan_results(
+            await asyncio.gather(*light_cones)
+        )
+        relic_results = self._flatten_scan_results(await asyncio.gather(*relics))
+        character_results = self._flatten_scan_results(
+            await asyncio.gather(*characters)
+        )
         self._log(
             f"OCR process timing: total_ms={(time.perf_counter() - ocr_process_start) * 1000:.3f}, "
             f"light_cones={len(light_cone_results)}, relics={len(relic_results)}, characters={len(character_results)}",
@@ -318,6 +333,10 @@ class HSRScanner(QObject):
     def stop_scan(self) -> None:
         """Stops the scan"""
         self._interrupt_event.set()
+
+    def _return_to_escape_screen(self) -> None:
+        """Open the game's escape menu before OCR starts."""
+        self._nav.key_tap(Key.esc)
 
     def scan_inventory(self, strategy: BaseParseStrategy) -> set[asyncio.Task]:
         """Scans the inventory for light cones or relics
@@ -404,7 +423,8 @@ class HSRScanner(QObject):
             self._nav_sleep(0.5)
             self._select_first_inventory_item(nav_data)
 
-        tasks = set()
+        tasks = []
+        batch_items = []
         scanned = 0
         previous_stats_panel_bytes = None
 
@@ -467,15 +487,18 @@ class HSRScanner(QObject):
             # Update UI count
             self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-            task = self._profiled_parse_task(
-                strategy.SCAN_TYPE.name.lower(),
-                item_id,
-                strategy.__class__.__name__,
-                strategy.parse,
-                stats_dict,
-                item_id,
-            )
-            tasks.add(task)
+            if isinstance(strategy, RelicStrategy):
+                batch_items.append((item_id, stats_dict))
+            else:
+                task = self._profiled_parse_task(
+                    strategy.SCAN_TYPE.name.lower(),
+                    item_id,
+                    strategy.__class__.__name__,
+                    strategy.parse,
+                    stats_dict,
+                    item_id,
+                )
+                tasks.append(task)
 
             # Next item
             self._nav.key_tap("d")
@@ -485,6 +508,24 @@ class HSRScanner(QObject):
         self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
         self._nav_sleep(1)
+        if batch_items:
+            strategy.BATCH_OCR_CHUNK_SIZE = self._ocr_batch_size
+            batch_item_chunks = self._split_batch_items(batch_items)
+            self._log(
+                f"Queued {len(batch_items)} relics for batch OCR across "
+                f"{len(batch_item_chunks)} worker batch(es).",
+                LogLevel.DEBUG,
+            )
+            for chunk_index, batch_item_chunk in enumerate(batch_item_chunks, start=1):
+                tasks.append(
+                    self._profiled_parse_task(
+                        strategy.SCAN_TYPE.name.lower(),
+                        f"batch_{chunk_index}",
+                        strategy.__class__.__name__,
+                        strategy.batch_parse,
+                        batch_item_chunk,
+                    )
+                )
         return tasks
 
     def scan_characters(self) -> set[asyncio.Task]:
@@ -877,6 +918,36 @@ class HSRScanner(QObject):
             return result
 
         return asyncio.to_thread(_run_parse)
+
+    def _flatten_scan_results(self, results) -> list[dict]:
+        """Flatten parse task results; batch parsers return lists, legacy parsers return dicts."""
+        flattened = []
+        for result in results:
+            if isinstance(result, list):
+                flattened.extend(x for x in result if x)
+            elif result:
+                flattened.append(result)
+        return flattened
+
+    def _split_batch_items(self, batch_items: list) -> list[list]:
+        """Split relic OCR batches so the OCR executor can use configured concurrency."""
+        if not batch_items:
+            return []
+
+        worker_count = min(self._ocr_concurrency, len(batch_items))
+        chunk_size = math.ceil(len(batch_items) / worker_count)
+        return [
+            batch_items[index : index + chunk_size]
+            for index in range(0, len(batch_items), chunk_size)
+        ]
+
+    def _resolve_ocr_batch_size(self, value) -> int:
+        """Clamp OCR batch size to a practical range for Tesseract composites."""
+        try:
+            parsed_value = int(value)
+        except (TypeError, ValueError):
+            parsed_value = DEFAULT_OCR_BATCH_SIZE
+        return max(1, min(parsed_value, 50))
 
     def _nav_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with navigation delay

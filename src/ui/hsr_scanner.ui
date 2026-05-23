@@ -907,7 +907,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>360</y>
+        <y>380</y>
         <width>201</width>
         <height>91</height>
        </rect>
@@ -964,7 +964,7 @@ p, li { white-space: pre-wrap; }
         <x>10</x>
         <y>280</y>
         <width>411</width>
-        <height>71</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -976,7 +976,7 @@ p, li { white-space: pre-wrap; }
          <x>10</x>
          <y>20</y>
          <width>391</width>
-         <height>41</height>
+         <height>61</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
@@ -1025,6 +1025,45 @@ p, li { white-space: pre-wrap; }
           </property>
           <property name="text">
            <string>75% (1 thread)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelOCRBatchSize">
+          <property name="text">
+           <string>OCR batch size:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSlider" name="horizontalSliderOCRBatchSize">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>50</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="labelOCRBatchSizeValue">
+          <property name="minimumSize">
+           <size>
+            <width>95</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>10 crops/call</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
