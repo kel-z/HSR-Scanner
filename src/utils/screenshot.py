@@ -71,6 +71,18 @@ class Screenshot:
         :raises ValueError: Thrown if the scan type is invalid
         :return: A dict of the stats with the key being the stat name and the value being the screenshot
         """
+        stats, _ = self.screenshot_stats_with_panel_bytes(scan_type)
+        return stats
+
+    def screenshot_stats_with_panel_bytes(
+        self, scan_type: IncrementType
+    ) -> tuple[dict, bytes]:
+        """Takes a stats screenshot and returns its panel bytes for duplicate detection.
+
+        :param scan_type: The scan type
+        :raises ValueError: Thrown if the scan type is invalid
+        :return: The cropped stats dict and raw bytes of the full stats panel
+        """
         match IncrementType(scan_type):
             case IncrementType.LIGHT_CONE_ADD:
                 return self._screenshot_stats("light_cone")
@@ -78,7 +90,6 @@ class Screenshot:
                 return self._screenshot_stats("relic")
             case _:
                 raise ValueError(f"Invalid scan type: {scan_type.name}.")
-
     def screenshot_sort(self) -> Image:
         """Takes a screenshot of the current sort option. Requires inventory to be open.
 
@@ -211,15 +222,16 @@ class Screenshot:
 
         return screenshot
 
-    def _screenshot_stats(self, key: str) -> dict:
+    def _screenshot_stats(self, key: str) -> tuple[dict, bytes]:
         """Takes a screenshot of the stats
 
         :param key: The key of the stats to screenshot
-        :return: A dict of the stats with the key being the stat name and the value being the screenshot
+        :return: The cropped stats dict and raw bytes of the full stats panel
         """
         coords = SCREENSHOT_COORDS[self._aspect_ratio]
 
         img = self._take_screenshot(*coords[STATS])
+        panel_bytes = img.tobytes()
 
         adjusted_stat_coords = {
             k: (
@@ -233,7 +245,7 @@ class Screenshot:
 
         res = {k: img.crop(v) for k, v in adjusted_stat_coords.items()}
 
-        return res
+        return res, panel_bytes
 
     def _screenshot_traces(self, key: str) -> dict:
         """Takes a screenshot of the trace levels
