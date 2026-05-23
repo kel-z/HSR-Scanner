@@ -4,6 +4,10 @@ import os
 import cv2
 import numpy as np
 import win32gui
+try:
+    import mss
+except ImportError:  # pragma: no cover - exercised by PIL fallback environments
+    mss = None
 from PIL import Image as PILImage
 from PIL import ImageGrab
 from PIL.Image import Image
@@ -22,6 +26,7 @@ from config.const import (
     UID,
 )
 from config.screenshot import SCREENSHOT_COORDS
+from enums.log_level import LogLevel
 from enums.increment_type import IncrementType
 from models.const import CHAR_LEVEL, CHAR_NAME
 
@@ -55,6 +60,9 @@ class Screenshot:
 
         self._debug = debug
         self._debug_output_location = debug_output_location
+        self._mss = None
+        self._mss_failed = False
+        self._mss_fallback_logged = False
 
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
@@ -209,8 +217,8 @@ class Screenshot:
         width = int(self._window_width * width)
         height = int(self._window_height * height)
 
-        screenshot = ImageGrab.grab(
-            bbox=(int(x), int(y), int(x + width), int(y + height)), all_screens=True
+        screenshot = self._grab_screenshot(
+            (int(x), int(y), int(x + width), int(y + height))
         )
 
         screenshot = screenshot.resize(
@@ -222,6 +230,40 @@ class Screenshot:
 
         return screenshot
 
+    def _grab_screenshot(self, bbox: tuple[int, int, int, int]) -> Image:
+        """Capture a cropped screenshot, preferring mss and falling back to PIL."""
+        if mss is not None and not self._mss_failed:
+            try:
+                return self._grab_with_mss(bbox)
+            except Exception as exc:  # pragma: no cover - depends on host capture stack
+                self._mss_failed = True
+                if not self._mss_fallback_logged:
+                    self._mss_fallback_logged = True
+                    self._log_signal.emit(
+                        (
+                            "mss capture failed; falling back to PIL ImageGrab. "
+                            f"Error: {exc}",
+                            LogLevel.WARNING,
+                        )
+                    )
+
+        return ImageGrab.grab(bbox=bbox, all_screens=True)
+
+    def _grab_with_mss(self, bbox: tuple[int, int, int, int]) -> Image:
+        """Capture a cropped screenshot using mss."""
+        left, top, right, bottom = bbox
+        monitor = {
+            "left": left,
+            "top": top,
+            "width": right - left,
+            "height": bottom - top,
+        }
+
+        if self._mss is None:
+            self._mss = mss.MSS()
+
+        raw = self._mss.grab(monitor)
+        return PILImage.frombytes("RGB", raw.size, raw.bgra, "raw", "BGRX")
     def _screenshot_stats(self, key: str) -> tuple[dict, bytes]:
         """Takes a screenshot of the stats
 
