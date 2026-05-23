@@ -45,6 +45,7 @@ from utils.ocr import (
     preprocess_main_stat_img,
     preprocess_sub_stat_img,
 )
+from utils.ocr_batch import batch_image_to_strings_chunked
 from utils.ocr_profile import ocr_profile_context
 
 
@@ -53,6 +54,7 @@ class RelicStrategy(BaseParseStrategy):
 
     SCAN_TYPE = IncrementType.RELIC_ADD
     NAV_DATA = RELIC_NAV_DATA
+    BATCH_OCR_CHUNK_SIZE = 10
 
     def __init__(self, *args, **kwargs) -> None:
         """Constructor"""
@@ -334,6 +336,203 @@ class RelicStrategy(BaseParseStrategy):
         else:
             return data
 
+    def batch_parse(self, items: list[tuple[int, RelicDict]]) -> list[dict]:
+        """Batch OCR relic text crops, then parse using the normal relic parser."""
+        if not items:
+            return []
+
+        results = []
+        for item_chunk in self._chunk_items(items, self.BATCH_OCR_CHUNK_SIZE):
+            raw_stats_by_uid = {
+                uid: stats_dict.copy() for uid, stats_dict in item_chunk
+            }
+            self._batch_extract_stats_data([stats_dict for _, stats_dict in item_chunk])
+
+            for uid, stats_dict in item_chunk:
+                # Preserve original images so failure debug still saves useful crops.
+                stats_dict["_raw_stats"] = raw_stats_by_uid[uid]  # type: ignore[typeddict-unknown-key]
+                result = self.parse(stats_dict, uid)
+                if result:
+                    results.append(result)
+        return results
+
+    def _chunk_items(
+        self, items: list[tuple[int, RelicDict]], chunk_size: int
+    ) -> list[list[tuple[int, RelicDict]]]:
+        """Split a worker shard so parsed relics can stream back during OCR."""
+        chunk_size = max(1, chunk_size)
+        return [
+            items[index : index + chunk_size]
+            for index in range(0, len(items), chunk_size)
+        ]
+
+    def _batch_extract_stats_data(self, stats_dicts: list[RelicDict]) -> None:
+        """Run homogeneous relic OCR fields through Tesseract in bounded batches."""
+        self._batch_extract_field(
+            stats_dicts,
+            RELIC_NAME,
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
+            6,
+            False,
+            None,
+            True,
+            f"eng+{DIN_ALTERNATE}",
+            "black",
+            40,
+            self._normalize_relic_name_ocr,
+            True,
+        )
+        self._batch_extract_field(
+            stats_dicts,
+            RELIC_LEVEL,
+            "0123456789S+",
+            6,
+            True,
+            preprocess_level_img,
+            True,
+            f"eng+{DIN_ALTERNATE}",
+            "white",
+            40,
+            self._normalize_relic_level_ocr,
+            True,
+        )
+        self._batch_extract_field(
+            stats_dicts,
+            RELIC_MAINSTAT,
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz+",
+            6,
+            True,
+            preprocess_main_stat_img,
+            True,
+            None,
+            "white",
+            40,
+            lambda text: text,
+            True,
+        )
+        self._batch_extract_field(
+            stats_dicts,
+            EQUIPPED,
+            "Equiped",
+            6,
+            True,
+            preprocess_equipped_img,
+            True,
+            None,
+            "white",
+            40,
+            lambda text: text,
+        )
+        self._batch_extract_field(
+            stats_dicts,
+            RELIC_SUBSTAT_NAMES,
+            " ABCDEFGHIKMPRSTacefikrt()+0123456789ov",
+            6,
+            True,
+            preprocess_sub_stat_img,
+            False,
+            None,
+            "white",
+            5,
+            lambda text: text,
+            True,
+        )
+        self._batch_extract_field(
+            stats_dicts,
+            RELIC_SUBSTAT_VALUES,
+            "0123456789S.%,",
+            6,
+            True,
+            preprocess_sub_stat_img,
+            False,
+            None,
+            "white",
+            5,
+            self._normalize_relic_substat_values_ocr,
+            True,
+        )
+
+        for stats_dict in stats_dicts:
+            if isinstance(stats_dict.get(RELIC_RARITY), Image):
+                stats_dict[RELIC_RARITY] = self.extract_stats_data(
+                    RELIC_RARITY, stats_dict[RELIC_RARITY]
+                )
+
+    def _batch_extract_field(
+        self,
+        stats_dicts: list[RelicDict],
+        key: str,
+        whitelist: str,
+        psm: int,
+        force_preprocess: bool,
+        preprocess_func,
+        remove_newline: bool,
+        lang: str | None,
+        background: str | tuple[int, int, int],
+        padding: int,
+        normalize_func,
+        fallback_empty_results: bool = False,
+    ) -> None:
+        indexed_images = [
+            (index, stats_dict[key])
+            for index, stats_dict in enumerate(stats_dicts)
+            if key in stats_dict and isinstance(stats_dict[key], Image)
+        ]
+        if not indexed_images:
+            return
+
+        indexes = [index for index, _ in indexed_images]
+        images = [img for _, img in indexed_images]
+        with ocr_profile_context(
+            item_type="relic", uid="batch", field=key, phase="batch_ocr"
+        ):
+            results, _ = batch_image_to_strings_chunked(
+                images,
+                whitelist,
+                psm,
+                force_preprocess,
+                preprocess_func,
+                remove_newline,
+                lang,
+                padding,
+                self.BATCH_OCR_CHUNK_SIZE,
+                background,
+            )
+
+        if fallback_empty_results and any(not text.strip() for text in results):
+            empty_count = sum(1 for text in results if not text.strip())
+            self._log(
+                f"Relic batch OCR field {key}: {empty_count}/{len(results)} results "
+                "were empty. Falling back to individual OCR for blank results.",
+                LogLevel.WARNING,
+            )
+            results = list(results)
+            for result_index, (_, image) in enumerate(indexed_images):
+                if results[result_index].strip():
+                    continue
+                with ocr_profile_context(
+                    item_type="relic",
+                    uid="batch",
+                    field=key,
+                    phase="batch_fallback",
+                ):
+                    results[result_index] = str(self.extract_stats_data(key, image))
+
+        for index, text in zip(indexes, results):
+            stats_dicts[index][key] = normalize_func(text)  # type: ignore[literal-required]
+
+    def _normalize_relic_name_ocr(self, text: str) -> str:
+        text = text.strip()
+        if text.endswith(" O"):
+            text = text[:-2].strip()
+        return text
+
+    def _normalize_relic_level_ocr(self, text: str) -> str:
+        return text.replace("S", "5").replace("+", "").strip()
+
+    def _normalize_relic_substat_values_ocr(self, text: str) -> str:
+        return text.replace("S", "5").replace(",", ".").replace("..", ".").strip()
+
     def parse(self, stats_dict: RelicDict, uid: int) -> dict:
         """Parses the relic data
 
@@ -346,7 +545,7 @@ class RelicStrategy(BaseParseStrategy):
 
         try:
             # Keep a copy of raw images for debug saving before they are OCRed into strings
-            raw_stats = stats_dict.copy()
+            raw_stats = stats_dict.pop("_raw_stats", None) or stats_dict.copy()  # type: ignore[typeddict-item]
             with ocr_profile_context(item_type="relic", uid=uid, phase="parse"):
                 for key in stats_dict:
                     with ocr_profile_context(field=key):
@@ -562,10 +761,14 @@ class RelicStrategy(BaseParseStrategy):
                 missing_percent_on_flat = (
                     name in {"HP", "ATK", "DEF"} and re.fullmatch(r"\d\.\d", val) is not None
                 )
+                missing_percent_on_percentage_name = (
+                    name_is_percentage and re.fullmatch(r"\d\.\d", val) is not None
+                )
 
                 is_percentage = (
                     "%" in val
                     or missing_percent_on_flat
+                    or missing_percent_on_percentage_name
                     or (name_is_percentage and len(val) > 3 and val.endswith("0") and "." in val)
                 )
 

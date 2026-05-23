@@ -24,6 +24,7 @@ from models.const import (
     CONFIG_MIN_CHAR_LEVEL,
     CONFIG_MIN_LC_LEVEL,
     CONFIG_MIN_LC_RARITY,
+    CONFIG_OCR_BATCH_SIZE,
     CONFIG_OCR_CONCURRENCY,
     CONFIG_MIN_RELIC_LEVEL,
     CONFIG_MIN_RELIC_RARITY,
@@ -69,6 +70,8 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
     """HSRScannerUI handles the UI for the HSR Scanner application"""
 
     OCR_CONCURRENCY_DEFAULT_PERCENT = 75
+    OCR_BATCH_SIZE_DEFAULT = 50
+    OCR_BATCH_SIZE_MAX = 50
 
     def __init__(self) -> None:
         """Constructor"""
@@ -157,6 +160,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.horizontalSliderOCRConcurrency.valueChanged.connect(
             self.handle_ocr_concurrency_slider
         )
+        self.horizontalSliderOCRBatchSize.valueChanged.connect(
+            self.handle_ocr_batch_size_slider
+        )
         self.checkBoxDebugMode.toggled.connect(
             self.checkBoxDebugSaveCaptures.setEnabled
         )
@@ -244,6 +250,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self._settings.value(CONFIG_PLAY_SOUND, True) == "true"
         )
 
+        saved_ocr_batch_size = self._settings.value(
+            CONFIG_OCR_BATCH_SIZE, self.OCR_BATCH_SIZE_DEFAULT
+        )
+        self._set_ocr_batch_size_controls(saved_ocr_batch_size)
+
         saved_ocr_concurrency = self._settings.value(CONFIG_OCR_CONCURRENCY, None)
         if saved_ocr_concurrency is None:
             default_threads = self._get_default_ocr_concurrency_threads()
@@ -306,6 +317,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(CONFIG_INCLUDE_UID, self.checkBoxIncludeUid.isChecked())
         self._settings.setValue(CONFIG_PLAY_SOUND, self.checkBoxPlaySound.isChecked())
         self._settings.setValue(CONFIG_OCR_CONCURRENCY, self._ocr_concurrency_threads)
+        self._settings.setValue(
+            CONFIG_OCR_BATCH_SIZE, self.horizontalSliderOCRBatchSize.value()
+        )
 
     def reset_settings(self) -> None:
         """Resets the settings for the scan"""
@@ -329,6 +343,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(CONFIG_DEBUG_MODE, False)
         self._settings.setValue(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True)
         self._settings.setValue(CONFIG_OCR_CONCURRENCY, default_ocr_threads)
+        self._settings.setValue(CONFIG_OCR_BATCH_SIZE, self.OCR_BATCH_SIZE_DEFAULT)
         self._settings.setValue(CONFIG_INCLUDE_UID, False)
         self._settings.setValue(CONFIG_PLAY_SOUND, True)
         self.load_settings()
@@ -511,6 +526,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         config[CONFIG_DEBUG_OUTPUT_LOCATION] = None
         config[CONFIG_OCR_CONCURRENCY] = self._ocr_concurrency_threads
+        config[CONFIG_OCR_BATCH_SIZE] = self.horizontalSliderOCRBatchSize.value()
 
         if config[CONFIG_DEBUG]:
             config[CONFIG_DEBUG_OUTPUT_LOCATION] = create_debug_folder(
@@ -608,6 +624,24 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             percent,
             threads_from_percent(percent, self._host_threads),
         )
+
+    def _set_ocr_batch_size_controls(self, batch_size) -> None:
+        """Sync the OCR batch-size slider and readout label."""
+        try:
+            resolved_batch_size = int(batch_size)
+        except (TypeError, ValueError):
+            resolved_batch_size = self.OCR_BATCH_SIZE_DEFAULT
+        resolved_batch_size = max(1, min(resolved_batch_size, self.OCR_BATCH_SIZE_MAX))
+        self.horizontalSliderOCRBatchSize.blockSignals(True)
+        self.horizontalSliderOCRBatchSize.setValue(resolved_batch_size)
+        self.horizontalSliderOCRBatchSize.blockSignals(False)
+        self.labelOCRBatchSizeValue.setText(
+            f"{resolved_batch_size} crops/call"
+        )
+
+    def handle_ocr_batch_size_slider(self, batch_size: int) -> None:
+        """Update OCR batch-size display when the slider moves."""
+        self._set_ocr_batch_size_controls(batch_size)
 
     def increment_progress(self, enum: IncrementType) -> None:
         """Increments the number on the UI based on the enum
