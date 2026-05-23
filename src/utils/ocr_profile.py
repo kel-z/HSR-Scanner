@@ -12,6 +12,7 @@ _enabled = False
 _log_callback: Callable[[str, LogLevel], None] | None = None
 _lock = threading.Lock()
 _ocr_calls: list[dict] = []
+_ocr_batches: list[dict] = []
 _attempts: list[dict] = []
 _parse_tasks: list[dict] = []
 _session_started_at = time.perf_counter()
@@ -34,6 +35,7 @@ def reset_ocr_profile() -> None:
     global _session_started_at
     with _lock:
         _ocr_calls.clear()
+        _ocr_batches.clear()
         _attempts.clear()
         _parse_tasks.clear()
         _session_started_at = time.perf_counter()
@@ -165,6 +167,56 @@ def record_ocr_call(
     )
 
 
+def record_ocr_batch(
+    image_count: int,
+    composite_size: tuple[int, int] | None,
+    whitelist: str,
+    psm: int,
+    force_preprocess: bool,
+    remove_newline: bool,
+    lang: str,
+    final_lang: str,
+    compose_ms: float,
+    preprocess_ms: float,
+    ocr_ms: float,
+    total_ms: float,
+    result_lengths: list[int],
+) -> None:
+    if not _enabled:
+        return
+
+    context = get_ocr_profile_context()
+    row = {
+        "image_count": image_count,
+        "composite_size": composite_size,
+        "whitelist_len": len(whitelist),
+        "psm": psm,
+        "force_preprocess": force_preprocess,
+        "remove_newline": remove_newline,
+        "lang": lang,
+        "final_lang": final_lang,
+        "compose_ms": compose_ms,
+        "preprocess_ms": preprocess_ms,
+        "ocr_ms": ocr_ms,
+        "total_ms": total_ms,
+        "result_count": len(result_lengths),
+        "nonempty_results": sum(1 for length in result_lengths if length > 0),
+        "result_chars": sum(result_lengths),
+        **context,
+    }
+    with _lock:
+        _ocr_batches.append(row)
+
+    log_ocr_profile_detail(
+        "OCR batch: "
+        f"images={image_count}, total_ms={total_ms:.3f}, compose_ms={compose_ms:.3f}, "
+        f"preprocess_ms={preprocess_ms:.3f}, ocr_ms={ocr_ms:.3f}, psm={psm}, "
+        f"lang={lang}, final_lang={final_lang}, image_size={composite_size}, "
+        f"whitelist_len={len(whitelist)}, nonempty_results={row['nonempty_results']}, "
+        f"result_chars={row['result_chars']}, context={_format_context(context)}"
+    )
+
+
 def record_parse_task(
     item_type: str,
     uid: int | str | None,
@@ -200,13 +252,14 @@ def get_ocr_profile_summary_lines() -> list[str]:
 
     with _lock:
         calls = list(_ocr_calls)
+        batches = list(_ocr_batches)
         attempts = list(_attempts)
         parse_tasks = list(_parse_tasks)
         session_ms = (time.perf_counter() - _session_started_at) * 1000
 
     lines = [
         "OCR profile summary: "
-        f"session_ms={session_ms:.3f}, calls={len(calls)}, attempts={len(attempts)}, "
+        f"session_ms={session_ms:.3f}, calls={len(calls)}, batches={len(batches)}, attempts={len(attempts)}, "
         f"parse_tasks={len(parse_tasks)}"
     ]
 
@@ -228,6 +281,27 @@ def get_ocr_profile_summary_lines() -> list[str]:
             + _counter_text(Counter(str(x.get("item_type", "unknown")) for x in calls))
         )
         lines.extend(_slowest_call_lines(calls, 10))
+
+    if batches:
+        totals = [x["total_ms"] for x in batches]
+        compose = [x["compose_ms"] for x in batches]
+        preprocess = [x["preprocess_ms"] for x in batches]
+        ocr = [x["ocr_ms"] for x in batches]
+        images = [float(x["image_count"]) for x in batches]
+        lines.append("OCR profile batches total_ms: " + _stats_text(totals))
+        lines.append("OCR profile batch compose_ms: " + _stats_text(compose))
+        lines.append("OCR profile batch preprocess_ms: " + _stats_text(preprocess))
+        lines.append("OCR profile batch ocr_ms: " + _stats_text(ocr))
+        lines.append("OCR profile batch image_count: " + _stats_text(images))
+        lines.append(
+            "OCR profile batches by field: "
+            + _counter_text(Counter(str(x.get("field", "unknown")) for x in batches))
+        )
+        lines.append(
+            "OCR profile batches by item_type: "
+            + _counter_text(Counter(str(x.get("item_type", "unknown")) for x in batches))
+        )
+        lines.extend(_slowest_batch_lines(batches, 10))
 
     if attempts:
         lines.append(
@@ -287,6 +361,20 @@ def _slowest_call_lines(calls: list[dict], limit: int) -> list[str]:
             f"field={row.get('field', 'unknown')}, item_type={row.get('item_type', 'unknown')}, "
             f"uid={row.get('uid', 'unknown')}, psm={row['psm']}, lang={row['lang']}, "
             f"used_preprocess={row['used_preprocess']}, result={row['result_preview']}"
+        )
+    return lines
+
+
+def _slowest_batch_lines(batches: list[dict], limit: int) -> list[str]:
+    lines = []
+    for row in sorted(batches, key=lambda x: x["total_ms"], reverse=True)[:limit]:
+        lines.append(
+            "OCR profile slow batch: "
+            f"field={row.get('field', 'unknown')}, item_type={row.get('item_type', 'unknown')}, "
+            f"images={row['image_count']}, total_ms={row['total_ms']:.3f}, "
+            f"ocr_ms={row['ocr_ms']:.3f}, preprocess_ms={row['preprocess_ms']:.3f}, "
+            f"compose_ms={row['compose_ms']:.3f}, psm={row['psm']}, lang={row['lang']}, "
+            f"nonempty_results={row['nonempty_results']}, result_chars={row['result_chars']}"
         )
     return lines
 
