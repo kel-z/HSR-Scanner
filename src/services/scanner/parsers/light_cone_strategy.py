@@ -31,6 +31,7 @@ from utils.ocr import (
     preprocess_lc_level_img,
     preprocess_superimposition_img,
 )
+from utils.ocr_profile import ocr_profile_context
 
 
 class LightConeStrategy(BaseParseStrategy):
@@ -76,9 +77,12 @@ class LightConeStrategy(BaseParseStrategy):
                     if filters[key] <= 3:
                         filter_results[key] = True
                         continue
-                    stats_dict[LC_NAME] = self.extract_stats_data(
-                        LC_NAME, stats_dict[LC_NAME]
-                    )
+                    with ocr_profile_context(
+                        item_type="light_cone", uid=uid, field=LC_NAME, phase="filter"
+                    ):
+                        stats_dict[LC_NAME] = self.extract_stats_data(
+                            LC_NAME, stats_dict[LC_NAME]
+                        )
                     lc_name = stats_dict[LC_NAME]
                     if not lc_name or not isinstance(lc_name, str):
                         self._log(
@@ -98,9 +102,12 @@ class LightConeStrategy(BaseParseStrategy):
                     if filters[key] <= 1:
                         filter_results[key] = True
                         continue
-                    stats_dict[LC_LEVEL] = self.extract_stats_data(
-                        LC_LEVEL, stats_dict[LC_LEVEL]
-                    )
+                    with ocr_profile_context(
+                        item_type="light_cone", uid=uid, field=LC_LEVEL, phase="filter"
+                    ):
+                        stats_dict[LC_LEVEL] = self.extract_stats_data(
+                            LC_LEVEL, stats_dict[LC_LEVEL]
+                        )
                     if not stats_dict[LC_LEVEL]:
                         self._log(
                             f"Light Cone UID {uid}: Failed to parse level. Setting to 1.",
@@ -134,24 +141,28 @@ class LightConeStrategy(BaseParseStrategy):
             return data
 
         if key == LC_NAME:
-            name, _ = self._game_data.get_closest_light_cone_name(
-                image_to_string(
-                    data,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
-                    6,
+            with ocr_profile_context(field=key):
+                name, _ = self._game_data.get_closest_light_cone_name(
+                    image_to_string(
+                        data,
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
+                        6,
+                    )
                 )
-            )
             return name
         elif key == LC_LEVEL:
-            return image_to_string(
-                data, "0123456789S/", 7, True, preprocess_lc_level_img
-            ).replace("S", "5")
+            with ocr_profile_context(field=key):
+                return image_to_string(
+                    data, "0123456789S/", 7, True, preprocess_lc_level_img
+                ).replace("S", "5")
         elif key == LC_SUPERIMPOSITION:
-            return image_to_string(
-                data, "12345S", 10, True, preprocess_superimposition_img
-            ).replace("S", "5")
+            with ocr_profile_context(field=key):
+                return image_to_string(
+                    data, "12345S", 10, True, preprocess_superimposition_img
+                ).replace("S", "5")
         elif key == EQUIPPED:
-            return image_to_string(data, "Equipped", 7, True, preprocess_equipped_img)
+            with ocr_profile_context(field=key):
+                return image_to_string(data, "Equipped", 7, True, preprocess_equipped_img)
         else:
             return data
 
@@ -166,8 +177,10 @@ class LightConeStrategy(BaseParseStrategy):
             return {}
 
         try:
-            for key in stats_dict:
-                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
+            with ocr_profile_context(item_type="light_cone", uid=uid, phase="parse"):
+                for key in stats_dict:
+                    with ocr_profile_context(field=key):
+                        stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
             (
                 self._log(

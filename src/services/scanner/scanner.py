@@ -33,6 +33,7 @@ from models.const import (
     CONFIG_CHARACTERS_KEY,
     CONFIG_DEBUG,
     CONFIG_DEBUG_OUTPUT_LOCATION,
+    CONFIG_DEBUG_SAVE_CAPTURE_PNG,
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_NAV_DELAY,
@@ -66,6 +67,13 @@ from utils.ocr import (
     preprocess_char_count_img,
     preprocess_uid_img,
     set_ocr_concurrency,
+)
+from utils.ocr_profile import (
+    configure_ocr_profile,
+    get_ocr_profile_summary_lines,
+    ocr_profile_context,
+    record_parse_task,
+    reset_ocr_profile,
 )
 from utils.screenshot import Screenshot
 from utils.window import bring_window_to_foreground
@@ -139,11 +147,14 @@ class HSRScanner(QObject):
             self.log_signal,
             self._aspect_ratio,
             config[CONFIG_DEBUG],
+            config.get(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True),
             config[CONFIG_DEBUG_OUTPUT_LOCATION],
         )
         self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
+        configure_ocr_profile(self._config[CONFIG_DEBUG], self._log)
+        reset_ocr_profile()
 
     @property
     def ocr_concurrency(self) -> int:
@@ -163,7 +174,6 @@ class HSRScanner(QObject):
         time.sleep(0.05)
         self._nav.click()
         self._scan_sleep(0.05)
-
 
     def _capture_inventory_stats(
         self,
@@ -206,13 +216,15 @@ class HSRScanner(QObject):
         if self._config[CONFIG_INCLUDE_UID] and not self._interrupt_event.is_set():
             self._nav_sleep(1)
             uid_img = self._screenshot.screenshot_uid()
-            uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
-                :9
-            ]
+            with ocr_profile_context(item_type="account", uid="account", field="uid", phase="scan"):
+                uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
+                    :9
+                ]
             if len(uid) != 9:
-                uid = image_to_string(
-                    uid_img, "0123456789", 7, True, preprocess_uid_img
-                )[:9]
+                with ocr_profile_context(item_type="account", uid="account", field="uid_retry", phase="scan"):
+                    uid = image_to_string(
+                        uid_img, "0123456789", 7, True, preprocess_uid_img
+                    )[:9]
             if len(uid) != 9:
                 self._log(f"Failed to parse UID. Got '{uid}' instead.", LogLevel.ERROR)
                 uid = None
@@ -274,6 +286,18 @@ class HSRScanner(QObject):
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")
 
+        ocr_process_start = time.perf_counter()
+        light_cone_results = [x for x in await asyncio.gather(*light_cones) if x]
+        relic_results = [x for x in await asyncio.gather(*relics) if x]
+        character_results = [x for x in await asyncio.gather(*characters) if x]
+        self._log(
+            f"OCR process timing: total_ms={(time.perf_counter() - ocr_process_start) * 1000:.3f}, "
+            f"light_cones={len(light_cone_results)}, relics={len(relic_results)}, characters={len(character_results)}",
+            LogLevel.DEBUG,
+        )
+        for line in get_ocr_profile_summary_lines():
+            self._log(line, LogLevel.DEBUG)
+
         return {
             "source": "HSR-Scanner",
             "build": "v1.5.0",
@@ -286,9 +310,9 @@ class HSRScanner(QObject):
                     else "Caelus"
                 ),
             },
-            "light_cones": [x for x in await asyncio.gather(*light_cones) if x],
-            "relics": [x for x in await asyncio.gather(*relics) if x],
-            "characters": [x for x in await asyncio.gather(*characters) if x],
+            "light_cones": light_cone_results,
+            "relics": relic_results,
+            "characters": character_results,
         }
 
     def stop_scan(self) -> None:
@@ -327,7 +351,13 @@ class HSRScanner(QObject):
             #
             #       for now, it will work for light cones and relics.
             quantity = self._screenshot.screenshot_quantity()
-            quantity = image_to_string(quantity, "0123456789/", 7)
+            with ocr_profile_context(
+                item_type=strategy.SCAN_TYPE.name.lower(),
+                uid="inventory",
+                field="quantity",
+                phase="scan",
+            ):
+                quantity = image_to_string(quantity, "0123456789/", 7)
 
             try:
                 self._log(f"Quantity: {quantity}.")
@@ -347,9 +377,15 @@ class HSRScanner(QObject):
                     )
                 self._nav_sleep(1)
 
-        current_sort_method = image_to_string(
-            self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
-        )
+        with ocr_profile_context(
+            item_type=strategy.SCAN_TYPE.name.lower(),
+            uid="inventory",
+            field="sort",
+            phase="scan",
+        ):
+            current_sort_method = image_to_string(
+                self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
+            )
         optimal_sort_method = SORT_DATE
         if self._scan_mode != ScanMode.RECENT_RELICS.value:
             optimal_sort_method = strategy.get_optimal_sort_method(
@@ -431,7 +467,14 @@ class HSRScanner(QObject):
             # Update UI count
             self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-            task = asyncio.to_thread(strategy.parse, stats_dict, item_id)
+            task = self._profiled_parse_task(
+                strategy.SCAN_TYPE.name.lower(),
+                item_id,
+                strategy.__class__.__name__,
+                strategy.parse,
+                stats_dict,
+                item_id,
+            )
             tasks.add(task)
 
             # Next item
@@ -493,13 +536,19 @@ class HSRScanner(QObject):
                 retry = 0
                 while True:
                     character_total = self._screenshot.screenshot_character_count()
-                    character_total = image_to_string(
-                        character_total,
-                        "0123456789/",
-                        7,
-                        True,
-                        preprocess_char_count_img,
-                    )
+                    with ocr_profile_context(
+                        item_type="character",
+                        uid="databank",
+                        field="character_count",
+                        phase="scan",
+                    ):
+                        character_total = image_to_string(
+                            character_total,
+                            "0123456789/",
+                            7,
+                            True,
+                            preprocess_char_count_img,
+                        )
                     try:
                         self._log(f"Character total: {character_total}.")
                         character_total = int(character_total.split("/")[0])
@@ -754,7 +803,13 @@ class HSRScanner(QObject):
         for stats_dict in res:
             if not stats_dict:
                 continue
-            task = asyncio.to_thread(char_parser.parse, stats_dict)
+            task = self._profiled_parse_task(
+                "character",
+                stats_dict.get(CHAR_NAME, "unknown"),
+                char_parser.__class__.__name__,
+                char_parser.parse,
+                stats_dict,
+            )
             tasks.add(task)
 
         self._nav_sleep(1)
@@ -783,11 +838,45 @@ class HSRScanner(QObject):
         :return: The character name
         """
         character_name_img = self._screenshot.screenshot_character_name()
-        return image_to_string(
-            character_name_img,
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/79&",
-            7,
-        )
+        with ocr_profile_context(
+            item_type="character",
+            uid="navigation",
+            field="character_name",
+            phase="scan",
+        ):
+            return image_to_string(
+                character_name_img,
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/79&",
+                7,
+            )
+
+    def _profiled_parse_task(
+        self,
+        item_type: str,
+        uid: int | str | None,
+        parser: str,
+        parse_func,
+        *args,
+    ):
+        """Run a parse call in the OCR executor with queue and parse timing."""
+        queued_at = time.perf_counter()
+
+        def _run_parse():
+            worker_started_at = time.perf_counter()
+            with ocr_profile_context(item_type=item_type, uid=uid, phase="parse"):
+                result = parse_func(*args)
+            parse_ms = (time.perf_counter() - worker_started_at) * 1000
+            record_parse_task(
+                item_type=item_type,
+                uid=uid,
+                parser=parser,
+                queue_wait_ms=(worker_started_at - queued_at) * 1000,
+                parse_ms=parse_ms,
+                success=bool(result),
+            )
+            return result
+
+        return asyncio.to_thread(_run_parse)
 
     def _nav_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with navigation delay

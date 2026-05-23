@@ -909,7 +909,7 @@ p, li { white-space: pre-wrap; }
         <x>10</x>
         <y>360</y>
         <width>201</width>
-        <height>71</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -921,17 +921,27 @@ p, li { white-space: pre-wrap; }
          <x>10</x>
          <y>20</y>
          <width>181</width>
-         <height>41</height>
+         <height>61</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QCheckBox" name="checkBoxDebugMode">
           <property name="toolTip">
-           <string>Saves ALL screenshots</string>
+           <string>Enables debug logging and debug output folder creation</string>
           </property>
           <property name="text">
            <string>Debug mode</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxDebugSaveCaptures">
+          <property name="toolTip">
+           <string>Save every screenshot capture as a PNG in debug mode</string>
+          </property>
+          <property name="text">
+           <string>Save capture PNGs</string>
           </property>
          </widget>
         </item>
@@ -1228,7 +1238,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- Scan delay for clicking between individual items (relics, light cones, and characters).&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt; text-decoration: underline;&quot;&gt;DEBUG MODE&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt;&quot;&gt;Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt;&quot;&gt;Debug mode records detailed logs and timing data in a debug folder. Enable Save capture PNGs when you also need every screenshot written to disk.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_16">
@@ -1255,7 +1265,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>440</y>
+        <y>470</y>
         <width>101</width>
         <height>31</height>
        </rect>
