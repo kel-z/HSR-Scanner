@@ -18,6 +18,7 @@ from models.const import (
     CONFIG_DEBUG,
     CONFIG_DEBUG_MODE,
     CONFIG_DEBUG_OUTPUT_LOCATION,
+    CONFIG_DEBUG_SAVE_CAPTURE_PNG,
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_MIN_CHAR_LEVEL,
@@ -156,6 +157,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.horizontalSliderOCRConcurrency.valueChanged.connect(
             self.handle_ocr_concurrency_slider
         )
+        self.checkBoxDebugMode.toggled.connect(
+            self.checkBoxDebugSaveCaptures.setEnabled
+        )
 
         self.load_settings()
 
@@ -219,6 +223,12 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxDebugMode.setChecked(
             self._settings.value(CONFIG_DEBUG_MODE, False) == "true"
         )
+        self.checkBoxDebugSaveCaptures.setChecked(
+            self._settings.value(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True) == "true"
+        )
+        self.checkBoxDebugSaveCaptures.setEnabled(
+            self.checkBoxDebugMode.isChecked()
+        )
         self.spinBoxNavDelay.setValue(self._settings.value(CONFIG_NAV_DELAY, 0))
         self.spinBoxScanDelay.setValue(self._settings.value(CONFIG_SCAN_DELAY, 0))
         self.spinBoxRecentRelics.setValue(
@@ -280,6 +290,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self._settings.setValue(CONFIG_SRO_FORMAT, self.checkBoxSroFormat.isChecked())
         self._settings.setValue(CONFIG_DEBUG_MODE, self.checkBoxDebugMode.isChecked())
+        self._settings.setValue(
+            CONFIG_DEBUG_SAVE_CAPTURE_PNG,
+            self.checkBoxDebugSaveCaptures.isChecked(),
+        )
         self._settings.setValue(CONFIG_NAV_DELAY, self.spinBoxNavDelay.value())
         self._settings.setValue(CONFIG_SCAN_DELAY, self.spinBoxScanDelay.value())
         self._settings.setValue(
@@ -313,6 +327,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(CONFIG_RECENT_RELICS_NUM, 8)
         self._settings.setValue(CONFIG_RECENT_RELICS_FIVE_STAR, True)
         self._settings.setValue(CONFIG_DEBUG_MODE, False)
+        self._settings.setValue(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True)
         self._settings.setValue(CONFIG_OCR_CONCURRENCY, default_ocr_threads)
         self._settings.setValue(CONFIG_INCLUDE_UID, False)
         self._settings.setValue(CONFIG_PLAY_SOUND, True)
@@ -491,6 +506,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # debug mode
         config[CONFIG_DEBUG] = self.checkBoxDebugMode.isChecked()
+        config[CONFIG_DEBUG_SAVE_CAPTURE_PNG] = (
+            config[CONFIG_DEBUG] and self.checkBoxDebugSaveCaptures.isChecked()
+        )
         config[CONFIG_DEBUG_OUTPUT_LOCATION] = None
         config[CONFIG_OCR_CONCURRENCY] = self._ocr_concurrency_threads
 

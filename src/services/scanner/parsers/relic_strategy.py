@@ -45,6 +45,7 @@ from utils.ocr import (
     preprocess_main_stat_img,
     preprocess_sub_stat_img,
 )
+from utils.ocr_profile import ocr_profile_context
 
 
 class RelicStrategy(BaseParseStrategy):
@@ -197,17 +198,23 @@ class RelicStrategy(BaseParseStrategy):
                     if filters[key] <= 2:
                         filter_results[key] = True
                         continue
-                    val = stats_dict[RELIC_RARITY] = self.extract_stats_data(  # type: ignore
-                        filter_key, stats_dict[RELIC_RARITY]
-                    )
+                    with ocr_profile_context(
+                        item_type="relic", uid=uid, field=filter_key, phase="filter"
+                    ):
+                        val = stats_dict[RELIC_RARITY] = self.extract_stats_data(  # type: ignore
+                            filter_key, stats_dict[RELIC_RARITY]
+                        )
                 elif key == MIN_LEVEL:
                     # Trivial case
                     if filters[key] <= 0:
                         filter_results[key] = True
                         continue
-                    level = self.extract_stats_data(
-                        RELIC_LEVEL, stats_dict[RELIC_LEVEL]
-                    )
+                    with ocr_profile_context(
+                        item_type="relic", uid=uid, field=RELIC_LEVEL, phase="filter"
+                    ):
+                        level = self.extract_stats_data(
+                            RELIC_LEVEL, stats_dict[RELIC_LEVEL]
+                        )
                     if not level or isinstance(level, Image):
                         self._log(
                             f"Relic UID {uid}: Failed to extract level for filtering. Raw OCR was: {repr(level)}",
@@ -261,38 +268,42 @@ class RelicStrategy(BaseParseStrategy):
             return data
 
         if key == RELIC_NAME:
-            res = image_to_string(
-                data,
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
-                6,
-                lang=f"eng+{DIN_ALTERNATE}",
-            )
+            with ocr_profile_context(field=key):
+                res = image_to_string(
+                    data,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
+                    6,
+                    lang=f"eng+{DIN_ALTERNATE}",
+                )
             if res.endswith(" O"):
                 res = res[:-2].strip()
             return res
         elif key == RELIC_LEVEL:
-            return (
-                image_to_string(
-                    data,
-                    "0123456789S+",
-                    13,
-                    True,
-                    preprocess_level_img,
-                    lang=f"eng+{DIN_ALTERNATE}",
+            with ocr_profile_context(field=key):
+                return (
+                    image_to_string(
+                        data,
+                        "0123456789S+",
+                        13,
+                        True,
+                        preprocess_level_img,
+                        lang=f"eng+{DIN_ALTERNATE}",
+                    )
+                    .replace("S", "5")
+                    .replace("+", "")
                 )
-                .replace("S", "5")
-                .replace("+", "")
-            )
         elif key == RELIC_MAINSTAT:
-            return image_to_string(
-                data,
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz+",
-                7,
-                True,
-                preprocess_main_stat_img,
-            )
+            with ocr_profile_context(field=key):
+                return image_to_string(
+                    data,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz+",
+                    7,
+                    True,
+                    preprocess_main_stat_img,
+                )
         elif key == EQUIPPED:
-            return image_to_string(data, "Equiped", 7, True, preprocess_equipped_img)
+            with ocr_profile_context(field=key):
+                return image_to_string(data, "Equiped", 7, True, preprocess_equipped_img)
         elif key == RELIC_RARITY:
             # Get rarity by color matching
             rarity_sample = np.array(data)
@@ -301,23 +312,25 @@ class RelicStrategy(BaseParseStrategy):
             ]
             return self._game_data.get_closest_rarity(rarity_sample)
         elif key == RELIC_SUBSTAT_NAMES:
-            return image_to_string(
-                data,
-                " ABCDEFGHIKMPRSTacefikrt()+0123456789ov",
-                6,
-                True,
-                preprocess_sub_stat_img,
-                False,
-            )
-        elif key == RELIC_SUBSTAT_VALUES:
-            return (
-                image_to_string(
-                    data, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
+            with ocr_profile_context(field=key):
+                return image_to_string(
+                    data,
+                    " ABCDEFGHIKMPRSTacefikrt()+0123456789ov",
+                    6,
+                    True,
+                    preprocess_sub_stat_img,
+                    False,
                 )
-                .replace("S", "5")
-                .replace(",", ".")
-                .replace("..", ".")
-            )
+        elif key == RELIC_SUBSTAT_VALUES:
+            with ocr_profile_context(field=key):
+                return (
+                    image_to_string(
+                        data, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
+                    )
+                    .replace("S", "5")
+                    .replace(",", ".")
+                    .replace("..", ".")
+                )
         else:
             return data
 
@@ -334,8 +347,10 @@ class RelicStrategy(BaseParseStrategy):
         try:
             # Keep a copy of raw images for debug saving before they are OCRed into strings
             raw_stats = stats_dict.copy()
-            for key in stats_dict:
-                stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
+            with ocr_profile_context(item_type="relic", uid=uid, phase="parse"):
+                for key in stats_dict:
+                    with ocr_profile_context(field=key):
+                        stats_dict[key] = self.extract_stats_data(key, stats_dict[key])
 
             (
                 self._log(

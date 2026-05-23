@@ -1,5 +1,6 @@
 import datetime
 import os
+import time
 
 import cv2
 import numpy as np
@@ -40,13 +41,15 @@ class Screenshot:
         log_signal: pyqtBoundSignal,
         aspect_ratio: str = ASPECT_16_9,
         debug: bool = False,
+        save_capture_png: bool = True,
         debug_output_location: str = "",
     ) -> None:
         """Constructor
 
         :param hwnd: The window handle of the game window
         :param aspect_ratio: The aspect ratio of the game window, defaults to "16:9"
-        :param debug_mode: Whether to save screenshots, default False
+        :param debug_mode: Whether to log screenshot timing, default False
+        :param save_capture_png: Whether to save every capture as a PNG
         :param debug_output_location: Output location of saved screenshots
         """
         self._aspect_ratio = aspect_ratio
@@ -59,6 +62,7 @@ class Screenshot:
         self._y_scaling_factor = self._window_height / 1080
 
         self._debug = debug
+        self._save_capture_png = save_capture_png
         self._debug_output_location = debug_output_location
         self._mss = None
         self._mss_failed = False
@@ -98,6 +102,7 @@ class Screenshot:
                 return self._screenshot_stats("relic")
             case _:
                 raise ValueError(f"Invalid scan type: {scan_type.name}.")
+
     def screenshot_sort(self) -> Image:
         """Takes a screenshot of the current sort option. Requires inventory to be open.
 
@@ -179,7 +184,7 @@ class Screenshot:
 
             res.append(img)
 
-        if self._debug:
+        if self._debug and self._save_capture_png:
             for img in res:
                 self._save_image(PILImage.fromarray(img))
 
@@ -211,30 +216,50 @@ class Screenshot:
         :param height: The height of the screenshot
         :return: The screenshot normalized to 1920x1080
         """
+        timing_start = time.perf_counter()
+
         # adjust coordinates to window
         x = self._window_x + int(self._window_width * x)
         y = self._window_y + int(self._window_height * y)
         width = int(self._window_width * width)
         height = int(self._window_height * height)
+        bbox = (int(x), int(y), int(x + width), int(y + height))
 
-        screenshot = self._grab_screenshot(
-            (int(x), int(y), int(x + width), int(y + height))
-        )
+        grab_start = time.perf_counter()
+        screenshot, backend = self._grab_screenshot(bbox)
+        grab_end = time.perf_counter()
 
+        resize_start = time.perf_counter()
         screenshot = screenshot.resize(
             (int(width / self._x_scaling_factor), int(height / self._y_scaling_factor))
         )
+        resize_end = time.perf_counter()
 
-        if self._debug and not do_not_save:
-            self._save_image(screenshot)
+        file_name = "not_saved"
+        save_ms = 0.0
+        if self._debug and self._save_capture_png and not do_not_save:
+            file_name, save_ms = self._save_image(screenshot)
+
+        if self._debug:
+            self._log_screenshot_timing(
+                file_name=file_name,
+                backend=backend,
+                bbox=bbox,
+                source_size=(width, height),
+                normalized_size=screenshot.size,
+                grab_ms=(grab_end - grab_start) * 1000,
+                resize_ms=(resize_end - resize_start) * 1000,
+                save_ms=save_ms,
+                total_ms=(time.perf_counter() - timing_start) * 1000,
+            )
 
         return screenshot
 
-    def _grab_screenshot(self, bbox: tuple[int, int, int, int]) -> Image:
+    def _grab_screenshot(self, bbox: tuple[int, int, int, int]) -> tuple[Image, str]:
         """Capture a cropped screenshot, preferring mss and falling back to PIL."""
         if mss is not None and not self._mss_failed:
             try:
-                return self._grab_with_mss(bbox)
+                return self._grab_with_mss(bbox), "mss"
             except Exception as exc:  # pragma: no cover - depends on host capture stack
                 self._mss_failed = True
                 if not self._mss_fallback_logged:
@@ -247,7 +272,7 @@ class Screenshot:
                         )
                     )
 
-        return ImageGrab.grab(bbox=bbox, all_screens=True)
+        return ImageGrab.grab(bbox=bbox, all_screens=True), "pil"
 
     def _grab_with_mss(self, bbox: tuple[int, int, int, int]) -> Image:
         """Capture a cropped screenshot using mss."""
@@ -264,6 +289,7 @@ class Screenshot:
 
         raw = self._mss.grab(monitor)
         return PILImage.frombytes("RGB", raw.size, raw.bgra, "raw", "BGRX")
+
     def _screenshot_stats(self, key: str) -> tuple[dict, bytes]:
         """Takes a screenshot of the stats
 
@@ -311,18 +337,51 @@ class Screenshot:
 
             res[k] = screenshot.crop((left - x0, upper - y0, right - x0, lower - y0))
 
-        if self._debug:
+        if self._debug and self._save_capture_png:
             for img in res.values():
                 self._save_image(img)
 
         return res
 
-    def _save_image(self, img: Image) -> None:
+    def _log_screenshot_timing(
+        self,
+        file_name: str,
+        backend: str,
+        bbox: tuple[int, int, int, int],
+        source_size: tuple[int, int],
+        normalized_size: tuple[int, int],
+        grab_ms: float,
+        resize_ms: float,
+        save_ms: float,
+        total_ms: float,
+    ) -> None:
+        """Log screenshot timing details for real scan performance analysis."""
+        self._log_signal.emit(
+            (
+                "Screenshot timing: "
+                f"file={file_name}, "
+                f"backend={backend}, "
+                f"bbox={bbox}, "
+                f"source={source_size[0]}x{source_size[1]}, "
+                f"normalized={normalized_size[0]}x{normalized_size[1]}, "
+                f"grab_ms={grab_ms:.3f}, "
+                f"resize_ms={resize_ms:.3f}, "
+                f"save_ms={save_ms:.3f}, "
+                f"total_ms={total_ms:.3f}",
+                LogLevel.DEBUG,
+            )
+        )
+
+    def _save_image(self, img: Image) -> tuple[str, float]:
         """Save the image on disk.
 
         :param img: The image to save.
+        :return: The saved image file name and PNG save duration in milliseconds.
         """
         file_name = f"{datetime.datetime.now().strftime('%H%M%S%f')}.png"
         output_location = os.path.join(self._debug_output_location, file_name)
+        save_start = time.perf_counter()
         img.save(output_location)
+        save_ms = (time.perf_counter() - save_start) * 1000
         self._log_signal.emit((f"Saving {file_name}."))
+        return file_name, save_ms
