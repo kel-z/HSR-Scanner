@@ -53,5 +53,6 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=True,
+    version='version_info.txt',
     icon='src\\assets\\images\\app.ico'
 )

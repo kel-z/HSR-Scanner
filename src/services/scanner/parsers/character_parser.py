@@ -36,6 +36,7 @@ from models.const import (
 from models.game_data import GameData
 from utils.data import resource_path
 from utils.ocr import image_to_string, preprocess_trace_img
+from utils.ocr_profile import ocr_profile_context
 
 
 class CharacterParser:
@@ -133,9 +134,16 @@ class CharacterParser:
             traces_dict = stats_dict[CHAR_TRACES]
             for k, v in traces_dict[TRACES_LEVELS].items():
                 try:
-                    res = image_to_string(
-                        v, "0123456789/", 6, True, preprocess_trace_img
-                    )
+                    with ocr_profile_context(
+                        item_type="character",
+                        uid=character[CHAR_NAME],
+                        field=f"trace_{k}",
+                        phase="parse",
+                        attempt="psm6_force",
+                    ):
+                        res = image_to_string(
+                            v, "0123456789/", 6, True, preprocess_trace_img
+                        )
 
                     # If the first OCR attempt failed, try again with different parameters
                     if not res or "/" not in res:
@@ -143,25 +151,46 @@ class CharacterParser:
                             f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 6 and no force preprocess.",
                             LogLevel.DEBUG,
                         )
-                        res = image_to_string(
-                            v, "0123456789/", 6, False, preprocess_trace_img
-                        )
+                        with ocr_profile_context(
+                            item_type="character",
+                            uid=character[CHAR_NAME],
+                            field=f"trace_{k}",
+                            phase="parse",
+                            attempt="psm6_direct",
+                        ):
+                            res = image_to_string(
+                                v, "0123456789/", 6, False, preprocess_trace_img
+                            )
                     if not res or "/" not in res:
                         self._log(
                             f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 7 and force preprocess.",
                             LogLevel.DEBUG,
                         )
-                        res = image_to_string(
-                            v, "0123456789/", 7, True, preprocess_trace_img
-                        )
+                        with ocr_profile_context(
+                            item_type="character",
+                            uid=character[CHAR_NAME],
+                            field=f"trace_{k}",
+                            phase="parse",
+                            attempt="psm7_force",
+                        ):
+                            res = image_to_string(
+                                v, "0123456789/", 7, True, preprocess_trace_img
+                            )
                     if not res or "/" not in res:
                         self._log(
                             f"{character[CHAR_NAME]}: Failed to parse '{k}' level. Trying again with PSM 7 and no force preprocess.",
                             LogLevel.DEBUG,
                         )
-                        res = image_to_string(
-                            v, "0123456789/", 7, False, preprocess_trace_img
-                        )
+                        with ocr_profile_context(
+                            item_type="character",
+                            uid=character[CHAR_NAME],
+                            field=f"trace_{k}",
+                            phase="parse",
+                            attempt="psm7_direct",
+                        ):
+                            res = image_to_string(
+                                v, "0123456789/", 7, False, preprocess_trace_img
+                            )
 
                     if k.startswith(CHAR_MEMOSPRITE):
                         key = k.split("_")[1]
@@ -207,9 +236,11 @@ class CharacterParser:
             return level
 
         if isinstance(level, Image):
-            res = image_to_string(level, "0123456789", 7, True)
+            with ocr_profile_context(field=CHAR_LEVEL, attempt="psm7_force"):
+                res = image_to_string(level, "0123456789", 7, True)
             if not res or not res.isdigit():
-                res = image_to_string(level, "0123456789", 6, True)
+                with ocr_profile_context(field=CHAR_LEVEL, attempt="psm6_force"):
+                    res = image_to_string(level, "0123456789", 6, True)
 
         if not res.isdigit():
             self._log(
