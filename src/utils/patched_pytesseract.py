@@ -253,6 +253,11 @@ def subprocess_args(include_stdout=True):
         kwargs['startupinfo'].dwFlags |= subprocess.STARTF_USESHOWWINDOW
         kwargs['startupinfo'].wShowWindow = subprocess.SW_HIDE
 
+    # PATCH: Run Tesseract below normal priority so OCR that overlaps live
+    # game capture yields CPU to the game instead of causing frame drops.
+    if hasattr(subprocess, 'BELOW_NORMAL_PRIORITY_CLASS'):
+        kwargs['creationflags'] = subprocess.BELOW_NORMAL_PRIORITY_CLASS
+
     if include_stdout:
         kwargs['stdout'] = subprocess.PIPE
     else:
