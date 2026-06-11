@@ -31,6 +31,27 @@ OCR_SEMAPHORE = threading.Semaphore(DEFAULT_OCR_CONCURRENCY)
 OCR_CALL_COUNTER = 0
 OCR_CALL_COUNTER_LOCK = threading.Lock()
 
+# Languages whose traineddata failed to load, so fallback attempts that can
+# never succeed are not retried with a fresh Tesseract process on every call.
+_MISSING_LANGS: set[str] = set()
+_MISSING_LANGS_LOCK = threading.Lock()
+_MISSING_LANG_ERROR_MARKERS = (
+    "Failed loading language",
+    "Error opening data file",
+    "Could not initialize tesseract",
+)
+
+
+def _is_lang_marked_missing(lang: str) -> bool:
+    with _MISSING_LANGS_LOCK:
+        return lang in _MISSING_LANGS
+
+
+def _mark_lang_missing_if_unloadable(lang: str, exc: Exception) -> None:
+    if any(marker in str(exc) for marker in _MISSING_LANG_ERROR_MARKERS):
+        with _MISSING_LANGS_LOCK:
+            _MISSING_LANGS.add(lang)
+
 
 def set_ocr_concurrency(limit: int | None) -> int:
     """Set the maximum number of concurrent OCR calls."""
@@ -91,10 +112,12 @@ def image_to_string(
     system_config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
 
     # If local tessdata is missing requested languages (e.g. eng), try system tessdata as fallback.
+    # Skip languages that already failed to load this run; respawning Tesseract for them
+    # costs ~160ms per attempt and can never succeed.
     attempts: list[tuple[str, str]] = [(local_config, final_lang)]
-    if lang != final_lang:
+    if lang != final_lang and not _is_lang_marked_missing(lang):
         attempts.append((system_config, lang))
-    if "eng" in lang.split("+"):
+    if "eng" in lang.split("+") and not _is_lang_marked_missing("eng"):
         attempts.append((system_config, "eng"))
 
     # Keep original order while removing duplicates.
@@ -109,12 +132,17 @@ def image_to_string(
     def _ocr_with_fallback(target_img: Image, target: str) -> str:
         last_res = ""
         for attempt_index, (config, config_lang) in enumerate(dedup_attempts, start=1):
+            # Fallback languages may get marked missing mid-call (e.g. by the
+            # direct pass); never skip the primary bundled attempt.
+            if attempt_index > 1 and _is_lang_marked_missing(config_lang):
+                continue
             attempt_start = time.perf_counter() if profile_enabled else 0.0
             try:
                 last_res = pytesseract.image_to_string(
                     target_img, config=config, lang=config_lang
                 )
             except Exception as exc:
+                _mark_lang_missing_if_unloadable(config_lang, exc)
                 if profile_enabled:
                     record_ocr_attempt(
                         call_id,
