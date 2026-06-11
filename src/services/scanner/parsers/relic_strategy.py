@@ -343,6 +343,8 @@ class RelicStrategy(BaseParseStrategy):
 
         results = []
         for item_chunk in self._chunk_items(items, self.BATCH_OCR_CHUNK_SIZE):
+            if self._interrupt_event.is_set():
+                break
             raw_stats_by_uid = {
                 uid: stats_dict.copy() for uid, stats_dict in item_chunk
             }
