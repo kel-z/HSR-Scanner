@@ -9,6 +9,7 @@ from typing import Callable, Iterator
 from enums.log_level import LogLevel
 
 _enabled = False
+_detail_logs_enabled = True
 _log_callback: Callable[[str, LogLevel], None] | None = None
 _lock = threading.Lock()
 _ocr_calls: list[dict] = []
@@ -23,10 +24,17 @@ _context = contextvars.ContextVar("ocr_profile_context", default={})
 def configure_ocr_profile(
     enabled: bool,
     log_callback: Callable[[str, LogLevel], None] | None = None,
+    detail_logs_enabled: bool = True,
 ) -> None:
-    """Enable or disable OCR profiling for the current scan."""
-    global _enabled, _log_callback
+    """Enable or disable OCR profiling for the current scan.
+
+    Profile rows are always recorded in memory while enabled (they feed the
+    end-of-scan summary); ``detail_logs_enabled`` additionally emits a log
+    line per OCR event, which is expensive at full-scan volume.
+    """
+    global _enabled, _detail_logs_enabled, _log_callback
     _enabled = enabled
+    _detail_logs_enabled = detail_logs_enabled
     _log_callback = log_callback
 
 
@@ -68,7 +76,7 @@ def get_ocr_profile_context() -> dict:
 
 
 def log_ocr_profile_detail(message: str) -> None:
-    if _enabled and _log_callback:
+    if _enabled and _detail_logs_enabled and _log_callback:
         _log_callback(message, LogLevel.DEBUG)
 
 

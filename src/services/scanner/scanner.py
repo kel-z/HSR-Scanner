@@ -36,6 +36,7 @@ from models.const import (
     CONFIG_DEBUG,
     CONFIG_DEBUG_OUTPUT_LOCATION,
     CONFIG_DEBUG_SAVE_CAPTURE_PNG,
+    CONFIG_DEBUG_VERBOSE_LOGS,
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_NAV_DELAY,
@@ -100,6 +101,14 @@ class HSRScanner(QObject):
 
     DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.15
 
+    # Delay testing showed the stats panel is never rendered before ~15ms
+    # after a nav keypress, with most panels ready by ~25-40ms and a tail
+    # past 45ms. Sleep the guaranteed-stale window, then poll raw panel
+    # grabs until the bytes change, giving up at the timeout (identical
+    # adjacent items, or a slow frame caught by duplicate recovery below).
+    PANEL_CHANGE_TIMEOUT = 0.07
+    POST_NAV_BASE_DELAY = 0.015
+
     update_signal = pyqtSignal(int)
     log_signal = pyqtSignal(object)
     complete_signal = pyqtSignal()
@@ -156,11 +165,16 @@ class HSRScanner(QObject):
             config[CONFIG_DEBUG],
             config.get(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True),
             config[CONFIG_DEBUG_OUTPUT_LOCATION],
+            config.get(CONFIG_DEBUG_VERBOSE_LOGS, True),
         )
         self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
-        configure_ocr_profile(self._config[CONFIG_DEBUG], self._log)
+        configure_ocr_profile(
+            self._config[CONFIG_DEBUG],
+            self._log,
+            self._config.get(CONFIG_DEBUG_VERBOSE_LOGS, True),
+        )
         reset_ocr_profile()
 
         # OCR now overlaps the live capture loop. While the game is being
@@ -199,8 +213,10 @@ class HSRScanner(QObject):
     ) -> tuple[dict, bytes]:
         """Capture inventory stats and recover from repeated stale panel screenshots."""
         return recover_duplicate_capture(
-            lambda: self._screenshot.screenshot_stats_with_panel_bytes(
-                strategy.SCAN_TYPE
+            lambda: self._screenshot.screenshot_stats_on_panel_change(
+                strategy.SCAN_TYPE,
+                previous_stats_panel_bytes,
+                self.PANEL_CHANGE_TIMEOUT,
             ),
             previous_stats_panel_bytes,
             item_id,
@@ -266,6 +282,8 @@ class HSRScanner(QObject):
             f"light_cones={len(light_cone_results)}, relics={len(relic_results)}, characters={len(character_results)}",
             LogLevel.DEBUG,
         )
+        for line in self._screenshot.get_capture_timing_summary_lines():
+            self._log(line, LogLevel.DEBUG)
         for line in get_ocr_profile_summary_lines():
             self._log(line, LogLevel.DEBUG)
 
@@ -535,7 +553,7 @@ class HSRScanner(QObject):
                     scanned += 1
                 if not all(filter_results.values()):
                     self._nav.key_tap("d")
-                    self._scan_sleep(0.05)
+                    self._scan_sleep(self.POST_NAV_BASE_DELAY)
                     continue
 
             # Update UI count
@@ -560,7 +578,7 @@ class HSRScanner(QObject):
 
             # Next item
             self._nav.key_tap("d")
-            self._scan_sleep(0.05)
+            self._scan_sleep(self.POST_NAV_BASE_DELAY)
 
         if batch_items:
             # Split the remainder across workers so the post-capture tail

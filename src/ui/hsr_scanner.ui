@@ -908,7 +908,7 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>10</x>
         <y>380</y>
-        <width>201</width>
+        <width>411</width>
         <height>91</height>
        </rect>
       </property>
@@ -920,12 +920,12 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>181</width>
+         <width>391</width>
          <height>61</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
+       <layout class="QGridLayout" name="verticalLayout_2">
+        <item row="0" column="0">
          <widget class="QCheckBox" name="checkBoxDebugMode">
           <property name="toolTip">
            <string>Enables debug logging and debug output folder creation</string>
@@ -935,7 +935,7 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="0">
          <widget class="QCheckBox" name="checkBoxDebugSaveCaptures">
           <property name="toolTip">
            <string>Save every screenshot capture as a PNG in debug mode</string>
@@ -945,7 +945,17 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="checkBoxDebugVerboseLogs">
+          <property name="toolTip">
+           <string>Log every capture and OCR event during the scan. Slower; summaries are always logged at scan end.</string>
+          </property>
+          <property name="text">
+           <string>Verbose debug logs</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
          <widget class="QCheckBox" name="checkBoxSroFormat">
           <property name="toolTip">
            <string>Star Rail Optimizer</string>

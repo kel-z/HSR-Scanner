@@ -19,6 +19,7 @@ from models.const import (
     CONFIG_DEBUG_MODE,
     CONFIG_DEBUG_OUTPUT_LOCATION,
     CONFIG_DEBUG_SAVE_CAPTURE_PNG,
+    CONFIG_DEBUG_VERBOSE_LOGS,
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_MIN_CHAR_LEVEL,
@@ -166,6 +167,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxDebugMode.toggled.connect(
             self.checkBoxDebugSaveCaptures.setEnabled
         )
+        self.checkBoxDebugMode.toggled.connect(
+            self.checkBoxDebugVerboseLogs.setEnabled
+        )
 
         self.load_settings()
 
@@ -232,7 +236,13 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.checkBoxDebugSaveCaptures.setChecked(
             self._settings.value(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True) == "true"
         )
+        self.checkBoxDebugVerboseLogs.setChecked(
+            self._settings.value(CONFIG_DEBUG_VERBOSE_LOGS, False) == "true"
+        )
         self.checkBoxDebugSaveCaptures.setEnabled(
+            self.checkBoxDebugMode.isChecked()
+        )
+        self.checkBoxDebugVerboseLogs.setEnabled(
             self.checkBoxDebugMode.isChecked()
         )
         self.spinBoxNavDelay.setValue(self._settings.value(CONFIG_NAV_DELAY, 0))
@@ -308,6 +318,10 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
             CONFIG_DEBUG_SAVE_CAPTURE_PNG,
             self.checkBoxDebugSaveCaptures.isChecked(),
         )
+        self._settings.setValue(
+            CONFIG_DEBUG_VERBOSE_LOGS,
+            self.checkBoxDebugVerboseLogs.isChecked(),
+        )
         self._settings.setValue(CONFIG_NAV_DELAY, self.spinBoxNavDelay.value())
         self._settings.setValue(CONFIG_SCAN_DELAY, self.spinBoxScanDelay.value())
         self._settings.setValue(
@@ -345,6 +359,7 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self._settings.setValue(CONFIG_RECENT_RELICS_FIVE_STAR, True)
         self._settings.setValue(CONFIG_DEBUG_MODE, False)
         self._settings.setValue(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True)
+        self._settings.setValue(CONFIG_DEBUG_VERBOSE_LOGS, False)
         self._settings.setValue(CONFIG_OCR_CONCURRENCY, default_ocr_threads)
         self._settings.setValue(CONFIG_OCR_BATCH_SIZE, self.OCR_BATCH_SIZE_DEFAULT)
         self._settings.setValue(CONFIG_INCLUDE_UID, False)
@@ -526,6 +541,9 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         config[CONFIG_DEBUG] = self.checkBoxDebugMode.isChecked()
         config[CONFIG_DEBUG_SAVE_CAPTURE_PNG] = (
             config[CONFIG_DEBUG] and self.checkBoxDebugSaveCaptures.isChecked()
+        )
+        config[CONFIG_DEBUG_VERBOSE_LOGS] = (
+            config[CONFIG_DEBUG] and self.checkBoxDebugVerboseLogs.isChecked()
         )
         config[CONFIG_DEBUG_OUTPUT_LOCATION] = None
         config[CONFIG_OCR_CONCURRENCY] = self._ocr_concurrency_threads
