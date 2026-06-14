@@ -101,11 +101,9 @@ class HSRScanner(QObject):
 
     DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.15
 
-    # Delay testing showed the stats panel is never rendered before ~15ms
-    # after a nav keypress, with most panels ready by ~25-40ms and a tail
-    # past 45ms. Sleep the guaranteed-stale window, then poll raw panel
-    # grabs until the bytes change, giving up at the timeout (identical
-    # adjacent items, or a slow frame caught by duplicate recovery below).
+    # Earliest panel refresh is ~15ms (~1 frame), so sleep that, then rapid-poll
+    # until the text changes or 70ms (the cap covers identical neighbors and slow
+    # frames).
     PANEL_CHANGE_TIMEOUT = 0.07
     POST_NAV_BASE_DELAY = 0.015
 
@@ -177,10 +175,8 @@ class HSRScanner(QObject):
         )
         reset_ocr_profile()
 
-        # OCR now overlaps the live capture loop. While the game is being
-        # captured, gate OCR workers to half the configured concurrency so
-        # Tesseract does not starve the game of CPU and cause frame drops;
-        # once capture completes, the gate opens to full concurrency.
+        # Gate OCR to half concurrency during capture so it can't starve the
+        # game's CPU and drop frames; opens to full once capture ends.
         self._loop: asyncio.AbstractEventLoop | None = None
         self._ocr_capture_workers = max(1, self._ocr_concurrency // 2)
         self._ocr_gate = threading.Semaphore(self._ocr_capture_workers)

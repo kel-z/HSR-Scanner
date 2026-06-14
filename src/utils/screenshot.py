@@ -69,9 +69,8 @@ class Screenshot:
         self._debug_output_location = debug_output_location
         self._verbose_logs = verbose_logs
         self._stats_capture_records: list[dict] = []
-        # Diagnostics: polls where the raw panel changed but the text-band
-        # signature did not, i.e. non-text pixel changes (art shimmer, icon
-        # pop-in, overlays) that previously caused phantom-duplicate accepts.
+        # Diagnostics: polls where raw pixels changed but the text signature
+        # didn't — non-text changes (icons loading, overlays) worth flagging.
         self._nontext_change_events: list[tuple[int, tuple]] = []
         self._last_panel_raw: Image | None = None
         self._mss = None
@@ -103,7 +102,7 @@ class Screenshot:
 
         :param scan_type: The scan type
         :raises ValueError: Thrown if the scan type is invalid
-        :return: The cropped stats dict and raw bytes of the full stats panel
+        :return: The cropped stats dict and the panel's text-band signature bytes
         """
         return self.screenshot_stats_on_panel_change(scan_type, None, 0.0)
 
@@ -113,18 +112,17 @@ class Screenshot:
         previous_panel_bytes: bytes | None,
         timeout_s: float,
     ) -> tuple[dict, bytes]:
-        """Takes a stats screenshot once the panel differs from the previous item.
+        """Takes a stats screenshot once the panel changes from the previous item.
 
-        Polls cheap raw grabs of the panel until its bytes change from
-        ``previous_panel_bytes``, then runs the full capture pipeline on the
-        accepted frame. Falls through after ``timeout_s`` so genuinely
-        identical adjacent items (or a slow frame) cannot stall the scan.
+        Polls until the panel's text-band signature differs from
+        ``previous_panel_bytes``, then captures the accepted frame; falls through
+        after ``timeout_s`` so identical adjacent items don't stall the scan.
 
         :param scan_type: The scan type
-        :param previous_panel_bytes: Raw panel bytes of the previous item, or None
+        :param previous_panel_bytes: Previous item's text-band signature bytes, or None
         :param timeout_s: Max time to wait for the panel to change
         :raises ValueError: Thrown if the scan type is invalid
-        :return: The cropped stats dict and raw bytes of the full stats panel
+        :return: The cropped stats dict and the panel's text-band signature bytes
         """
         match IncrementType(scan_type):
             case IncrementType.LIGHT_CONE_ADD:
@@ -331,9 +329,9 @@ class Screenshot:
         """Takes a screenshot of the stats
 
         :param key: The key of the stats to screenshot
-        :param previous_panel_bytes: Raw panel bytes of the previous item, or None
+        :param previous_panel_bytes: Previous item's text-band signature bytes, or None
         :param timeout_s: Max time to poll for the panel to change
-        :return: The cropped stats dict and raw bytes of the full stats panel
+        :return: The cropped stats dict and the panel's text-band signature bytes
         """
         coords = SCREENSHOT_COORDS[self._aspect_ratio]
         timing_start = time.perf_counter()
@@ -345,10 +343,8 @@ class Screenshot:
         height = int(self._window_height * h_pct)
         bbox = (int(x), int(y), int(x + width), int(y + height))
 
-        # Poll cheap raw grabs (no resize, no crops) until the panel differs
-        # from the previous item, so capture starts the moment the game has
-        # rendered the new panel instead of after a fixed worst-case delay.
-        # The grab itself (~10ms) paces the loop; no inter-poll sleep needed.
+        # Grab raw until the text-band signature differs from the previous item
+        # (the new panel has rendered); the ~10ms mss grab paces the loop.
         polls = 0
         poll_start = time.perf_counter()
         while True:
@@ -390,10 +386,8 @@ class Screenshot:
         res = {k: img.crop(v) for k, v in adjusted_stat_coords.items()}
 
         if self._debug:
-            # Bounding box of what actually changed in the accepted frame. A
-            # real item swap repaints most of the panel; a tiny area means the
-            # accept was triggered by something else (animation, overlay) and
-            # the capture is suspect.
+            # Diff bbox of the accepted frame: a real item swap repaints most
+            # of the panel, so a tiny changed area flags a suspect accept.
             accept_bbox = None
             accept_area = None
             if (
@@ -509,23 +503,8 @@ class Screenshot:
             )
         )
 
-    # Text-content bands of the stats panel, per item type, as (x0, y0, x1, y1)
-    # fractions. The item art plays a glow/shimmer animation and pops in late
-    # on a cold icon cache, so raw whole-panel bytes can change while the text
-    # still shows the previous item — which made the change poll accept stale
-    # panels and emit phantom duplicates. Compare only the regions OCR actually
-    # reads; text content swaps atomically, so a signature change means the
-    # new item is rendered.
-    # Text-only regions: name strip, slot text, level, and the stat text
-    # columns. Everything excluded changes pixels while the panel text still
-    # shows the previous item, which caused phantom-duplicate accepts:
-    #  - x<0.06: the inventory list's scrollbar/grid edge bleeds into the
-    #    panel crop and scrolls on every navigation keypress.
-    #  - x<0.115 below the banner: stat-row icons render a frame later than
-    #    the text, and their late settle false-triggered the next item's poll.
-    #  - y 0.15-0.22 (rarity stars): atlas icons with the same lag risk.
-    #  - x>0.96 / y>0.90: panel scroll edge, expander button, and the
-    #    equipped-character avatar bar (loads lazily on a fresh session).
+    # Text-only regions as (x0, y0, x1, y1) fractions. The poll compares only
+    # these, so non-text pixels (scrollbar, icons, art) can't fake a change.
     _PANEL_SIGNATURE_BANDS = {
         "relic": (
             (0.06, 0, 1, 0.09),         # name
@@ -550,11 +529,9 @@ class Screenshot:
     _NONTEXT_CHANGE_EVENT_CAP = 500
 
     def _record_nontext_change(self, raw_img: Image) -> None:
-        """Record a poll where raw panel pixels changed but the signature didn't.
+        """Record a poll where raw pixels changed but the text signature didn't.
 
-        These are exactly the events that caused phantom-duplicate accepts
-        before the text-band signature: the bounding box of the changed
-        pixels identifies what is animating (item art, overlay, etc.).
+        The diff bbox identifies what changed outside the text bands.
         """
         last = self._last_panel_raw
         if (
@@ -577,12 +554,8 @@ class Screenshot:
         )
 
     def get_capture_timing_summary_lines(self) -> list[str]:
-        """Summarize stats-capture timing collected during the scan.
-
-        Always available in debug mode, even with verbose per-capture
-        logging disabled, so the panel-wait distribution can be reviewed
-        without paying per-frame logging costs during capture.
-        """
+        """Summarize stats-capture timing; available in debug mode even when
+        verbose per-capture logging is off."""
         records = self._stats_capture_records
         if not records:
             return []
