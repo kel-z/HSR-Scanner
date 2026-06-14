@@ -77,6 +77,13 @@ class Screenshot:
         self._mss_failed = False
         self._mss_fallback_logged = False
 
+    def close(self) -> None:
+        """Close the cached mss backend if it was opened."""
+        if self._mss is None:
+            return
+        self._mss.close()
+        self._mss = None
+
     def screenshot_screen(self) -> Image:
         """Takes a screenshot of the entire screen
 

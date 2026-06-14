@@ -256,6 +256,7 @@ class HSRScanner(QObject):
             # Submitted OCR work blocks on the capture gate; open it before any
             # await/shutdown so workers can always drain, even on interrupt.
             self._open_ocr_gate()
+            self._screenshot.close()
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
