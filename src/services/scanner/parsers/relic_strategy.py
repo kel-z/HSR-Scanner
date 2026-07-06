@@ -38,7 +38,6 @@ from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from type_defs.stats_dict import RelicDict
 from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
-    DIN_ALTERNATE,
     image_to_string,
     preprocess_equipped_img,
     preprocess_level_img,
@@ -265,7 +264,6 @@ class RelicStrategy(BaseParseStrategy):
                 data,
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
                 6,
-                lang=f"eng+{DIN_ALTERNATE}",
             )
             if res.endswith(" O"):
                 res = res[:-2].strip()
@@ -278,7 +276,6 @@ class RelicStrategy(BaseParseStrategy):
                     13,
                     True,
                     preprocess_level_img,
-                    lang=f"eng+{DIN_ALTERNATE}",
                 )
                 .replace("S", "5")
                 .replace("+", "")

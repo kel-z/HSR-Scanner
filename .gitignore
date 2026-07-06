@@ -13,7 +13,3 @@ debug/
 20??-??-??_??-??-??/
 log.txt
 real-example.png
-
-# Local tessdata overrides (not required in repo)
-src/assets/tesseract/tessdata/eng.traineddata
-src/assets/tesseract/tessdata/osd.traineddata
