@@ -140,7 +140,8 @@ SCREENSHOT_COORDS = {
         },
         RELIC: {
             RELIC_NAME: (0, 0, 0.8, 0.09),
-            RELIC_LEVEL: (0.115, 0.25, 0.28, 0.32),
+            # Left edge must include single-digit "+0" levels, which start near x=0.04.
+            RELIC_LEVEL: (0.03, 0.25, 0.28, 0.32),
             RELIC_DISCARD: (0.865, 0.253, 0.935, 0.293),
             # Centered on the 16:9 relic lock button; keep slightly wider than the icon to absorb scaling drift.
             LOCK: (0.8583333333333333, 0.18171021377672208, 0.9375, 0.22684085510688837),
