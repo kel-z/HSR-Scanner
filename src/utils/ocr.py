@@ -51,7 +51,6 @@ def image_to_string(
     force_preprocess=False,
     preprocess_func=preprocess_img,
     remove_newline=True,
-    lang=None,
 ) -> str:
     """Convert image to string
 
@@ -62,61 +61,18 @@ def image_to_string(
     :param preprocess_func: The preprocessing function to use, defaults to None
     :return: The string representation of the image
     """
-    if lang is None:
-        lang = DIN_ALTERNATE
-
     tessdata_dir = resource_path("assets/tesseract/tessdata")
-
-    # Check which requested languages are bundled locally.
-    available_langs = []
-    for l in lang.split("+"):
-        if os.path.exists(os.path.join(tessdata_dir, f"{l}.traineddata")):
-            available_langs.append(l)
-
-    # Local OCR attempt uses bundled tessdata first.
-    final_lang = "+".join(available_langs) if available_langs else DIN_ALTERNATE
-    local_config = f'--tessdata-dir "{tessdata_dir}" -c tessedit_char_whitelist="{whitelist}" --psm {psm}'
-    system_config = f'-c tessedit_char_whitelist="{whitelist}" --psm {psm}'
-
-    # If local tessdata is missing requested languages (e.g. eng), try system tessdata as fallback.
-    attempts: list[tuple[str, str]] = [(local_config, final_lang)]
-    if lang != final_lang:
-        attempts.append((system_config, lang))
-    if "eng" in lang.split("+"):
-        attempts.append((system_config, "eng"))
-
-    # Keep original order while removing duplicates.
-    dedup_attempts = []
-    seen_attempts = set()
-    for config, config_lang in attempts:
-        key = (config, config_lang)
-        if key not in seen_attempts:
-            seen_attempts.add(key)
-            dedup_attempts.append((config, config_lang))
-
-    def _ocr_with_fallback(target_img: Image) -> str:
-        last_res = ""
-        for config, config_lang in dedup_attempts:
-            try:
-                last_res = pytesseract.image_to_string(
-                    target_img, config=config, lang=config_lang
-                )
-            except Exception:
-                # Continue to the next OCR source if this language/config is unavailable.
-                continue
-
-            if last_res.strip():
-                return last_res
-
-        return last_res
+    config = f'--tessdata-dir "{tessdata_dir}" -c tessedit_char_whitelist="{whitelist}" --psm {psm}'
 
     res = ""
     with OCR_SEMAPHORE:
         if not force_preprocess:
-            res = _ocr_with_fallback(img)
+            res = pytesseract.image_to_string(img, config=config, lang=DIN_ALTERNATE)
 
         if not res.strip():
-            res = _ocr_with_fallback(preprocess_func(img))
+            res = pytesseract.image_to_string(
+                preprocess_func(img), config=config, lang=DIN_ALTERNATE
+            )
 
     if remove_newline:
         res = res.replace("\n", " ")

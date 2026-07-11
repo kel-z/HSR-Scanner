@@ -38,7 +38,6 @@ from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from type_defs.stats_dict import RelicDict
 from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
-    DIN_ALTERNATE,
     image_to_string,
     preprocess_equipped_img,
     preprocess_level_img,
@@ -102,6 +101,21 @@ class RelicStrategy(BaseParseStrategy):
         except Exception as e:
             self._log(f"Failed to save debug image: {e}", LogLevel.ERROR)
 
+    def _parse_relic_lock_state(self, img: Image) -> bool:
+        """Detect the active/gold relic lock state from the lock button crop."""
+        arr = np.array(img.convert("RGB"))
+        red = arr[:, :, 0]
+        green = arr[:, :, 1]
+        blue = arr[:, :, 2]
+
+        white_ratio = np.mean((red > 220) & (green > 220) & (blue > 220))
+        gold_ratio = np.mean((red > 145) & (green > 105) & (blue < 120))
+        dark_ratio = np.mean((red < 80) & (green < 80) & (blue < 80))
+
+        # Locked relics render as a gold button with a white lock; unlocked relics
+        # render as a white button with a dark lock.
+        return bool(gold_ratio >= 0.45 and white_ratio >= 0.05 and dark_ratio <= 0.03)
+
     def _parse_icon_flag(
         self,
         uid: int,
@@ -129,6 +143,9 @@ class RelicStrategy(BaseParseStrategy):
 
         min_dim = min(haystack.size)
         try:
+            if key == LOCK:
+                return self._parse_relic_lock_state(haystack)
+
             # Normalize mode to avoid locate failures on palette/alpha edge cases.
             icon_img = icon.convert("RGB").resize((min_dim, min_dim))
             haystack_img = haystack.convert("RGB")
@@ -247,7 +264,6 @@ class RelicStrategy(BaseParseStrategy):
                 data,
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
                 6,
-                lang=f"eng+{DIN_ALTERNATE}",
             )
             if res.endswith(" O"):
                 res = res[:-2].strip()
@@ -260,7 +276,6 @@ class RelicStrategy(BaseParseStrategy):
                     13,
                     True,
                     preprocess_level_img,
-                    lang=f"eng+{DIN_ALTERNATE}",
                 )
                 .replace("S", "5")
                 .replace("+", "")

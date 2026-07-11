@@ -59,6 +59,7 @@ from models.const import (
 from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
+from utils.duplicate_capture import recover_duplicate_capture
 from utils.navigation import Navigation
 from utils.ocr import (
     image_to_string,
@@ -84,6 +85,8 @@ class InterruptedScanException(Exception):
 
 class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
+
+    DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.15
 
     update_signal = pyqtSignal(int)
     log_signal = pyqtSignal(object)
@@ -160,6 +163,25 @@ class HSRScanner(QObject):
         time.sleep(0.05)
         self._nav.click()
         self._scan_sleep(0.05)
+
+
+    def _capture_inventory_stats(
+        self,
+        strategy: BaseParseStrategy,
+        item_id: int,
+        previous_stats_panel_bytes: bytes | None,
+    ) -> tuple[dict, bytes]:
+        """Capture inventory stats and recover from repeated stale panel screenshots."""
+        return recover_duplicate_capture(
+            lambda: self._screenshot.screenshot_stats_with_panel_bytes(
+                strategy.SCAN_TYPE
+            ),
+            previous_stats_panel_bytes,
+            item_id,
+            self._log,
+            self._interruptible_sleep,
+            self.DUPLICATE_STATS_CAPTURE_RETRY_DELAY,
+        )
 
     async def start_scan(self) -> dict:
         """Starts the scan
@@ -348,6 +370,7 @@ class HSRScanner(QObject):
 
         tasks = set()
         scanned = 0
+        previous_stats_panel_bytes = None
 
         def should_stop():
             if self._scan_mode == ScanMode.RECENT_RELICS.value:
@@ -360,9 +383,11 @@ class HSRScanner(QObject):
         while not should_stop():
             quantity_remaining -= 1
 
-            # Get stats
-            stats_dict = self._screenshot.screenshot_stats(strategy.SCAN_TYPE)
             item_id = quantity - quantity_remaining
+            stats_dict, stats_panel_bytes = self._capture_inventory_stats(
+                strategy, item_id, previous_stats_panel_bytes
+            )
+            previous_stats_panel_bytes = stats_panel_bytes
 
             # Check if item satisfies filters
             if FILTERS in self._config:
@@ -783,6 +808,19 @@ class HSRScanner(QObject):
         time.sleep(seconds + self._config[CONFIG_SCAN_DELAY])
         if self._interrupt_event.is_set():
             raise InterruptedScanException()
+
+    def _interruptible_sleep(self, seconds: float) -> None:
+        """Sleep without scan/navigation delay, waking early on interruption."""
+        end_time = time.perf_counter() + seconds
+        while True:
+            if self._interrupt_event.is_set():
+                raise InterruptedScanException()
+
+            remaining = end_time - time.perf_counter()
+            if remaining <= 0:
+                return
+
+            time.sleep(min(remaining, 0.01))
 
     def _ceildiv(self, a, b) -> int:
         """Divides a by b and rounds up
