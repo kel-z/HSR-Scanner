@@ -120,8 +120,12 @@ CONFIG_PLAY_SOUND = "play_sound"
 
 CONFIG_DEBUG = "debug"
 CONFIG_DEBUG_OUTPUT_LOCATION = "debug_output_location"
+CONFIG_DEBUG_SAVE_CAPTURE_PNG = "debug_save_capture_png"
+CONFIG_DEBUG_VERBOSE_LOGS = "debug_verbose_logs"
 CONFIG_OCR_CONCURRENCY = "ocr_concurrency"
 DEFAULT_OCR_CONCURRENCY = 10
+CONFIG_OCR_BATCH_SIZE = "ocr_batch_size"
+DEFAULT_OCR_BATCH_SIZE = 10
 
 # Resource paths
 CAELUS_ICON_PATH = "assets/images/trailblazerm.png"

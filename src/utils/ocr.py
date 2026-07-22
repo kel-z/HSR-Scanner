@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import time
 
 import cv2
 import numpy as np
@@ -10,6 +11,11 @@ from PIL.Image import Image
 
 from models.const import DEFAULT_OCR_CONCURRENCY
 from utils.data import resource_path
+from utils.ocr_profile import (
+    is_ocr_profile_enabled,
+    record_ocr_attempt,
+    record_ocr_call,
+)
 from utils.ocr_threads import clamp_thread_count
 
 # set environment variables for Tesseract
@@ -22,6 +28,8 @@ DIN_ALTERNATE = "DIN-Alternate"
 
 # Limit concurrent Tesseract processes to prevent system overload
 OCR_SEMAPHORE = threading.Semaphore(DEFAULT_OCR_CONCURRENCY)
+OCR_CALL_COUNTER = 0
+OCR_CALL_COUNTER_LOCK = threading.Lock()
 
 
 def set_ocr_concurrency(limit: int | None) -> int:
@@ -61,23 +69,77 @@ def image_to_string(
     :param preprocess_func: The preprocessing function to use, defaults to None
     :return: The string representation of the image
     """
+    profile_enabled = is_ocr_profile_enabled()
+    call_id = _next_ocr_call_id() if profile_enabled else 0
+    total_start = time.perf_counter() if profile_enabled else 0.0
+
     tessdata_dir = resource_path("assets/tesseract/tessdata")
     config = f'--tessdata-dir "{tessdata_dir}" -c tessedit_char_whitelist="{whitelist}" --psm {psm}'
 
+    def _ocr(target_img: Image, target: str) -> str:
+        attempt_start = time.perf_counter() if profile_enabled else 0.0
+        attempt_res = pytesseract.image_to_string(
+            target_img, config=config, lang=DIN_ALTERNATE
+        )
+        if profile_enabled:
+            record_ocr_attempt(
+                call_id,
+                1,
+                DIN_ALTERNATE,
+                config,
+                target,
+                (time.perf_counter() - attempt_start) * 1000,
+                attempt_res,
+            )
+        return attempt_res
+
     res = ""
+    direct_ms = 0.0
+    preprocess_ms = 0.0
+    preprocessed_ocr_ms = 0.0
+    used_preprocess = force_preprocess
     with OCR_SEMAPHORE:
         if not force_preprocess:
-            res = pytesseract.image_to_string(img, config=config, lang=DIN_ALTERNATE)
+            direct_start = time.perf_counter() if profile_enabled else 0.0
+            res = _ocr(img, "direct")
+            if profile_enabled:
+                direct_ms = (time.perf_counter() - direct_start) * 1000
 
         if not res.strip():
-            res = pytesseract.image_to_string(
-                preprocess_func(img), config=config, lang=DIN_ALTERNATE
-            )
+            used_preprocess = True
+            preprocess_start = time.perf_counter() if profile_enabled else 0.0
+            preprocessed_img = preprocess_func(img)
+            if profile_enabled:
+                preprocess_ms = (time.perf_counter() - preprocess_start) * 1000
+            preprocessed_start = time.perf_counter() if profile_enabled else 0.0
+            res = _ocr(preprocessed_img, "preprocessed")
+            if profile_enabled:
+                preprocessed_ocr_ms = (time.perf_counter() - preprocessed_start) * 1000
 
     if remove_newline:
         res = res.replace("\n", " ")
 
-    return res.strip()
+    res = res.strip()
+    if profile_enabled:
+        record_ocr_call(
+            call_id=call_id,
+            image_size=img.size,
+            whitelist=whitelist,
+            psm=psm,
+            force_preprocess=force_preprocess,
+            remove_newline=remove_newline,
+            lang=DIN_ALTERNATE,
+            final_lang=DIN_ALTERNATE,
+            attempts_count=1,
+            direct_ms=direct_ms,
+            preprocess_ms=preprocess_ms,
+            preprocessed_ocr_ms=preprocessed_ocr_ms,
+            total_ms=(time.perf_counter() - total_start) * 1000,
+            used_preprocess=used_preprocess,
+            result=res,
+        )
+
+    return res
 
 
 def preprocess_char_count_img(img: Image) -> Image:
@@ -230,3 +292,10 @@ def _preprocess_img_by_colour_filter(
     img_arr = 255 - img_arr
 
     return PILImage.fromarray(img_arr)
+
+
+def _next_ocr_call_id() -> int:
+    global OCR_CALL_COUNTER
+    with OCR_CALL_COUNTER_LOCK:
+        OCR_CALL_COUNTER += 1
+        return OCR_CALL_COUNTER

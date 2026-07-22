@@ -907,9 +907,9 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>360</y>
-        <width>201</width>
-        <height>71</height>
+        <y>380</y>
+        <width>411</width>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -920,22 +920,42 @@ p, li { white-space: pre-wrap; }
         <rect>
          <x>10</x>
          <y>20</y>
-         <width>181</width>
-         <height>41</height>
+         <width>391</width>
+         <height>61</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
+       <layout class="QGridLayout" name="verticalLayout_2">
+        <item row="0" column="0">
          <widget class="QCheckBox" name="checkBoxDebugMode">
           <property name="toolTip">
-           <string>Saves ALL screenshots</string>
+           <string>Enables debug logging and debug output folder creation</string>
           </property>
           <property name="text">
            <string>Debug mode</string>
           </property>
          </widget>
         </item>
-        <item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="checkBoxDebugSaveCaptures">
+          <property name="toolTip">
+           <string>Save every screenshot capture as a PNG in debug mode</string>
+          </property>
+          <property name="text">
+           <string>Save capture PNGs</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="checkBoxDebugVerboseLogs">
+          <property name="toolTip">
+           <string>Log every capture and OCR event during the scan. Slower; summaries are always logged at scan end.</string>
+          </property>
+          <property name="text">
+           <string>Verbose debug logs</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
          <widget class="QCheckBox" name="checkBoxSroFormat">
           <property name="toolTip">
            <string>Star Rail Optimizer</string>
@@ -954,7 +974,7 @@ p, li { white-space: pre-wrap; }
         <x>10</x>
         <y>280</y>
         <width>411</width>
-        <height>71</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -966,7 +986,7 @@ p, li { white-space: pre-wrap; }
          <x>10</x>
          <y>20</y>
          <width>391</width>
-         <height>41</height>
+         <height>61</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
@@ -1015,6 +1035,45 @@ p, li { white-space: pre-wrap; }
           </property>
           <property name="text">
            <string>75% (1 thread)</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="labelOCRBatchSize">
+          <property name="text">
+           <string>OCR batch size:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QSlider" name="horizontalSliderOCRBatchSize">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>50</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="labelOCRBatchSizeValue">
+          <property name="minimumSize">
+           <size>
+            <width>95</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>10 crops/call</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1228,7 +1287,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- Scan delay for clicking between individual items (relics, light cones, and characters).&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt; text-decoration: underline;&quot;&gt;DEBUG MODE&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt;&quot;&gt;Enabling this option will export ALL screenshots taken during a scan. The screenshots will be saved to a debug folder in the same directory as the JSON output.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8.25pt;&quot;&gt;Debug mode records detailed logs and timing data in a debug folder. Enable Save capture PNGs when you also need every screenshot written to disk.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_16">
@@ -1255,7 +1314,7 @@ p, li { white-space: pre-wrap; }
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>440</y>
+        <y>470</y>
         <width>101</width>
         <height>31</height>
        </rect>

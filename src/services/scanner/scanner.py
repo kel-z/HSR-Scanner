@@ -1,4 +1,6 @@
 import asyncio
+import math
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -33,15 +35,19 @@ from models.const import (
     CONFIG_CHARACTERS_KEY,
     CONFIG_DEBUG,
     CONFIG_DEBUG_OUTPUT_LOCATION,
+    CONFIG_DEBUG_SAVE_CAPTURE_PNG,
+    CONFIG_DEBUG_VERBOSE_LOGS,
     CONFIG_INCLUDE_UID,
     CONFIG_INVENTORY_KEY,
     CONFIG_NAV_DELAY,
+    CONFIG_OCR_BATCH_SIZE,
     CONFIG_OCR_CONCURRENCY,
     CONFIG_RECENT_RELICS_NUM,
     CONFIG_SCAN_CHARACTERS,
     CONFIG_SCAN_DELAY,
     CONFIG_SCAN_LC,
     CONFIG_SCAN_RELICS,
+    DEFAULT_OCR_BATCH_SIZE,
     EIDOLON_IMAGES,
     FILTERS,
     HSR_SCANNER,
@@ -67,6 +73,13 @@ from utils.ocr import (
     preprocess_uid_img,
     set_ocr_concurrency,
 )
+from utils.ocr_profile import (
+    configure_ocr_profile,
+    get_ocr_profile_summary_lines,
+    ocr_profile_context,
+    record_parse_task,
+    reset_ocr_profile,
+)
 from utils.screenshot import Screenshot
 from utils.window import bring_window_to_foreground
 
@@ -87,6 +100,12 @@ class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
     DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.15
+
+    # Earliest panel refresh is ~15ms (~1 frame), so sleep that, then rapid-poll
+    # until the text changes or 70ms (the cap covers identical neighbors and slow
+    # frames).
+    PANEL_CHANGE_TIMEOUT = 0.07
+    POST_NAV_BASE_DELAY = 0.015
 
     update_signal = pyqtSignal(int)
     log_signal = pyqtSignal(object)
@@ -125,6 +144,9 @@ class HSRScanner(QObject):
         self._ocr_concurrency = set_ocr_concurrency(
             self._config.get(CONFIG_OCR_CONCURRENCY)
         )
+        self._ocr_batch_size = self._resolve_ocr_batch_size(
+            self._config.get(CONFIG_OCR_BATCH_SIZE)
+        )
 
         self._nav = Navigation(self._hwnd)
 
@@ -139,11 +161,26 @@ class HSRScanner(QObject):
             self.log_signal,
             self._aspect_ratio,
             config[CONFIG_DEBUG],
+            config.get(CONFIG_DEBUG_SAVE_CAPTURE_PNG, True),
             config[CONFIG_DEBUG_OUTPUT_LOCATION],
+            config.get(CONFIG_DEBUG_VERBOSE_LOGS, True),
         )
         self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
+        configure_ocr_profile(
+            self._config[CONFIG_DEBUG],
+            self._log,
+            self._config.get(CONFIG_DEBUG_VERBOSE_LOGS, True),
+        )
+        reset_ocr_profile()
+
+        # Gate OCR to half concurrency during capture so it can't starve the
+        # game's CPU and drop frames; opens to full once capture ends.
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._ocr_capture_workers = max(1, self._ocr_concurrency // 2)
+        self._ocr_gate = threading.Semaphore(self._ocr_capture_workers)
+        self._ocr_gate_opened = False
 
     @property
     def ocr_concurrency(self) -> int:
@@ -164,7 +201,6 @@ class HSRScanner(QObject):
         self._nav.click()
         self._scan_sleep(0.05)
 
-
     def _capture_inventory_stats(
         self,
         strategy: BaseParseStrategy,
@@ -173,8 +209,10 @@ class HSRScanner(QObject):
     ) -> tuple[dict, bytes]:
         """Capture inventory stats and recover from repeated stale panel screenshots."""
         return recover_duplicate_capture(
-            lambda: self._screenshot.screenshot_stats_with_panel_bytes(
-                strategy.SCAN_TYPE
+            lambda: self._screenshot.screenshot_stats_on_panel_change(
+                strategy.SCAN_TYPE,
+                previous_stats_panel_bytes,
+                self.PANEL_CHANGE_TIMEOUT,
             ),
             previous_stats_panel_bytes,
             item_id,
@@ -189,9 +227,15 @@ class HSRScanner(QObject):
         :raises InterruptedScanException: Thrown if the scan is interrupted
         :return: The scan results
         """
+        self._loop = asyncio.get_running_loop()
         self._log("Config: " + str(self._config), LogLevel.DEBUG)
         self._log(
-            f"OCR concurrency limit: {self._ocr_concurrency}",
+            f"OCR concurrency limit: {self._ocr_concurrency} "
+            f"({self._ocr_capture_workers} during capture)",
+            LogLevel.DEBUG,
+        )
+        self._log(
+            f"OCR batch size: {self._ocr_batch_size} crops per Tesseract call",
             LogLevel.DEBUG,
         )
 
@@ -203,16 +247,75 @@ class HSRScanner(QObject):
         bring_window_to_foreground(self._hwnd)
 
         uid = None
+        light_cones = []
+        relics = []
+        characters = []
+        try:
+            uid, light_cones, relics, characters = self._run_capture_phases()
+        finally:
+            # Submitted OCR work blocks on the capture gate; open it before any
+            # await/shutdown so workers can always drain, even on interrupt.
+            self._open_ocr_gate()
+            self._screenshot.close()
+
+        if self._interrupt_event.is_set():
+            await asyncio.gather(*light_cones, *relics, *characters)
+            return {}
+
+        self._return_to_escape_screen()
+        self.complete_signal.emit()
+        self._log("Starting OCR process. Please wait...")
+
+        ocr_process_start = time.perf_counter()
+        light_cone_results = self._flatten_scan_results(
+            await asyncio.gather(*light_cones)
+        )
+        relic_results = self._flatten_scan_results(await asyncio.gather(*relics))
+        character_results = self._flatten_scan_results(
+            await asyncio.gather(*characters)
+        )
+        self._log(
+            f"OCR process timing: total_ms={(time.perf_counter() - ocr_process_start) * 1000:.3f}, "
+            f"light_cones={len(light_cone_results)}, relics={len(relic_results)}, characters={len(character_results)}",
+            LogLevel.DEBUG,
+        )
+        for line in self._screenshot.get_capture_timing_summary_lines():
+            self._log(line, LogLevel.DEBUG)
+        for line in get_ocr_profile_summary_lines():
+            self._log(line, LogLevel.DEBUG)
+
+        return {
+            "source": "HSR-Scanner",
+            "build": "v1.5.0",
+            "version": 4,
+            "metadata": {
+                "uid": int(uid) if uid else None,
+                "trailblazer": (
+                    "Stelle"
+                    if QSettings(KEL_Z, HSR_SCANNER).value("is_stelle", True) == "true"
+                    else "Caelus"
+                ),
+            },
+            "light_cones": light_cone_results,
+            "relics": relic_results,
+            "characters": character_results,
+        }
+
+    def _run_capture_phases(self) -> tuple[str | None, list, list, list]:
+        """Run the capture phases while OCR streams to gated background workers."""
+        uid = None
         if self._config[CONFIG_INCLUDE_UID] and not self._interrupt_event.is_set():
             self._nav_sleep(1)
             uid_img = self._screenshot.screenshot_uid()
-            uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
-                :9
-            ]
+            with ocr_profile_context(item_type="account", uid="account", field="uid", phase="scan"):
+                uid = image_to_string(uid_img, "0123456789", 7, False, preprocess_uid_img)[
+                    :9
+                ]
             if len(uid) != 9:
-                uid = image_to_string(
-                    uid_img, "0123456789", 7, True, preprocess_uid_img
-                )[:9]
+                with ocr_profile_context(item_type="account", uid="account", field="uid_retry", phase="scan"):
+                    uid = image_to_string(
+                        uid_img, "0123456789", 7, True, preprocess_uid_img
+                    )[:9]
             if len(uid) != 9:
                 self._log(f"Failed to parse UID. Got '{uid}' instead.", LogLevel.ERROR)
                 uid = None
@@ -267,33 +370,23 @@ class HSRScanner(QObject):
                 else None
             )
 
-        if self._interrupt_event.is_set():
-            await asyncio.gather(*light_cones, *relics, *characters)
-            return {}
+        return uid, light_cones, relics, characters
 
-        self.complete_signal.emit()
-        self._log("Starting OCR process. Please wait...")
-
-        return {
-            "source": "HSR-Scanner",
-            "build": "v1.5.0",
-            "version": 4,
-            "metadata": {
-                "uid": int(uid) if uid else None,
-                "trailblazer": (
-                    "Stelle"
-                    if QSettings(KEL_Z, HSR_SCANNER).value("is_stelle", True) == "true"
-                    else "Caelus"
-                ),
-            },
-            "light_cones": [x for x in await asyncio.gather(*light_cones) if x],
-            "relics": [x for x in await asyncio.gather(*relics) if x],
-            "characters": [x for x in await asyncio.gather(*characters) if x],
-        }
+    def _open_ocr_gate(self) -> None:
+        """Lift the capture-phase OCR concurrency limit to the full configured value."""
+        if self._ocr_gate_opened:
+            return
+        self._ocr_gate_opened = True
+        for _ in range(self._ocr_concurrency - self._ocr_capture_workers):
+            self._ocr_gate.release()
 
     def stop_scan(self) -> None:
         """Stops the scan"""
         self._interrupt_event.set()
+
+    def _return_to_escape_screen(self) -> None:
+        """Open the game's escape menu before OCR starts."""
+        self._nav.key_tap(Key.esc)
 
     def scan_inventory(self, strategy: BaseParseStrategy) -> set[asyncio.Task]:
         """Scans the inventory for light cones or relics
@@ -327,7 +420,13 @@ class HSRScanner(QObject):
             #
             #       for now, it will work for light cones and relics.
             quantity = self._screenshot.screenshot_quantity()
-            quantity = image_to_string(quantity, "0123456789/", 7)
+            with ocr_profile_context(
+                item_type=strategy.SCAN_TYPE.name.lower(),
+                uid="inventory",
+                field="quantity",
+                phase="scan",
+            ):
+                quantity = image_to_string(quantity, "0123456789/", 7)
 
             try:
                 self._log(f"Quantity: {quantity}.")
@@ -347,9 +446,15 @@ class HSRScanner(QObject):
                     )
                 self._nav_sleep(1)
 
-        current_sort_method = image_to_string(
-            self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
-        )
+        with ocr_profile_context(
+            item_type=strategy.SCAN_TYPE.name.lower(),
+            uid="inventory",
+            field="sort",
+            phase="scan",
+        ):
+            current_sort_method = image_to_string(
+                self._screenshot.screenshot_sort(), "RarityLvDate obtained", 7
+            )
         optimal_sort_method = SORT_DATE
         if self._scan_mode != ScanMode.RECENT_RELICS.value:
             optimal_sort_method = strategy.get_optimal_sort_method(
@@ -368,9 +473,29 @@ class HSRScanner(QObject):
             self._nav_sleep(0.5)
             self._select_first_inventory_item(nav_data)
 
-        tasks = set()
+        tasks = []
+        batch_items = []
+        batch_total = 0
+        batch_shard_count = 0
         scanned = 0
         previous_stats_panel_bytes = None
+
+        if isinstance(strategy, RelicStrategy):
+            strategy.BATCH_OCR_CHUNK_SIZE = self._ocr_batch_size
+
+        def submit_batch_shard(shard: list) -> None:
+            """Stream a relic shard to the gated OCR workers while capture continues."""
+            nonlocal batch_shard_count
+            batch_shard_count += 1
+            tasks.append(
+                self._profiled_parse_task(
+                    strategy.SCAN_TYPE.name.lower(),
+                    f"batch_{batch_shard_count}",
+                    strategy.__class__.__name__,
+                    strategy.batch_parse,
+                    shard,
+                )
+            )
 
         def should_stop():
             if self._scan_mode == ScanMode.RECENT_RELICS.value:
@@ -425,19 +550,45 @@ class HSRScanner(QObject):
                     scanned += 1
                 if not all(filter_results.values()):
                     self._nav.key_tap("d")
-                    self._scan_sleep(0.05)
+                    self._scan_sleep(self.POST_NAV_BASE_DELAY)
                     continue
 
             # Update UI count
             self.update_signal.emit(strategy.SCAN_TYPE.value)
 
-            task = asyncio.to_thread(strategy.parse, stats_dict, item_id)
-            tasks.add(task)
+            if isinstance(strategy, RelicStrategy):
+                batch_items.append((item_id, stats_dict))
+                batch_total += 1
+                if len(batch_items) >= self._ocr_batch_size:
+                    submit_batch_shard(batch_items)
+                    batch_items = []
+            else:
+                task = self._profiled_parse_task(
+                    strategy.SCAN_TYPE.name.lower(),
+                    item_id,
+                    strategy.__class__.__name__,
+                    strategy.parse,
+                    stats_dict,
+                    item_id,
+                )
+                tasks.append(task)
 
             # Next item
             self._nav.key_tap("d")
-            self._scan_sleep(0.05)
+            self._scan_sleep(self.POST_NAV_BASE_DELAY)
 
+        if batch_items:
+            # Split the remainder across workers so the post-capture tail
+            # finishes in parallel instead of on a single thread.
+            for batch_item_chunk in self._split_batch_items(batch_items):
+                submit_batch_shard(batch_item_chunk)
+            batch_items = []
+        if batch_total:
+            self._log(
+                f"Queued {batch_total} relics for batch OCR across "
+                f"{batch_shard_count} streamed shard(s).",
+                LogLevel.DEBUG,
+            )
         self._nav.key_tap(Key.esc)
         self._nav_sleep(2)
         self._nav.key_tap(Key.esc)
@@ -493,13 +644,19 @@ class HSRScanner(QObject):
                 retry = 0
                 while True:
                     character_total = self._screenshot.screenshot_character_count()
-                    character_total = image_to_string(
-                        character_total,
-                        "0123456789/",
-                        7,
-                        True,
-                        preprocess_char_count_img,
-                    )
+                    with ocr_profile_context(
+                        item_type="character",
+                        uid="databank",
+                        field="character_count",
+                        phase="scan",
+                    ):
+                        character_total = image_to_string(
+                            character_total,
+                            "0123456789/",
+                            7,
+                            True,
+                            preprocess_char_count_img,
+                        )
                     try:
                         self._log(f"Character total: {character_total}.")
                         character_total = int(character_total.split("/")[0])
@@ -754,7 +911,13 @@ class HSRScanner(QObject):
         for stats_dict in res:
             if not stats_dict:
                 continue
-            task = asyncio.to_thread(char_parser.parse, stats_dict)
+            task = self._profiled_parse_task(
+                "character",
+                stats_dict.get(CHAR_NAME, "unknown"),
+                char_parser.__class__.__name__,
+                char_parser.parse,
+                stats_dict,
+            )
             tasks.add(task)
 
         self._nav_sleep(1)
@@ -783,11 +946,85 @@ class HSRScanner(QObject):
         :return: The character name
         """
         character_name_img = self._screenshot.screenshot_character_name()
-        return image_to_string(
-            character_name_img,
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/79&",
-            7,
-        )
+        with ocr_profile_context(
+            item_type="character",
+            uid="navigation",
+            field="character_name",
+            phase="scan",
+        ):
+            return image_to_string(
+                character_name_img,
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz/79&",
+                7,
+            )
+
+    def _profiled_parse_task(
+        self,
+        item_type: str,
+        uid: int | str | None,
+        parser: str,
+        parse_func,
+        *args,
+    ):
+        """Run a parse call in the OCR executor with queue and parse timing.
+
+        Work is submitted to the executor immediately so OCR overlaps the
+        remaining capture loop; the capture gate bounds how many workers run
+        while the game is still being captured.
+        """
+        queued_at = time.perf_counter()
+
+        def _run_parse():
+            with self._ocr_gate:
+                worker_started_at = time.perf_counter()
+                with ocr_profile_context(item_type=item_type, uid=uid, phase="parse"):
+                    result = parse_func(*args)
+                parse_ms = (time.perf_counter() - worker_started_at) * 1000
+                record_parse_task(
+                    item_type=item_type,
+                    uid=uid,
+                    parser=parser,
+                    queue_wait_ms=(worker_started_at - queued_at) * 1000,
+                    parse_ms=parse_ms,
+                    success=bool(result),
+                )
+                return result
+
+        if self._loop is not None:
+            return self._loop.run_in_executor(None, _run_parse)
+        # Parser-only callers without a captured loop (e.g. tests) keep the
+        # lazy coroutine behavior.
+        return asyncio.to_thread(_run_parse)
+
+    def _flatten_scan_results(self, results) -> list[dict]:
+        """Flatten parse task results; batch parsers return lists, legacy parsers return dicts."""
+        flattened = []
+        for result in results:
+            if isinstance(result, list):
+                flattened.extend(x for x in result if x)
+            elif result:
+                flattened.append(result)
+        return flattened
+
+    def _split_batch_items(self, batch_items: list) -> list[list]:
+        """Split relic OCR batches so the OCR executor can use configured concurrency."""
+        if not batch_items:
+            return []
+
+        worker_count = min(self._ocr_concurrency, len(batch_items))
+        chunk_size = math.ceil(len(batch_items) / worker_count)
+        return [
+            batch_items[index : index + chunk_size]
+            for index in range(0, len(batch_items), chunk_size)
+        ]
+
+    def _resolve_ocr_batch_size(self, value) -> int:
+        """Clamp OCR batch size to a practical range for Tesseract composites."""
+        try:
+            parsed_value = int(value)
+        except (TypeError, ValueError):
+            parsed_value = DEFAULT_OCR_BATCH_SIZE
+        return max(1, min(parsed_value, 50))
 
     def _nav_sleep(self, seconds: float) -> None:
         """Sleeps for the specified amount of time with navigation delay
