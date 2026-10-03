@@ -11,6 +11,7 @@ from pynput.keyboard import Key
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
+from config.screenshot import SCREENSHOT_COORDS
 from config.const import (
     ASCENSION_OFFSET_X,
     ASCENSION_START,
@@ -53,9 +54,11 @@ from models.const import (
     HSR_SCANNER,
     KEL_Z,
     LEVEL,
+    LC_FILTERS,
     MIN_LEVEL,
     MIN_RARITY,
     RARITY,
+    RELIC_FILTERS,
     SORT_DATE,
     SORT_LV,
     SORT_RARITY,
@@ -69,6 +72,7 @@ from utils.duplicate_capture import recover_duplicate_capture
 from utils.navigation import Navigation
 from utils.ocr import (
     image_to_string,
+    prepare_ocr,
     preprocess_char_count_img,
     preprocess_uid_img,
     set_ocr_concurrency,
@@ -81,6 +85,7 @@ from utils.ocr_profile import (
     reset_ocr_profile,
 )
 from utils.screenshot import Screenshot
+from utils.scan_integrity import validate_relic_records
 from utils.window import bring_window_to_foreground
 
 from .parsers.character_parser import CharacterParser
@@ -99,13 +104,11 @@ class InterruptedScanException(Exception):
 class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
-    DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.15
+    DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.25
 
-    # Earliest panel refresh is ~15ms (~1 frame), so sleep that, then rapid-poll
-    # until the text changes or 70ms (the cap covers identical neighbors and slow
-    # frames).
-    PANEL_CHANGE_TIMEOUT = 0.07
-    POST_NAV_BASE_DELAY = 0.015
+    PANEL_CHANGE_TIMEOUT = 0.75
+    PANEL_SETTLE_TIME = 0.0  # Two matching observations, no fixed per-item wait.
+    POST_NAV_BASE_DELAY = 0.0
 
     update_signal = pyqtSignal(int)
     log_signal = pyqtSignal(object)
@@ -175,8 +178,6 @@ class HSRScanner(QObject):
         )
         reset_ocr_profile()
 
-        # Gate OCR to half concurrency during capture so it can't starve the
-        # game's CPU and drop frames; opens to full once capture ends.
         self._loop: asyncio.AbstractEventLoop | None = None
         self._ocr_capture_workers = max(1, self._ocr_concurrency // 2)
         self._ocr_gate = threading.Semaphore(self._ocr_capture_workers)
@@ -208,18 +209,100 @@ class HSRScanner(QObject):
         previous_stats_panel_bytes: bytes | None,
     ) -> tuple[dict, bytes]:
         """Capture inventory stats and recover from repeated stale panel screenshots."""
-        return recover_duplicate_capture(
-            lambda: self._screenshot.screenshot_stats_on_panel_change(
-                strategy.SCAN_TYPE,
-                previous_stats_panel_bytes,
-                self.PANEL_CHANGE_TIMEOUT,
-            ),
+        profile = self._config.get(CONFIG_DEBUG, False)
+        capture_start = time.perf_counter() if profile else 0.0
+        incoming_nav_start = getattr(self, '_profile_nav_start', None)
+        def capture():
+            advance = None
+            if (getattr(self, '_pipeline_allowed', False)
+                    and getattr(self, '_inventory_nav_target', None) != item_id + 1):
+                advance = lambda raw, key: self._advance_inventory_candidate(item_id, raw, key)
+            self._screenshot.configure_inventory_capture(item_id, advance, self._check_capture_interrupt)
+            return self._screenshot.screenshot_stats_on_panel_change(
+                strategy.SCAN_TYPE, previous_stats_panel_bytes,
+                self.PANEL_CHANGE_TIMEOUT, self.PANEL_SETTLE_TIME)
+        result = recover_duplicate_capture(
+            capture,
             previous_stats_panel_bytes,
             item_id,
             self._log,
             self._interruptible_sleep,
             self.DUPLICATE_STATS_CAPTURE_RETRY_DELAY,
+            lambda attempt, _stats: self._record_duplicate_transition(
+                item_id, attempt
+            ),
         )
+        if profile:
+            capture_end = time.perf_counter()
+            nav_start = incoming_nav_start
+            if nav_start is not None:
+                distance = item_id - getattr(self, '_profile_shard_last_uid', -100)
+                group = 'after_shard_1_3' if 1 <= distance <= 3 else 'other'
+                self._inventory_profile.append((
+                    item_id, group, (capture_end - nav_start) * 1000,
+                    (capture_start - nav_start) * 1000,
+                    (capture_end - capture_start) * 1000,
+                ))
+        return result
+
+    def _record_duplicate_transition(self, item_id: int, attempt: int) -> None:
+        """Record enough evidence to diagnose a failed inventory transition."""
+        try:
+            foreground = win32gui.GetForegroundWindow()
+            self._log(
+                f"Item UID {item_id}: recovery attempt={attempt}, "
+                f"game_is_foreground={foreground == self._hwnd}, "
+                f"foreground_class={win32gui.GetClassName(foreground) if foreground else 'none'}. "
+                "This is recovery-time focus, not proof of focus during input.",
+                LogLevel.DEBUG,
+            )
+        except Exception as exc:
+            self._log(f"Could not inspect recovery-time focus: {exc}", LogLevel.DEBUG)
+        if attempt == 0:
+            self._log(
+                f"Item UID {item_id}: item {item_id - 1} was accepted and one "
+                "forward ('d') navigation input was issued, but the details "
+                "signature still matches the prior item. This may be an "
+                "unaccepted navigation input or a stale details panel; recovery "
+                "will capture only and will not resend navigation.",
+                LogLevel.WARNING,
+            )
+        self._screenshot.save_inventory_transition_diagnostic(item_id, attempt)
+
+    def _check_capture_interrupt(self):
+        event = getattr(self, '_interrupt_event', None)
+        if event is not None and event.is_set():
+            raise InterruptedScanException()
+
+    def _advance_inventory_candidate(self, item_id, raw, key):
+        """Skip the next input once a relic is below the rarity filter; the parser still filters."""
+        minimum = getattr(self, '_pipeline_min_rarity', 0)
+        if minimum > 2 and key == 'relic':
+            left, top, right, bottom = SCREENSHOT_COORDS[self._aspect_ratio]['relic'][RARITY]
+            x = min(raw.width - 1, int((left + right) * raw.width / 2))
+            y = min(raw.height - 1, int((top + bottom) * raw.height / 2))
+            if self._game_data.get_closest_rarity(raw.getpixel((x, y))) < minimum:
+                return None
+        return self._advance_inventory(item_id, pipeline=True)
+
+    def _advance_inventory(self, item_id: int, pipeline: bool = False):
+        if getattr(self, '_inventory_nav_target', None) == item_id + 1:
+            return None
+        self._check_capture_interrupt()
+        self._screenshot.remember_inventory_before_navigation()
+        nav_start = time.perf_counter()
+        self._nav.key_tap("d")
+        nav_end = time.perf_counter()
+        self._inventory_nav_target = item_id + 1
+        self._profile_nav_start = nav_start
+        if not pipeline:
+            if self._config.get(CONFIG_DEBUG, False):
+                self._screenshot._trace_capture(('nav', getattr(self, '_inventory_type', ''),
+                    item_id, item_id + 1, '', nav_start, nav_end, '', '', '', '', '', 'issued'))
+            delay = self._config.get(CONFIG_SCAN_DELAY, 0)
+            if delay:
+                self._scan_sleep(0)
+        return nav_start, nav_end
 
     async def start_scan(self) -> dict:
         """Starts the scan
@@ -244,19 +327,46 @@ class HSRScanner(QObject):
                 "Non-English game name detected. The scanner only works with English text.",
                 LogLevel.WARNING,
             )
-        bring_window_to_foreground(self._hwnd)
 
         uid = None
         light_cones = []
         relics = []
         characters = []
         try:
+            preflight_start = time.perf_counter()
+            version = prepare_ocr()
+            self._log(
+                f"OCR preflight: Tesseract {version}, version cache ready; "
+                f"elapsed_ms={(time.perf_counter() - preflight_start) * 1000:.3f}. "
+                "Windows subprocesses use CREATE_NO_WINDOW; recognition jobs "
+                "still launch per call.", LogLevel.DEBUG,
+            )
+            bring_window_to_foreground(self._hwnd)
             uid, light_cones, relics, characters = self._run_capture_phases()
         finally:
             # Submitted OCR work blocks on the capture gate; open it before any
             # await/shutdown so workers can always drain, even on interrupt.
             self._open_ocr_gate()
             self._screenshot.close()
+            try:
+                self._screenshot.flush_inventory_capture_trace()
+            except Exception as exc:
+                self._log(f'Could not write capture pipeline trace: {exc}', LogLevel.WARNING)
+            for line in self._screenshot.get_capture_timing_summary_lines():
+                self._log(line, LogLevel.DEBUG)
+            records = getattr(self, '_inventory_profile', [])
+            for group in ('all', 'after_shard_1_3', 'other'):
+                selected = [r for r in records if group == 'all' or r[1] == group]
+                if not selected:
+                    continue
+                for column, name in ((2, 'nav_to_accept_ms'), (3, 'nav_to_capture_ms'), (4, 'capture_with_recovery_ms')):
+                    values = sorted(r[column] for r in selected)
+                    self._log(
+                        f"Inventory profile: group={group}, metric={name}, n={len(values)}, "
+                        f"avg={sum(values)/len(values):.3f}, p50={values[len(values)//2]:.3f}, "
+                        f"p95={values[min(len(values)-1, int(len(values)*.95))]:.3f}, max={values[-1]:.3f}",
+                        LogLevel.DEBUG,
+                    )
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
@@ -271,6 +381,7 @@ class HSRScanner(QObject):
             await asyncio.gather(*light_cones)
         )
         relic_results = self._flatten_scan_results(await asyncio.gather(*relics))
+        validate_relic_records(relic_results)
         character_results = self._flatten_scan_results(
             await asyncio.gather(*characters)
         )
@@ -279,8 +390,6 @@ class HSRScanner(QObject):
             f"light_cones={len(light_cone_results)}, relics={len(relic_results)}, characters={len(character_results)}",
             LogLevel.DEBUG,
         )
-        for line in self._screenshot.get_capture_timing_summary_lines():
-            self._log(line, LogLevel.DEBUG)
         for line in get_ocr_profile_summary_lines():
             self._log(line, LogLevel.DEBUG)
 
@@ -479,6 +588,29 @@ class HSRScanner(QObject):
         batch_shard_count = 0
         scanned = 0
         previous_stats_panel_bytes = None
+        self._inventory_nav_target = None
+        self._inventory_type = 'relic' if isinstance(strategy, RelicStrategy) else 'light_cone'
+        self._screenshot.reset_inventory_pipeline()
+        filters = self._config.get(FILTERS, {}).get(
+            RELIC_FILTERS if isinstance(strategy, RelicStrategy) else LC_FILTERS, {})
+        minimum_level = 0 if isinstance(strategy, RelicStrategy) else 1
+        recent_mode = self._scan_mode == ScanMode.RECENT_RELICS.value
+        self._pipeline_min_rarity = (
+            filters.get(MIN_RARITY, 1) if current_sort_method == SORT_RARITY else 0
+        )
+        pipeline_safe = (
+            not self._config.get(CONFIG_SCAN_DELAY, 0)
+            and filters.get(MIN_LEVEL, minimum_level) <= minimum_level
+            and (isinstance(strategy, RelicStrategy) or filters.get(MIN_RARITY, 1) <= 1)
+        )
+        self._log(
+            f'Inventory pipeline: eligible={pipeline_safe}, base_delay_ms=0, '
+            f'rarity_stop_hint={self._pipeline_min_rarity}, '
+            f'recent_last_candidate_conservative={recent_mode}.', LogLevel.DEBUG)
+        self._profile_nav_start = None
+        self._profile_shard_last_uid = -100
+        if not hasattr(self, '_inventory_profile'):
+            self._inventory_profile = []
 
         if isinstance(strategy, RelicStrategy):
             strategy.BATCH_OCR_CHUNK_SIZE = self._ocr_batch_size
@@ -487,6 +619,12 @@ class HSRScanner(QObject):
             """Stream a relic shard to the gated OCR workers while capture continues."""
             nonlocal batch_shard_count
             batch_shard_count += 1
+            self._profile_shard_last_uid = shard[-1][0]
+            self._log(
+                f"OCR shard submitted: shard={batch_shard_count}, "
+                f"first_uid={shard[0][0]}, last_uid={shard[-1][0]}, count={len(shard)}",
+                LogLevel.DEBUG,
+            )
             tasks.append(
                 self._profiled_parse_task(
                     strategy.SCAN_TYPE.name.lower(),
@@ -506,13 +644,16 @@ class HSRScanner(QObject):
             return quantity_remaining <= 0
 
         while not should_stop():
-            quantity_remaining -= 1
-
-            item_id = quantity - quantity_remaining
+            item_id = quantity - quantity_remaining + 1
+            self._pipeline_allowed = (
+                pipeline_safe and quantity_remaining > 1
+                and (not recent_mode or scanned + 1 < self._config[CONFIG_RECENT_RELICS_NUM])
+            )
             stats_dict, stats_panel_bytes = self._capture_inventory_stats(
                 strategy, item_id, previous_stats_panel_bytes
             )
             previous_stats_panel_bytes = stats_panel_bytes
+            quantity_remaining -= 1
 
             # Check if item satisfies filters
             if FILTERS in self._config:
@@ -549,8 +690,8 @@ class HSRScanner(QObject):
                 ):
                     scanned += 1
                 if not all(filter_results.values()):
-                    self._nav.key_tap("d")
-                    self._scan_sleep(self.POST_NAV_BASE_DELAY)
+                    if not should_stop():
+                        self._advance_inventory(item_id)
                     continue
 
             # Update UI count
@@ -574,8 +715,8 @@ class HSRScanner(QObject):
                 tasks.append(task)
 
             # Next item
-            self._nav.key_tap("d")
-            self._scan_sleep(self.POST_NAV_BASE_DELAY)
+            if not should_stop():
+                self._advance_inventory(item_id)
 
         if batch_items:
             # Split the remainder across workers so the post-capture tail

@@ -1,5 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+import sys
+from pathlib import Path
+
+# Stop PyInstaller bundling stray DLLs from other apps on PATH (e.g. Poppler's ICU).
+python_root = Path(sys.executable).parent
+windows_root = Path(os.environ['SystemRoot'])
+os.environ['PATH'] = os.pathsep.join(str(path) for path in (
+    python_root, python_root / 'DLLs', windows_root / 'System32', windows_root,
+))
+
 
 block_cipher = None
 
@@ -28,6 +39,9 @@ a.datas += [('assets\\images\\discard.png','src\\assets\\images\\discard.png', "
 a.datas += [('assets\\images\\trailblazerm.png','src\\assets\\images\\trailblazerm.png', "DATA")]
 a.datas += [('assets\\images\\trailblazerf.png','src\\assets\\images\\trailblazerf.png', "DATA")]
 a.datas += [('assets\\images\\app.ico','src\\assets\\images\\app.ico', "DATA")]
+a.datas += [('assets\\images\\sparxie_equipped_reference.png','src\\assets\\images\\sparxie_equipped_reference.png', "DATA")]
+a.datas += [('assets\\images\\evanescia_lunar_blossoming_equipped_reference.png','src\\assets\\images\\evanescia_lunar_blossoming_equipped_reference.png', "DATA")]
+a.datas += [('assets\\images\\hyacine_warm_cotton_skies_equipped_reference.png','src\\assets\\images\\hyacine_warm_cotton_skies_equipped_reference.png', "DATA")]
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 

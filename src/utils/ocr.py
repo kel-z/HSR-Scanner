@@ -26,6 +26,11 @@ else:
     pytesseract.tesseract_cmd = "tesseract"
 DIN_ALTERNATE = "DIN-Alternate"
 
+
+def prepare_ocr() -> str:
+    """Cache the Tesseract version before parallel OCR starts."""
+    return str(pytesseract.get_tesseract_version(cached=True))
+
 # Limit concurrent Tesseract processes to prevent system overload
 OCR_SEMAPHORE = threading.Semaphore(DEFAULT_OCR_CONCURRENCY)
 OCR_CALL_COUNTER = 0
@@ -213,18 +218,46 @@ def preprocess_main_stat_img(img: Image) -> Image:
 
 
 def preprocess_sub_stat_img(img: Image) -> Image:
-    """Preprocess sub stat image
+    """Binarize substat text over coloured lighting.
 
-    :param img: The image to preprocess
-    :return: The preprocessed image
+    The darkest channel suppresses the lighting tint, and a top-hat removes the
+    background, so dim preview text survives where a global threshold loses it.
     """
-    # Even wider range for grayed-out inactive substats
-    img = _preprocess_img_by_colour_filter(
-        img,
-        [(255, 255, 255), (140, 140, 140)],
-        [120, 80],
-    )
-    return img
+    rgb = np.asarray(img.convert("RGB") if img.mode != "RGB" else img)
+    red, green, blue = cv2.split(rgb)
+    gray = cv2.min(cv2.min(red, green), blue)
+    foreground = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, _SUBSTAT_BACKGROUND_KERNEL)
+    foreground = cv2.resize(foreground, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    foreground = cv2.GaussianBlur(foreground, (3, 3), 1)
+    _, foreground = cv2.threshold(foreground, 29, 255, cv2.THRESH_BINARY_INV)
+    return PILImage.fromarray(foreground)
+
+
+_SUBSTAT_BACKGROUND_KERNEL = np.ones((17, 17), dtype=np.uint8)
+
+
+def _local_text_mask(gray: np.ndarray, threshold: int = 29) -> Image:
+    foreground = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, _SUBSTAT_BACKGROUND_KERNEL)
+    foreground = cv2.resize(foreground, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    foreground = cv2.GaussianBlur(foreground, (3, 3), 1)
+    return PILImage.fromarray(cv2.threshold(foreground, threshold, 255, cv2.THRESH_BINARY_INV)[1])
+
+
+def preprocess_relic_name_img(img: Image) -> Image:
+    """Local green-channel contrast preserves gold titles over coloured lighting."""
+    return _local_text_mask(np.asarray(img.convert('RGB'))[:, :, 1])
+
+
+def preprocess_relic_main_stat_img(img: Image) -> Image:
+    """Gold chroma remains distinct even when the main-stat bar is brighter."""
+    rgb = np.asarray(img.convert('RGB'))
+    return _local_text_mask(cv2.subtract(rgb[:, :, 0], rgb[:, :, 2]))
+
+
+def preprocess_sub_stat_value_img(img: Image) -> Image:
+    """Slightly stronger local contrast rejects texture dots near numeric glyphs."""
+    red, green, blue = cv2.split(np.asarray(img.convert('RGB')))
+    return _local_text_mask(cv2.min(cv2.min(red, green), blue), 39)
 
 
 def preprocess_superimposition_img(img: Image) -> Image:

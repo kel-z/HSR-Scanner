@@ -257,6 +257,10 @@ def subprocess_args(include_stdout=True):
     # game capture yields CPU to the game instead of causing frame drops.
     if hasattr(subprocess, 'BELOW_NORMAL_PRIORITY_CLASS'):
         kwargs['creationflags'] = subprocess.BELOW_NORMAL_PRIORITY_CLASS
+    if hasattr(subprocess, 'CREATE_NO_WINDOW'):
+        kwargs['creationflags'] = (
+            kwargs.get('creationflags', 0) | subprocess.CREATE_NO_WINDOW
+        )
 
     if include_stdout:
         kwargs['stdout'] = subprocess.PIPE
@@ -447,8 +451,7 @@ def get_languages(config=''):
     try:
         result = subprocess.run(
             cmd_args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            **subprocess_args(),
         )
     except OSError:
         raise TesseractNotFoundError()
@@ -473,11 +476,13 @@ def get_tesseract_version():
     Returns Version object of the Tesseract version
     """
     try:
+        kwargs = subprocess_args()
+        # check_output owns stdout; keep all other shared launch protections.
+        kwargs.pop('stdout')
         output = subprocess.check_output(
             [tesseract_cmd, '--version'],
-            stderr=subprocess.STDOUT,
-            env=environ,
-            stdin=subprocess.DEVNULL,
+            **kwargs,
+            timeout=10,
         )
     except OSError:
         raise TesseractNotFoundError()

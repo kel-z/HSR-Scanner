@@ -7,6 +7,18 @@ Stats = TypeVar("Stats")
 MAX_DUPLICATE_CAPTURE_RETRIES = 2
 
 
+class UnresolvedDuplicateCaptureError(RuntimeError):
+    """Raised when a new inventory item cannot be distinguished from the last."""
+
+    def __init__(self, item_id: int, attempts: int) -> None:
+        self.item_id = item_id
+        self.attempts = attempts
+        super().__init__(
+            f"Item UID {item_id}: stats panel did not change after {attempts} "
+            "capture attempts. The scan is incomplete and will not be exported."
+        )
+
+
 def recover_duplicate_capture(
     capture_stats: Callable[[], tuple[Stats, bytes]],
     previous_panel_bytes: bytes | None,
@@ -14,11 +26,18 @@ def recover_duplicate_capture(
     log: Callable[[str, LogLevel], None],
     sleep: Callable[[float], None],
     retry_delay: float,
+    on_duplicate: Callable[[int, Stats], None] | None = None,
 ) -> tuple[Stats, bytes]:
-    """Capture stats and retry when the panel is byte-identical to the previous item."""
+    """Capture stats, re-capturing while the panel matches the previous item.
+
+    Retries never re-send navigation: the selection may already have moved.
+    """
     stats, panel_bytes = capture_stats()
     if previous_panel_bytes is None or panel_bytes != previous_panel_bytes:
         return stats, panel_bytes
+
+    if on_duplicate is not None:
+        on_duplicate(0, stats)
 
     for retry in range(1, MAX_DUPLICATE_CAPTURE_RETRIES + 1):
         log(
@@ -35,10 +54,14 @@ def recover_duplicate_capture(
                 LogLevel.DEBUG,
             )
             return stats, panel_bytes
+        if on_duplicate is not None:
+            on_duplicate(retry, stats)
 
     log(
         f"Item UID {item_id}: Duplicate stats capture persisted after retries. "
-        "Continuing with latest capture.",
-        LogLevel.WARNING,
+        "Aborting incomplete scan; no export will be written.",
+        LogLevel.ERROR,
     )
-    return stats, panel_bytes
+    raise UnresolvedDuplicateCaptureError(
+        item_id, MAX_DUPLICATE_CAPTURE_RETRIES + 1
+    )

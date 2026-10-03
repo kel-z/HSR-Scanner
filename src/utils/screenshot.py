@@ -1,4 +1,5 @@
 import datetime
+import csv
 import os
 import time
 
@@ -30,6 +31,7 @@ from config.screenshot import SCREENSHOT_COORDS
 from enums.log_level import LogLevel
 from enums.increment_type import IncrementType
 from models.const import CHAR_LEVEL, CHAR_NAME
+from utils.scan_integrity import ScanIntegrityError
 
 
 class Screenshot:
@@ -73,9 +75,54 @@ class Screenshot:
         # didn't — non-text changes (icons loading, overlays) worth flagging.
         self._nontext_change_events: list[tuple[int, tuple]] = []
         self._last_panel_raw: Image | None = None
+        self._inventory_before_navigation = None
+        self._diagnostic_panel = None
         self._mss = None
         self._mss_failed = False
         self._mss_fallback_logged = False
+        self._pipeline_cache = None
+        self._capture_trace = []
+        self._capture_trace_dropped = 0
+        self._overlap_evidence = []
+
+    def configure_inventory_capture(self, uid, advance=None, interrupt=None):
+        self._capture_uid = uid
+        self._capture_advance = advance
+        self._capture_interrupt = interrupt
+
+    def reset_inventory_pipeline(self):
+        self._pipeline_cache = None
+
+    def _trace_capture(self, row):
+        if not self._debug:
+            return
+        if not hasattr(self, '_capture_trace'):
+            self._capture_trace = []
+            self._capture_trace_dropped = 0
+        if len(self._capture_trace) < 200000:
+            self._capture_trace.append((getattr(self, '_capture_id', 0), *row))
+        else:
+            self._capture_trace_dropped += 1
+
+    def flush_inventory_capture_trace(self):
+        if not self._debug or not self._debug_output_location:
+            return
+        path = os.path.join(self._debug_output_location, 'capture_pipeline.csv')
+        with open(path, 'w', newline='', encoding='utf-8') as stream:
+            writer = csv.writer(stream)
+            writer.writerow(('capture_id', 'event', 'item_type', 'uid', 'target_uid', 'poll',
+                             'grab_start_s', 'grab_end_s', 'signature_end_s',
+                             'equals_previous', 'equals_candidate', 'transition_id',
+                             'source', 'decision'))
+            writer.writerows(getattr(self, '_capture_trace', []))
+            dropped = getattr(self, '_capture_trace_dropped', 0)
+            if dropped:
+                writer.writerow(('', 'dropped', '', '', '', '', '', '', '', '', '', '', '', dropped))
+                self._log_signal.emit((f'Capture trace limit reached: {dropped} rows dropped.', LogLevel.WARNING))
+        for uid, before, following in getattr(self, '_overlap_evidence', []):
+            before.save(os.path.join(self._debug_output_location, f'overlap-{uid}-unconfirmed.png'))
+            following.save(os.path.join(self._debug_output_location, f'overlap-{uid}-following.png'))
+        return path
 
     def close(self) -> None:
         """Close the cached mss backend if it was opened."""
@@ -91,6 +138,51 @@ class Screenshot:
         """
         do_not_save = True  # so users don't unintentionally reveal their UID when naively sharing debug folder
         return self._take_screenshot(0, 0, 1, 1, do_not_save)
+
+    def remember_inventory_before_navigation(self) -> None:
+        """Retain the already captured panel by reference; never grab on navigation."""
+        if self._debug:
+            self._inventory_before_navigation = self._diagnostic_panel
+
+    def save_inventory_transition_diagnostic(
+        self, item_id: int, attempt: int
+    ) -> str | None:
+        """Save an image of the grid and panel for a failure, excluding the account UID."""
+        if not self._debug or not self._debug_output_location:
+            return None
+
+        file_name = f"inventory-transition-item-{item_id}-attempt-{attempt}.png"
+        output_location = os.path.join(self._debug_output_location, file_name)
+        try:
+            image = self._take_screenshot(0.045, 0.12, 0.925, 0.76, do_not_save=True)
+            image.save(output_location)
+            if attempt == 0 and self._inventory_before_navigation is not None:
+                self._inventory_before_navigation.save(os.path.join(
+                    self._debug_output_location, f"inventory-transition-item-{item_id}-before-panel.png"
+                ))
+            if self._diagnostic_panel is not None:
+                self._diagnostic_panel.save(os.path.join(
+                    self._debug_output_location, f"inventory-transition-item-{item_id}-attempt-{attempt}-exact-panel.png"
+                ))
+        except Exception as exc:
+            self._log_signal.emit(
+                (
+                    f"Item UID {item_id}: Failed to save transition diagnostic: {exc}",
+                    LogLevel.ERROR,
+                )
+            )
+            return None
+        self._log_signal.emit(
+            (
+                f"Item UID {item_id}: Saved transition diagnostic {file_name}. "
+                "It shows the selected inventory tile and details panel; no "
+                "additional navigation input was sent. Before-panel is the cached "
+                "prior panel, not a prior selection image; selection movement "
+                "cannot be proved from that image alone.",
+                LogLevel.WARNING,
+            )
+        )
+        return file_name
 
     def screenshot_stats(self, scan_type: IncrementType) -> dict:
         """Takes a screenshot of the stats. Requires an item to be selected in the inventory.
@@ -118,16 +210,19 @@ class Screenshot:
         scan_type: IncrementType,
         previous_panel_bytes: bytes | None,
         timeout_s: float,
+        settle_s: float = 0.0,
     ) -> tuple[dict, bytes]:
         """Takes a stats screenshot once the panel changes from the previous item.
 
         Polls until the panel's text-band signature differs from
-        ``previous_panel_bytes``, then captures the accepted frame; falls through
-        after ``timeout_s`` so identical adjacent items don't stall the scan.
+        ``previous_panel_bytes`` and settles. On timeout returns the previous
+        signature so the caller must retry or fail the scan.
 
         :param scan_type: The scan type
         :param previous_panel_bytes: Previous item's text-band signature bytes, or None
         :param timeout_s: Max time to wait for the panel to change
+        :param settle_s: Optional minimum unchanged time. Zero requires two
+            consecutive matching changed signatures without an added delay.
         :raises ValueError: Thrown if the scan type is invalid
         :return: The cropped stats dict and the panel's text-band signature bytes
         """
@@ -138,7 +233,7 @@ class Screenshot:
                 key = "relic"
             case _:
                 raise ValueError(f"Invalid scan type: {scan_type.name}.")
-        return self._screenshot_stats(key, previous_panel_bytes, timeout_s)
+        return self._screenshot_stats(key, previous_panel_bytes, timeout_s, settle_s)
 
     def screenshot_sort(self) -> Image:
         """Takes a screenshot of the current sort option. Requires inventory to be open.
@@ -332,6 +427,7 @@ class Screenshot:
         key: str,
         previous_panel_bytes: bytes | None = None,
         timeout_s: float = 0.0,
+        settle_s: float = 0.0,
     ) -> tuple[dict, bytes]:
         """Takes a screenshot of the stats
 
@@ -341,6 +437,7 @@ class Screenshot:
         :return: The cropped stats dict and the panel's text-band signature bytes
         """
         coords = SCREENSHOT_COORDS[self._aspect_ratio]
+        self._capture_id = getattr(self, '_capture_id', 0) + 1
         timing_start = time.perf_counter()
 
         x_pct, y_pct, w_pct, h_pct = coords[STATS]
@@ -350,24 +447,133 @@ class Screenshot:
         height = int(self._window_height * h_pct)
         bbox = (int(x), int(y), int(x + width), int(y + height))
 
-        # Grab raw until the text-band signature differs from the previous item
-        # (the new panel has rendered); the ~10ms mss grab paces the loop.
+        # Wait for the whole panel to settle; the name renders before the substats.
         polls = 0
         poll_start = time.perf_counter()
+        changed_signature = None
+        stable_since = None
+        settled = previous_panel_bytes is None
+        profile = self._debug
+        grabs_s = signatures_s = nontext_s = 0.0
+        first_change_at = None
+        signature_changes = 0
+        uid = getattr(self, '_capture_uid', 0)
+        advance = getattr(self, '_capture_advance', None)
+        interrupt = getattr(self, '_capture_interrupt', None)
+        candidate_raw = None
+        candidate_backend = None
+        navigation_issued = False
+        decision = 'timeout'
+        pending_nav = None
         while True:
             polls += 1
             grab_start = time.perf_counter()
-            raw_img, backend = self._grab_screenshot(bbox)
+            cache = getattr(self, '_pipeline_cache', None)
+            source = 'grab'
+            try:
+                if interrupt is not None:
+                    interrupt()
+                if cache is not None and cache[0] == uid and cache[1] == key:
+                    _, _, raw_img, backend, panel_bytes, cached_times = cache
+                    self._pipeline_cache = None
+                    source = 'cache'
+                else:
+                    raw_img, backend = self._grab_screenshot(bbox)
+            except BaseException:
+                if profile and pending_nav is not None:
+                    self._trace_capture(('nav', key, uid, uid + 1, polls - 1,
+                                         *pending_nav, '', '', '', '', '', 'issued'))
+                if profile:
+                    self._trace_capture(('abort', key, uid, '', polls, '', '',
+                                         time.perf_counter(), '', '', signature_changes, source, 'exception'))
+                raise
             grab_end = time.perf_counter()
-            panel_bytes = self._panel_change_signature(raw_img, key)
+            if source == 'grab':
+                panel_bytes = self._panel_change_signature(raw_img, key)
             changed = (
                 previous_panel_bytes is None or panel_bytes != previous_panel_bytes
             )
-            if not changed and self._debug:
+            equals_candidate = panel_bytes == changed_signature
+            if profile:
+                signature_end = time.perf_counter()
+                if source == 'grab':
+                    grabs_s += grab_end - grab_start
+                    signatures_s += signature_end - grab_end
+                if changed and first_change_at is None:
+                    first_change_at = signature_end
+                if pending_nav is not None:
+                    self._trace_capture(('nav', key, uid, uid + 1, polls - 1,
+                                         *pending_nav, '', '', '', '', '', 'issued'))
+                    pending_nav = None
+                trace_times = cached_times if source == 'cache' else (grab_start, grab_end, signature_end)
+                self._trace_capture(('poll', key, uid, '', polls, *trace_times, not changed,
+                                     equals_candidate, signature_changes,
+                                     source, ''))
+            if not changed and self._debug and self._verbose_logs:
                 self._record_nontext_change(raw_img)
-            if changed or (time.perf_counter() - poll_start) >= timeout_s:
+            now = time.perf_counter()
+            if profile and not changed:
+                nontext_s += now - signature_end
+            if not changed:
+                changed_signature = None
+                stable_since = None
+            if changed:
+                if previous_panel_bytes is None:
+                    settled = True
+                    decision = 'initial'
+                    break
+                if not equals_candidate:
+                    if navigation_issued and signature_changes >= 2 and candidate_raw is not None:
+                        self._pipeline_cache = (uid + 1, key, raw_img, backend, panel_bytes,
+                                                (grab_start, grab_end, signature_end if profile else now))
+                        if profile:
+                            if not hasattr(self, '_overlap_evidence'):
+                                self._overlap_evidence = []
+                            if len(self._overlap_evidence) < 8:
+                                self._overlap_evidence.append((uid, candidate_raw, raw_img))
+                        raw_img, backend, panel_bytes = candidate_raw, candidate_backend, changed_signature
+                        settled = True
+                        decision = 'unconfirmed_overlap'
+                        break
+                    signature_changes += 1
+                    changed_signature = panel_bytes
+                    candidate_raw, candidate_backend = raw_img, backend
+                    stable_since = now
+                elif stable_since is not None and now - stable_since >= settle_s:
+                    settled = True
+                    decision = 'stable'
+                    break
+            if now - poll_start >= timeout_s:
                 break
-        panel_wait_ms = (time.perf_counter() - poll_start) * 1000
+            if changed and advance is not None and not navigation_issued:
+                # Keep this adjacent to the next grab: no logging, sleep or IO.
+                self._diagnostic_panel = raw_img
+                pending_nav = advance(raw_img, key)
+                navigation_issued = pending_nav is not None
+                if not navigation_issued:
+                    advance = None
+        poll_end = time.perf_counter()
+        if profile:
+            self._trace_capture(('accept' if settled else 'timeout', key, uid, '', polls,
+                                 '', '', poll_end, '', '', signature_changes, '', decision))
+        if navigation_issued and not settled:
+            self._diagnostic_panel = raw_img
+            if profile and getattr(self, '_debug_output_location', ''):
+                self.save_inventory_transition_diagnostic(uid, 0)
+            raise ScanIntegrityError(
+                f'Item UID {uid}: panel did not settle after navigation to UID {uid + 1}; '
+                'ownership is unresolved, scan aborted without recapture or export.')
+        if decision == 'unconfirmed_overlap':
+            self._log_signal.emit((
+                f'Item UID {uid}: UNCONFIRMED overlap fallback; accepted preceding '
+                f'candidate after {polls} polls, cached new observation for UID {uid + 1}.',
+                LogLevel.WARNING))
+        panel_wait_ms = (poll_end - poll_start) * 1000
+        self._diagnostic_panel = raw_img
+        if previous_panel_bytes is not None and not settled:
+            # Report "unchanged" so the caller retries or aborts.
+            panel_bytes = previous_panel_bytes
+            changed = False
 
         resize_start = time.perf_counter()
         img = raw_img.resize(
@@ -380,6 +586,7 @@ class Screenshot:
         if self._debug and self._save_capture_png:
             file_name, save_ms = self._save_image(img)
 
+        crop_start = time.perf_counter() if profile else 0.0
         adjusted_stat_coords = {
             k: (
                 int(v[0] * img.width),
@@ -393,12 +600,14 @@ class Screenshot:
         res = {k: img.crop(v) for k, v in adjusted_stat_coords.items()}
 
         if self._debug:
+            crop_end = time.perf_counter()
             # Diff bbox of the accepted frame: a real item swap repaints most
             # of the panel, so a tiny changed area flags a suspect accept.
             accept_bbox = None
             accept_area = None
             if (
-                changed
+                self._verbose_logs
+                and changed
                 and previous_panel_bytes is not None
                 and self._last_panel_raw is not None
                 and self._last_panel_raw.size == raw_img.size
@@ -423,6 +632,15 @@ class Screenshot:
             total_ms = (time.perf_counter() - timing_start) * 1000
             self._stats_capture_records.append(
                 {
+                    "all_grabs_ms": grabs_s * 1000,
+                    "signature_ms": signatures_s * 1000,
+                    "nontext_diagnostic_ms": nontext_s * 1000,
+                    "first_change_ms": ((first_change_at or poll_end) - poll_start) * 1000,
+                    "confirmation_ms": (poll_end - first_change_at) * 1000 if first_change_at is not None else 0.0,
+                    "first_change_seen": first_change_at is not None,
+                    "signature_changes": signature_changes,
+                    "crop_ms": (crop_end - crop_start) * 1000,
+                    "accept_diagnostic_ms": total_ms - (crop_end - timing_start) * 1000,
                     "polls": polls,
                     "panel_wait_ms": panel_wait_ms,
                     "changed": changed,
@@ -510,26 +728,28 @@ class Screenshot:
             )
         )
 
-    # Text-only regions as (x0, y0, x1, y1) fractions. The poll compares only
-    # these, so non-text pixels (scrollbar, icons, art) can't fake a change.
+    # Text regions only, as (x0, y0, x1, y1): animated art changes on its own.
     _PANEL_SIGNATURE_BANDS = {
         "relic": (
-            (0.06, 0, 1, 0.09),         # name
-            (0.06, 0.09, 0.30, 0.15),   # slot text
-            (0.06, 0.22, 0.30, 0.34),   # level
-            (0.115, 0.34, 0.96, 0.90),  # mainstat/substat/set text
+            (0.06, 0, 1, 0.09),
+            (0.06, 0.09, 0.30, 0.15),
+            (0.06, 0.22, 0.30, 0.34),
+            (0.115, 0.34, 0.96, 0.90),
         ),
-        "light_cone": ((0.06, 0, 1, 0.09), (0.115, 0.31, 0.96, 0.90)),
+        "light_cone": (
+            (0.06, 0, 1, 0.09), (0.115, 0.31, 0.96, 0.90),
+        ),
     }
 
     @classmethod
     def _panel_change_signature(cls, img: Image, key: str) -> bytes:
-        """Bytes of the text-content regions of a raw stats panel."""
+        """Bytes of the text regions of a stats panel."""
         w, h = img.size
         return b"".join(
             img.crop(
                 (int(x0 * w), int(y0 * h), int(x1 * w), int(y1 * h))
-            ).tobytes()
+            )
+            .tobytes()
             for x0, y0, x1, y1 in cls._PANEL_SIGNATURE_BANDS[key]
         )
 
@@ -568,7 +788,9 @@ class Screenshot:
             return []
 
         lines = [f"Stats capture summary: count={len(records)}"]
-        for metric in ("panel_wait_ms", "grab_ms", "resize_ms", "save_ms", "total_ms"):
+        for metric in ("panel_wait_ms", "grab_ms", "resize_ms", "save_ms", "total_ms",
+                       "all_grabs_ms", "signature_ms", "nontext_diagnostic_ms",
+                       "first_change_ms", "confirmation_ms", "crop_ms", "accept_diagnostic_ms"):
             values = sorted(r[metric] for r in records)
             mid = len(values) // 2
             median = (
@@ -607,6 +829,15 @@ class Screenshot:
             f"avg={sum(polls) / len(polls):.2f}, max={max(polls)}, "
             f"timeouts={timeouts}"
         )
+        lines.append(
+            "Capture profile semantics: all_grabs_ms includes backend capture and RGB "
+            "conversion across every poll; grab_ms is last poll only. first_change_ms "
+            "and confirmation_ms partition panel_wait_ms approximately; signature_ms "
+            "includes text-band copies and previous-buffer comparison. These overlap "
+            "panel_wait_ms, so do not add them to it. "
+            f"no_change_attempts={sum(not r['first_change_seen'] for r in records)}, "
+            f"multiple_candidate_attempts={sum(r['signature_changes'] > 1 for r in records)}"
+        )
 
         suspicious = [
             (i, r["accept_area"], r["accept_bbox"])
@@ -615,6 +846,9 @@ class Screenshot:
         ]
         lines.append(
             f"Suspicious small-area accepts (<2% of panel): count={len(suspicious)}"
+            if self._verbose_logs else
+            "Full-panel difference diagnostics: disabled (enable verbose logging); "
+            "basic timing and failure images remain enabled."
         )
         for i, area, bbox in suspicious[:15]:
             lines.append(
@@ -637,7 +871,7 @@ class Screenshot:
             )
             for idx, bbox in events[:15]:
                 lines.append(f"Non-text panel change: capture={idx}, bbox={bbox}")
-        else:
+        elif self._verbose_logs:
             lines.append("Non-text panel changes: events=0")
         return lines
 

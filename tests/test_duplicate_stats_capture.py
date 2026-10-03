@@ -7,7 +7,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from enums.log_level import LogLevel  # noqa: E402
-from utils.duplicate_capture import recover_duplicate_capture  # noqa: E402
+from utils.duplicate_capture import (  # noqa: E402
+    UnresolvedDuplicateCaptureError,
+    recover_duplicate_capture,
+)
+from utils.scan_integrity import (  # noqa: E402
+    ScanIntegrityError,
+    validate_relic_records,
+)
 
 
 class FakeScreenshot:
@@ -50,7 +57,7 @@ class DuplicateStatsCaptureTest(unittest.TestCase):
         self.assertEqual(logs, [])
         self.assertEqual(sleeps, [])
 
-    def test_duplicate_fixed_by_wait(self) -> None:
+    def test_delayed_panel_update_is_recovered_by_wait(self) -> None:
         (stats, panel_bytes), screenshot, logs, sleeps = recover(
             [({"id": "stale"}, b"previous"), ({"id": "fresh"}, b"fresh")],
             b"previous",
@@ -80,24 +87,137 @@ class DuplicateStatsCaptureTest(unittest.TestCase):
         self.assertEqual(sleeps, [0.15, 0.15])
         self.assertIn(LogLevel.WARNING, [level for _, level in logs])
 
-    def test_persistent_duplicate_caps_retries_and_continues(self) -> None:
-        (stats, panel_bytes), screenshot, logs, sleeps = recover(
+    def test_exhausted_recovery_aborts_instead_of_accepting_stale_capture(self) -> None:
+        screenshot = FakeScreenshot(
             [
                 ({"id": "stale1"}, b"previous"),
                 ({"id": "stale2"}, b"previous"),
                 ({"id": "stale3"}, b"previous"),
-            ],
-            b"previous",
-            4,
+            ]
         )
+        logs = []
+        sleeps = []
+        with self.assertRaisesRegex(
+            UnresolvedDuplicateCaptureError, "will not be exported"
+        ):
+            recover_duplicate_capture(
+                screenshot.capture_stats,
+                b"previous",
+                4,
+                lambda msg, level: logs.append((msg, level)),
+                lambda seconds: sleeps.append(seconds),
+                0.15,
+            )
 
-        self.assertEqual(stats, {"id": "stale3"})
-        self.assertEqual(panel_bytes, b"previous")
         self.assertEqual(screenshot.calls, 3)
         self.assertEqual(sleeps, [0.15, 0.15])
-        warning_logs = [msg for msg, level in logs if level == LogLevel.WARNING]
-        self.assertEqual(len(warning_logs), 3)
-        self.assertIn("persisted after retries", warning_logs[-1])
+        self.assertIn(LogLevel.ERROR, [level for _, level in logs])
+        self.assertIn("no export will be written", logs[-1][0])
+
+    def test_failed_navigation_is_never_blindly_resent(self) -> None:
+        actions = []
+        captures = FakeScreenshot([({"id": "same-selection"}, b"previous")])
+
+        with self.assertRaises(UnresolvedDuplicateCaptureError):
+            recover_duplicate_capture(
+                captures.capture_stats,
+                b"previous",
+                5,
+                lambda _msg, _level: None,
+                lambda seconds: actions.append(("wait", seconds)),
+                0.15,
+            )
+
+        self.assertEqual(actions, [("wait", 0.15), ("wait", 0.15)])
+        self.assertNotIn("navigate", [action[0] for action in actions])
+
+    def test_basic_debug_callback_records_each_unchanged_attempt(self) -> None:
+        attempts = []
+        captures = FakeScreenshot([({"id": "stale"}, b"previous")])
+
+        with self.assertRaises(UnresolvedDuplicateCaptureError):
+            recover_duplicate_capture(
+                captures.capture_stats,
+                b"previous",
+                6,
+                lambda _msg, _level: None,
+                lambda _seconds: None,
+                0.15,
+                lambda attempt, stats: attempts.append((attempt, stats["id"])),
+            )
+
+        self.assertEqual(attempts, [(0, "stale"), (1, "stale"), (2, "stale")])
+
+
+class ScanIntegrityTest(unittest.TestCase):
+    def test_legitimate_identical_unequipped_relics_are_preserved(self) -> None:
+        relic = {
+            "set_id": "101",
+            "slot": "Head",
+            "mainstat": "HP",
+            "substats": [{"key": "SPD", "value": 2}],
+            "location": "",
+        }
+        records = [dict(relic, _uid="relic_1"), dict(relic, _uid="relic_2")]
+
+        result = validate_relic_records(records)
+
+        self.assertIs(result, records)
+        self.assertEqual([record["_uid"] for record in result], ["relic_1", "relic_2"])
+        self.assertEqual(len(result), 2)
+
+    def test_exact_duplicate_equipped_record_aborts(self) -> None:
+        records = [
+            {
+                "_uid": "relic_51",
+                "slot": "Head",
+                "location": "1014",
+                "mainstat": "HP",
+            },
+            {
+                "_uid": "relic_52",
+                "slot": "Head",
+                "location": "1014",
+                "mainstat": "HP",
+            },
+        ]
+
+        with self.assertRaisesRegex(ScanIntegrityError, "relic_51.*relic_52"):
+            validate_relic_records(records)
+
+    def test_same_equipped_slot_with_different_stats_is_preserved(self) -> None:
+        records = [
+            {
+                "_uid": "relic_1",
+                "slot": "Body",
+                "location": "1014",
+                "mainstat": "CRIT Rate",
+            },
+            {
+                "_uid": "relic_2",
+                "slot": "Body",
+                "location": "1014",
+                "mainstat": "CRIT DMG",
+            },
+        ]
+
+        self.assertIs(validate_relic_records(records), records)
+
+    def test_valid_records_keep_item_order_and_count(self) -> None:
+        records = [
+            {"_uid": "relic_49", "slot": "Link Rope", "location": "1501"},
+            {"_uid": "relic_50", "slot": "Body", "location": "1501"},
+            {"_uid": "relic_51", "slot": "Head", "location": "1014"},
+            {"_uid": "relic_52", "slot": "Hands", "location": "1014"},
+        ]
+
+        result = validate_relic_records(records)
+
+        self.assertEqual(len(result), 4)
+        self.assertEqual(
+            [record["_uid"] for record in result],
+            ["relic_49", "relic_50", "relic_51", "relic_52"],
+        )
 
 
 class DebugRunDuplicateCaptureTest(unittest.TestCase):

@@ -33,19 +33,25 @@ from models.const import (
     SORT_LV,
     SORT_RARITY,
 )
-from models.substat_vals import SUBSTAT_ROLL_VALS
+from models.game_data import RELIC_MAIN_STATS, RELIC_SUB_STATS
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from type_defs.stats_dict import RelicDict
 from utils.data import filter_images_from_dict, resource_path
 from utils.ocr import (
+    preprocess_relic_name_img,
+    preprocess_relic_main_stat_img,
+    preprocess_sub_stat_value_img,
     image_to_string,
     preprocess_equipped_img,
     preprocess_level_img,
-    preprocess_main_stat_img,
     preprocess_sub_stat_img,
 )
 from utils.ocr_batch import batch_image_to_strings_chunked
 from utils.ocr_profile import ocr_profile_context
+from utils.scan_integrity import ScanIntegrityError
+from utils.substat_validation import validate_substat_rolls
+from utils.recognition_validation import validated_match, validate_main_stat_slot, normalize_text
+from utils.avatar_matching import equipped_frame_present
 
 
 class RelicStrategy(BaseParseStrategy):
@@ -70,8 +76,8 @@ class RelicStrategy(BaseParseStrategy):
         if level is None or isinstance(level, Image):
             return None
 
-        level_digits = re.sub(r"\D", "", str(level))
-        if not level_digits:
+        level_digits = str(level).strip()
+        if not re.fullmatch(r'\+?\d{1,2}', level_digits):
             return None
 
         return int(level_digits)
@@ -128,21 +134,21 @@ class RelicStrategy(BaseParseStrategy):
     ) -> bool:
         """Parse lock/discard icon with guarded image matching.
 
-        Returns False on any parsing error and logs details for diagnostics.
+        Known absent icons are false; processing failures invalidate the scan.
         """
         if not isinstance(haystack, Image):
             self._log(
                 f"Relic UID {uid}: Failed to parse {key}. Input is not an image (type={type(haystack).__name__}). Setting to False.",
                 LogLevel.ERROR,
             )
-            return False
+            raise ScanIntegrityError(f'Relic {uid}: invalid {key} image; incomplete scan, no export.')
 
         if haystack.size[0] <= 0 or haystack.size[1] <= 0:
             self._log(
                 f"Relic UID {uid}: Failed to parse {key}. Invalid image size {haystack.size}. Setting to False.",
                 LogLevel.ERROR,
             )
-            return False
+            raise ScanIntegrityError(f'Relic {uid}: empty {key} image; incomplete scan, no export.')
 
         min_dim = min(haystack.size)
         try:
@@ -161,7 +167,7 @@ class RelicStrategy(BaseParseStrategy):
                 LogLevel.ERROR,
             )
             self._save_debug_image(haystack, uid, f"{key}_parse_failed")
-            return False
+            raise ScanIntegrityError(f'Relic {uid}: {key} recognition failed; incomplete scan, no export.') from e
 
     def get_optimal_sort_method(self, filters: dict) -> str:
         """Gets the optimal sort method based on the filters
@@ -225,7 +231,7 @@ class RelicStrategy(BaseParseStrategy):
                             self._save_debug_image(
                                 stats_dict[RELIC_LEVEL], uid, "level_filter_failed"
                             )
-                        stats_dict[RELIC_LEVEL] = 0
+                        raise ScanIntegrityError(f'Relic {uid}: unreadable filter level; incomplete scan, no export.')
                         filter_results[key] = True
                         continue
 
@@ -239,7 +245,7 @@ class RelicStrategy(BaseParseStrategy):
                             self._save_debug_image(
                                 stats_dict[RELIC_LEVEL], uid, "level_filter_digits_failed"
                             )
-                        stats_dict[RELIC_LEVEL] = 0
+                        raise ScanIntegrityError(f'Relic {uid}: invalid filter level; incomplete scan, no export.')
                         # Do not fail filter on OCR parse errors; avoid early scan termination.
                         filter_results[key] = True
                         continue
@@ -274,6 +280,8 @@ class RelicStrategy(BaseParseStrategy):
                     data,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
                     6,
+                    True,
+                    preprocess_relic_name_img,
                 )
             if res.endswith(" O"):
                 res = res[:-2].strip()
@@ -298,11 +306,11 @@ class RelicStrategy(BaseParseStrategy):
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz+",
                     7,
                     True,
-                    preprocess_main_stat_img,
+                    preprocess_relic_main_stat_img,
                 )
         elif key == EQUIPPED:
             with ocr_profile_context(field=key):
-                return image_to_string(data, "Equiped", 7, True, preprocess_equipped_img)
+                return image_to_string(data, "Equiped", 7, True, preprocess_relic_name_img)
         elif key == RELIC_RARITY:
             # Get rarity by color matching
             rarity_sample = np.array(data)
@@ -324,7 +332,7 @@ class RelicStrategy(BaseParseStrategy):
             with ocr_profile_context(field=key):
                 return (
                     image_to_string(
-                        data, "0123456789S.%,", 6, True, preprocess_sub_stat_img, False
+                        data, "0123456789S.%,", 6, True, preprocess_sub_stat_value_img, False
                     )
                     .replace("S", "5")
                     .replace(",", ".")
@@ -353,6 +361,8 @@ class RelicStrategy(BaseParseStrategy):
                 result = self.parse(stats_dict, uid)
                 if result:
                     results.append(result)
+                elif not self._interrupt_event.is_set():
+                    raise ScanIntegrityError(f'Relic {uid}: empty parse result; incomplete scan, no export.')
         return results
 
     def _chunk_items(
@@ -372,10 +382,10 @@ class RelicStrategy(BaseParseStrategy):
             RELIC_NAME,
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ \\'abcedfghijklmnopqrstuvwxyz-",
             6,
-            False,
-            None,
             True,
-            "black",
+            preprocess_relic_name_img,
+            True,
+            "white",
             40,
             self._normalize_relic_name_ocr,
             True,
@@ -399,7 +409,7 @@ class RelicStrategy(BaseParseStrategy):
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcedfghijklmnopqrstuvwxyz+",
             6,
             True,
-            preprocess_main_stat_img,
+            preprocess_relic_main_stat_img,
             True,
             "white",
             40,
@@ -412,7 +422,7 @@ class RelicStrategy(BaseParseStrategy):
             "Equiped",
             6,
             True,
-            preprocess_equipped_img,
+            preprocess_relic_name_img,
             True,
             "white",
             40,
@@ -436,7 +446,7 @@ class RelicStrategy(BaseParseStrategy):
             "0123456789S.%,",
             6,
             True,
-            preprocess_sub_stat_img,
+            preprocess_sub_stat_value_img,
             False,
             "white",
             5,
@@ -488,6 +498,8 @@ class RelicStrategy(BaseParseStrategy):
                 background,
             )
 
+        if len(results) != len(indexed_images):
+            raise ScanIntegrityError(f'OCR batch {key} returned wrong count; incomplete scan, no export.')
         if fallback_empty_results and any(not text.strip() for text in results):
             empty_count = sum(1 for text in results if not text.strip())
             self._log(
@@ -523,6 +535,37 @@ class RelicStrategy(BaseParseStrategy):
         return text.replace("S", "5").replace(",", ".").replace("..", ".").strip()
 
     def parse(self, stats_dict: RelicDict, uid: int) -> dict:
+        """Re-read invalid fields from the cached crops, each field group at most once.
+
+        A corrected name can expose a substat error that the first parse never reached.
+        """
+        saved = dict(stats_dict)
+        raw = saved.get('_raw_stats')
+        reread = {}
+        try:
+            return self._parse_once(stats_dict, uid)
+        except ScanIntegrityError as exc:
+            error = exc
+        while True:
+            message = str(error).lower()
+            fields = ([RELIC_NAME] if 'relic name' in message else
+                      [RELIC_MAINSTAT] if 'main stat' in message else
+                      [RELIC_SUBSTAT_NAMES, RELIC_SUBSTAT_VALUES] if 'substat' in message else [])
+            if (not raw or not fields or any(k in reread for k in fields)
+                    or not all(isinstance(raw.get(k), Image) for k in fields)):
+                raise error
+            self._log(f'Relic {uid}: invalid batch OCR; retrying {fields} once from cached crops.', LogLevel.WARNING)
+            for field in fields:
+                reread[field] = self.extract_stats_data(field, raw[field])
+            retry = dict(saved)
+            retry.update(reread)
+            retry['_raw_stats'] = raw
+            try:
+                return self._parse_once(retry, uid)
+            except ScanIntegrityError as exc:
+                error = exc
+
+    def _parse_once(self, stats_dict: RelicDict, uid: int) -> dict:
         """Parses the relic data
 
         :param stats_dict: The stats dict
@@ -559,34 +602,22 @@ class RelicStrategy(BaseParseStrategy):
             substat_names = stats_dict[RELIC_SUBSTAT_NAMES]
             substat_vals = stats_dict[RELIC_SUBSTAT_VALUES]
 
-            # Fix OCR errors
-            name, _ = self._game_data.get_closest_relic_name(name)  # type: ignore
-            main_stat_key, _ = self._game_data.get_closest_relic_main_stat(main_stat_key)  # type: ignore
+            name = validated_match(name, self._game_data.RELIC_META_DATA, 'relic name')
+            main_stat_key = validated_match(main_stat_key, RELIC_MAIN_STATS, 'main stat')
 
             parsed_level = self._parse_level_int(level)
             if parsed_level is None:
                 self._log(
-                    f"Relic UID {uid}: Failed to extract level. Setting to 0. Raw OCR was: {repr(level)}",
+                    f"Relic UID {uid}: Failed to extract level. Raw OCR was: {repr(level)}",
                     LogLevel.ERROR,
                 )
                 if isinstance(raw_stats.get(RELIC_LEVEL), Image):
                     self._save_debug_image(
                         raw_stats[RELIC_LEVEL], uid, "level_parse_failed"
                     )
-                level = 0
+                raise ScanIntegrityError(f'Relic {uid}: unreadable level; cannot validate rolls. Incomplete scan, no export.')
             else:
                 level = parsed_level
-
-            if not name:
-                self._log(
-                    f'Relic UID {uid}: Failed to extract name. Setting to "Musketeer\'s Wild Wheat Felt Hat".',
-                    LogLevel.ERROR,
-                )
-                if isinstance(raw_stats.get(RELIC_NAME), Image):
-                    self._save_debug_image(
-                        raw_stats[RELIC_NAME], uid, "name_extract_failed"
-                    )
-                name = "Musketeer's Wild Wheat Felt Hat"
 
             # Substats
             while "\n\n" in substat_names:  # type: ignore
@@ -596,26 +627,31 @@ class RelicStrategy(BaseParseStrategy):
             substat_names = substat_names.split("\n")  # type: ignore
             substat_vals = substat_vals.split("\n")  # type: ignore
 
-            substats_res, unactivated_substats_res = self._parse_substats(
-                substat_names, substat_vals, uid, raw_stats
-            )
-            self._validate_substats(substats_res, rarity, level, uid, raw_stats)  # type: ignore
+            try:
+                substats_res, unactivated_substats_res = self._parse_substats(
+                    substat_names, substat_vals, uid, raw_stats
+                )
+                if (len(substats_res) + len(unactivated_substats_res)
+                        != len([n for n in substat_names if n.strip()])
+                        or len([n for n in substat_names if n.strip()])
+                        != len([v for v in substat_vals if v.strip()])):
+                    raise ScanIntegrityError(f'Relic {uid}: unparsed/misaligned substats; incomplete scan, no export.')
+                validate_substat_rolls(substats_res, unactivated_substats_res, rarity, level, uid)
+            except ScanIntegrityError:
+                for field in (RELIC_SUBSTAT_NAMES, RELIC_SUBSTAT_VALUES):
+                    if isinstance(raw_stats.get(field), Image):
+                        try:
+                            self._save_debug_image(raw_stats[field], uid, 'invalid_roll_' + field)
+                        except Exception as exc:
+                            self._log(f'Relic {uid}: could not save invalid-roll evidence: {exc}', LogLevel.ERROR)
+                raise
 
             # Set and slot
             metadata = self._game_data.get_relic_meta_data(name)
             set_id = str(metadata[RELIC_SET_ID])
             set_name = metadata[RELIC_SET]
             slot_key = metadata[RELIC_SLOT]
-            if slot_key == "Hands":
-                main_stat_key = "ATK"
-            elif slot_key == "Head":
-                main_stat_key = "HP"
-            elif not main_stat_key:
-                self._log(
-                    f"Relic UID {uid}: Failed to extract main stat. Setting to ATK.",
-                    LogLevel.ERROR,
-                )
-                main_stat_key = "ATK"
+            validate_main_stat_slot(main_stat_key, slot_key)
 
             # Check if locked/discarded by image matching
             lock = self._parse_icon_flag(uid, "lock", lock, self._lock_icon)
@@ -623,18 +659,17 @@ class RelicStrategy(BaseParseStrategy):
 
             location = ""
             outfit_id = None
-            if equipped == "Equipped":
-                equipped_avatar = stats_dict[EQUIPPED_AVATAR]
-                location, outfit_id = self._game_data.get_equipped_character(
-                    equipped_avatar
+            footer = raw_stats.get('_equipped_frame')
+            if not isinstance(footer, Image):
+                raise ScanIntegrityError(f'Relic {uid}: missing equipped-footer evidence; incomplete scan, no export.')
+            # The footer frame decides whether the relic is equipped and the portrait
+            # decides by whom. The label text only serves as a cross-check.
+            if equipped_frame_present(footer):
+                location, outfit_id = self._game_data.get_verified_equipped_character(
+                    stats_dict[EQUIPPED_AVATAR], stats_dict[EQUIPPED_AVATAR_OFFSET]
                 )
-            elif (
-                equipped == "Equippe"
-            ):  # https://github.com/kel-z/HSR-Scanner/issues/88
-                equipped_avatar = stats_dict[EQUIPPED_AVATAR_OFFSET]
-                location, outfit_id = self._game_data.get_equipped_character(
-                    equipped_avatar
-                )
+            elif normalize_text(equipped) in ('equipped', 'equippe'):
+                raise ScanIntegrityError(f'Relic {uid}: equipped label/frame disagree; incomplete scan, no export.')
 
             if outfit_id:
                 self._log(
@@ -660,12 +695,20 @@ class RelicStrategy(BaseParseStrategy):
             self._update_signal.emit(IncrementType.RELIC_SUCCESS.value)
 
             return result
+        except ScanIntegrityError:
+            for field, image in locals().get('raw_stats', {}).items():
+                if isinstance(image, Image):
+                    try:
+                        self._save_debug_image(image, uid, 'recognition_' + str(field))
+                    except Exception:
+                        pass  # Don't mask the original error.
+            raise
         except Exception as e:
             self._log(
                 f"Failed to parse relic {uid}. stats_dict={stats_dict}, exception={e}",
                 LogLevel.ERROR,
             )
-            return {}
+            raise ScanIntegrityError(f'Relic {uid}: parser failure; incomplete scan, no export.') from e
 
     def _parse_substats(
         self,
@@ -717,15 +760,7 @@ class RelicStrategy(BaseParseStrategy):
             if "(" in name:
                 name = name[:name.index("(")].strip()
 
-            name, dist = self._game_data.get_closest_relic_sub_stat(name)
-            if dist > 3:
-                self._log(
-                    f"Relic UID {uid}: Substat name matching failed for '{raw_name}' (Index {i}, Distance {dist}).",
-                    LogLevel.ERROR,
-                )
-                if stats_dict and isinstance(stats_dict.get(RELIC_SUBSTAT_NAMES), Image):
-                    self._save_debug_image(stats_dict[RELIC_SUBSTAT_NAMES], uid, f"substat_name_{i}_failed")
-                continue
+            name = validated_match(name, RELIC_SUB_STATS, 'substat name')
 
             if i >= len(vals):
                 self._log(
@@ -774,7 +809,12 @@ class RelicStrategy(BaseParseStrategy):
                     if not name.endswith("_"):
                         name += "_"
                 else:
-                    val = int(float(val))  # float then int handles "16.0" strings
+                    if not re.fullmatch(r"\d+(?:\.0+)?", val):
+                        raise ScanIntegrityError(
+                            f'Relic {uid}: invalid integer substat {name}={val!r}; '
+                            'incomplete scan, no export.'
+                        )
+                    val = int(float(val))
 
                 parsed_substat = {"key": name, "value": val}
                 if is_unactivated:
@@ -790,95 +830,6 @@ class RelicStrategy(BaseParseStrategy):
                     self._save_debug_image(stats_dict[RELIC_SUBSTAT_VALUES], uid, f"substat_value_{i}_failed")
 
         return active_substats, unactivated_substats
-
-    def _validate_substat(self, substat: dict[str, int | float], rarity: int) -> bool:
-        """Validates the substat
-
-        :param substat: The substat
-        :param rarity: The rarity of the relic
-        :return: True if the substat is valid, False otherwise
-        """
-        try:
-            name = substat[RELIC_SUBSTAT_NAME]
-            val = substat[RELIC_SUBSTAT_VALUE]
-            if name not in SUBSTAT_ROLL_VALS[str(rarity)]:
-                return False
-            if str(val) not in SUBSTAT_ROLL_VALS[str(rarity)][name]:
-                return False
-        except KeyError:
-            return False
-
-        return True
-
-    def _validate_substats(
-        self,
-        substats: list[dict[str, int | float]],
-        rarity: int,
-        level: int,
-        uid: int,
-        stats_dict: RelicDict | None = None,
-    ) -> None:
-        """Rudimentary substat validation on number of substats based on rarity and level
-
-        :param substats: The substats
-        :param rarity: The rarity of the relic
-        :param level: The level of the relic
-        :param uid: The relic UID
-        :param stats_dict: The stats dictionary (for debug images)
-        """
-        seen_substats = set()
-
-        # check valid number of substats
-        substats_len = len(substats)
-        min_substats = min(rarity - 2 + int(level / 3), 4)
-        if substats_len < min_substats:
-            self._log(
-                f"Relic UID {uid} has {substats_len} substat(s), but the minimum for rarity {rarity} and level {level} is {min_substats}.",
-                LogLevel.ERROR,
-            )
-            return
-
-        # check valid roll value total
-        min_roll_value = round(min_substats * 0.8, 1)
-        max_roll_value = round(rarity - 1 + int(level / 3), 1)
-        total = 0
-        for substat in substats:
-            if substat[RELIC_SUBSTAT_NAME] in seen_substats:
-                self._log(
-                    f"Relic UID {uid}: More than one substat with key {substat[RELIC_SUBSTAT_NAME]} parsed.",
-                    LogLevel.ERROR,
-                )
-                if stats_dict and isinstance(stats_dict.get(RELIC_SUBSTAT_NAMES), Image):
-                    self._save_debug_image(stats_dict[RELIC_SUBSTAT_NAMES], uid, "duplicate_substat_name")
-                return
-            if not self._validate_substat(substat, rarity):
-                self._log(
-                    f'Relic UID {uid}: Substat {substat[RELIC_SUBSTAT_NAME]} has illegal value "{substat[RELIC_SUBSTAT_VALUE]}" for rarity {rarity}.',
-                    LogLevel.ERROR,
-                )
-                if stats_dict and isinstance(stats_dict.get(RELIC_SUBSTAT_VALUES), Image):
-                    self._save_debug_image(stats_dict[RELIC_SUBSTAT_VALUES], uid, "illegal_substat_value")
-                return
-
-            roll_value = SUBSTAT_ROLL_VALS[str(rarity)][
-                str(substat[RELIC_SUBSTAT_NAME])
-            ][str(substat[RELIC_SUBSTAT_VALUE])]
-            if isinstance(roll_value, list):
-                # assume minimum
-                roll_value = roll_value[0]
-            total += roll_value
-
-        total = round(total, 1)
-        if total < min_roll_value:
-            self._log(
-                f"Relic UID {uid} has a roll value of {total}, but the minimum for rarity {rarity} and level {level} is {min_roll_value}.",
-                LogLevel.ERROR,
-            )
-        elif total > max_roll_value:
-            self._log(
-                f"Relic UID {uid} has a roll value of {total}, but the maximum for rarity {rarity} and level {level} is {max_roll_value}.",
-                LogLevel.ERROR,
-            )
 
     def _log(self, msg: str, level: LogLevel = LogLevel.INFO) -> None:
         """Logs a message

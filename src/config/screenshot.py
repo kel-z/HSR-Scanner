@@ -152,6 +152,7 @@ SCREENSHOT_COORDS = {
             RELIC_MAINSTAT: (0.11, 0.358, 0.7, 0.4),
             RELIC_SUBSTAT_NAMES: (0.11, 0.4, 0.5, 0.58),
             RELIC_SUBSTAT_VALUES: (0.775, 0.4, 0.975, 0.58),
+            "_equipped_frame": (0, 0.92, 1, 1),
         },
     }
 }

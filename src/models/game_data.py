@@ -11,6 +11,9 @@ from PIL.Image import Image
 from PyQt6.QtCore import QSettings
 
 from models.const import HSR_SCANNER, IS_STELLE, KEL_Z
+from utils.avatar_matching import REFERENCE_OUTFIT, require_avatar_match, split_icon_key
+from utils.scan_integrity import ScanIntegrityError
+from utils.data import resource_path
 
 GAME_DATA_URL = "https://raw.githubusercontent.com/kel-z/HSR-Data/v6/output/min/game_data_with_icons.json"
 SRO_MAPPINGS_URL = (
@@ -49,6 +52,13 @@ RELIC_SUB_STATS = {
     "Break Effect",
 }
 
+# Outfit portraits missing from the feed, added as extra templates for the character.
+OUTFIT_PORTRAITS = (
+    ("1501", "sparxie_equipped_reference.png"),
+    ("1505", "evanescia_lunar_blossoming_equipped_reference.png"),
+    ("1409", "hyacine_warm_cotton_skies_equipped_reference.png"),
+)
+
 PATHS = {
     "The Hunt",
     "Erudition",
@@ -66,6 +76,23 @@ class GameData:
     """GameData class for storing and accessing game data"""
 
     sro_mappings = None
+
+    def get_verified_equipped_character(self, primary, offset):
+        """Try both supported crop alignments; OCR spelling does not choose a face."""
+        candidates = []
+        failures = []
+        for image in (primary, offset):
+            try:
+                candidates.append(self.get_equipped_character(image, strict=True))
+            except ScanIntegrityError as exc:
+                failures.append(str(exc))
+                continue
+        if not candidates or len({c[0] for c in candidates}) != 1:
+            raise ScanIntegrityError(
+                f'Equipped portrait is unknown or alignment candidates disagree: {candidates}; '
+                + '; '.join(failures) + '; incomplete scan, no export.'
+            )
+        return candidates[0]
 
     def __init__(self) -> None:
         try:
@@ -88,6 +115,13 @@ class GameData:
             img = PILImage.open(BytesIO(decoded_image))
             img = cv2.GaussianBlur(np.array(img), (5, 5), 0)  # type: ignore
             self.EQUIPPED_ICONS[char_id] = img
+
+        for character_id, filename in OUTFIT_PORTRAITS:
+            with PILImage.open(resource_path("assets/images/" + filename)) as portrait:
+                img = cv2.resize(np.asarray(portrait.convert("RGB")), (100, 100))
+            key = f"{character_id}#{REFERENCE_OUTFIT}{filename}"
+            self.EQUIPPED_ICONS[key] = cv2.GaussianBlur(img, (5, 5), 0)
+        self.CHARACTER_IDS = self.EQUIPPED_ICONS.keys()
 
         # where i + 1 is the rarity
         self.COLOURS = np.array(
@@ -151,7 +185,7 @@ class GameData:
             )
 
     def get_equipped_character(
-        self, equipped_avatar_img: Image
+        self, equipped_avatar_img: Image, strict: bool = False
     ) -> tuple[str, str | None]:
         """Get equipped character from equipped avatar image
 
@@ -160,6 +194,21 @@ class GameData:
         :param equipped_avatar_img: The equipped avatar image
         :return: The character id and outfit id if applicable
         """
+        if strict:
+            cache = self.__dict__.setdefault('_strict_avatar_cache', {})
+            key = (equipped_avatar_img.size, equipped_avatar_img.mode, equipped_avatar_img.tobytes())
+            result = cache.get(key)
+            if result is None:
+                if len(cache) >= 256:
+                    cache.clear()
+                try:
+                    result = require_avatar_match(equipped_avatar_img, self.EQUIPPED_ICONS)
+                except ScanIntegrityError as exc:
+                    result = str(exc)
+                cache[key] = result
+            if isinstance(result, str):
+                raise ScanIntegrityError(result)
+            return result
         to_compare_img = np.array(equipped_avatar_img)  # type: ignore
         to_compare_img = cv2.resize(to_compare_img, (100, 100))  # type: ignore
 
@@ -184,9 +233,7 @@ class GameData:
             ).max()
             if conf > max_conf:
                 max_conf = conf
-                res, outfit_id = (
-                    char_id.split("#", 1) if "#" in char_id else (char_id, None)
-                )
+                res, outfit_id = split_icon_key(char_id)
 
         if res.startswith("8"):
             self.settings.setValue(IS_STELLE, int(res[-1]) % 2 == 0)
