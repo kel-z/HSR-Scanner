@@ -29,6 +29,9 @@ from config.const import (
     INVENTORY_ROW_LENGTH,
     INV_TAB,
     INV_TAB_ALL,
+    NAV_KEY_DOWN,
+    NAV_KEY_LEFT,
+    NAV_KEY_RIGHT,
     SORT_BUTTON,
     TRACES,
     TRACES_BUTTON,
@@ -288,7 +291,7 @@ class HSRScanner(QObject):
         if attempt == 0:
             self._log(
                 f"Item UID {item_id}: item {item_id - 1} was accepted and one "
-                "forward ('d') navigation input was issued, but the details "
+                f"forward ('{NAV_KEY_RIGHT}') navigation input was issued, but the details "
                 "signature still matches the prior item. This may be an "
                 "unaccepted navigation input or a stale details panel; recovery "
                 "will capture only and will not resend navigation.",
@@ -312,21 +315,51 @@ class HSRScanner(QObject):
                 return None
         return self._advance_inventory(item_id, pipeline=True)
 
+    def _inventory_row_position(self, item_id: int) -> tuple[int, int, bool]:
+        """Return the traversal row, column index, and row-end flag for an item."""
+        row_length = self._inventory_row_length
+        index = (item_id - 1) % row_length
+        return (item_id - 1) // row_length, index, index == row_length - 1
+
     def _advance_inventory(self, item_id: int, pipeline: bool = False):
         if getattr(self, '_inventory_nav_target', None) == item_id + 1:
             return None
         self._check_capture_interrupt()
         self._screenshot.remember_inventory_before_navigation()
         nav_start = time.perf_counter()
-        row_length = getattr(self, '_inventory_row_length', 9)
-        index = (item_id - 1) % row_length
-        row = (item_id - 1) // row_length
-        at_row_end = index == row_length - 1
-        key = 's' if at_row_end else ('d' if row % 2 == 0 else 'a')
+        row, _, at_row_end = self._inventory_row_position(item_id)
+        if self._scan_mode == ScanMode.RECENT_RELICS.value:
+            # shortcut: 4.7 no longer wraps D at the row end, so a recent
+            # scan returns to the row start instead of reversing the sweep.
+            keys = (
+                [NAV_KEY_DOWN] + [NAV_KEY_LEFT] * (self._inventory_row_length - 1)
+                if at_row_end else [NAV_KEY_RIGHT]
+            )
+        else:
+            keys = [
+                NAV_KEY_DOWN if at_row_end
+                else NAV_KEY_RIGHT if row % 2 == 0
+                else NAV_KEY_LEFT
+            ]
         # Distinguish a duplicate panel from a failed navigation.
         self._previous_grid_image = self._screenshot.inventory_grid_image()
-        self._nav.key_tap(key)
-        self._inventory_nav_action = key
+        panel_bytes = None
+        if len(keys) > 1:
+            _, panel_bytes = self._screenshot.screenshot_stats_on_panel_change(
+                self._inventory_scan_type, None, 0.0
+            )
+        for i, key in enumerate(keys):
+            self._nav.key_tap(key)
+            self._inventory_nav_action = key
+            if i < len(keys) - 1:
+                # Reuse the capture polling so the next key only fires after
+                # the game has rendered this one.
+                _, panel_bytes = self._screenshot.screenshot_stats_on_panel_change(
+                    self._inventory_scan_type,
+                    panel_bytes,
+                    self.PANEL_CHANGE_TIMEOUT,
+                    self.PANEL_SETTLE_TIME,
+                )
         nav_end = time.perf_counter()
         self._inventory_nav_target = item_id + 1
         self._profile_nav_start = nav_start
@@ -599,7 +632,7 @@ class HSRScanner(QObject):
         :return: The tasks to await
         """
         nav_data = strategy.NAV_DATA[self._aspect_ratio]
-        self._inventory_row_length = nav_data.get(INVENTORY_ROW_LENGTH, 9)
+        self._inventory_row_length = nav_data[INVENTORY_ROW_LENGTH]
 
         self._open_inventory()
 
@@ -699,6 +732,7 @@ class HSRScanner(QObject):
         previous_stats_panel_bytes = None
         self._inventory_nav_target = None
         self._inventory_type = 'relic' if isinstance(strategy, RelicStrategy) else 'light_cone'
+        self._inventory_scan_type = strategy.SCAN_TYPE
         self._screenshot.reset_inventory_pipeline()
         filters = self._config.get(FILTERS, {}).get(
             RELIC_FILTERS if isinstance(strategy, RelicStrategy) else LC_FILTERS, {})
@@ -755,9 +789,13 @@ class HSRScanner(QObject):
         stop_after_row = False
         while not should_stop():
             item_id = quantity - quantity_remaining + 1
+            _, _, at_row_end = self._inventory_row_position(item_id)
             self._pipeline_allowed = (
                 pipeline_safe and quantity_remaining > 1
                 and (not recent_mode or scanned + 1 < self._config[CONFIG_RECENT_RELICS_NUM])
+                # A row-end carriage return spans several panels; let the
+                # scanner issue it outside the capture pipeline.
+                and not (recent_mode and at_row_end)
             )
             stats_dict = None
             try:
@@ -789,15 +827,13 @@ class HSRScanner(QObject):
                     if not should_stop():
                         self._advance_inventory(item_id)
                     continue
-                row_length = getattr(self, '_inventory_row_length', 9)
-                index = (item_id - 1) % row_length
-                row = (item_id - 1) // row_length
+                row, _, at_row_end = self._inventory_row_position(item_id)
                 if (
                     current_sort_method == SORT_LV
                     and MIN_LEVEL in filter_results
                     and not filter_results[MIN_LEVEL]
                 ):
-                    if row % 2 == 0 or index == row_length - 1:
+                    if row % 2 == 0 or at_row_end:
                         quantity_remaining = 0
                         self._log(
                             f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
@@ -812,7 +848,7 @@ class HSRScanner(QObject):
                     and MIN_RARITY in filter_results
                     and not filter_results[MIN_RARITY]
                 ):
-                    if row % 2 == 0 or index == row_length - 1:
+                    if row % 2 == 0 or at_row_end:
                         quantity_remaining = 0
                         self._log(
                             f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
@@ -855,8 +891,7 @@ class HSRScanner(QObject):
                 tasks.append(task)
 
             if stop_after_row:
-                row_length = getattr(self, '_inventory_row_length', 9)
-                if (item_id - 1) % row_length == row_length - 1:
+                if self._inventory_row_position(item_id)[2]:
                     quantity_remaining = 0
                     break
 

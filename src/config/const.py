@@ -15,6 +15,9 @@ INV_TAB_ALL = "inv_tab_all"
 SORT_BUTTON = "button"
 FIRST_ITEM = "first_item"
 INVENTORY_ROW_LENGTH = "inventory_row_length"
+NAV_KEY_RIGHT = "d"
+NAV_KEY_LEFT = "a"
+NAV_KEY_DOWN = "s"
 
 # Screenshot coordinate keys
 QUANTITY = "quantity"
