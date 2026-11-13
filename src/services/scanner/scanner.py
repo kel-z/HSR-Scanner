@@ -21,6 +21,8 @@ from config.const import (
     ASCENSION_OFFSET_X,
     ASCENSION_START,
     ASPECT_16_9,
+    DATABANK_HEIGHT_RATIO,
+    DATABANK_WIDTH_RATIO,
     DETAILS_BUTTON,
     EIDOLONS_BUTTON,
     FIRST_ITEM,
@@ -77,7 +79,6 @@ from models.const import (
 )
 from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
-from utils.data import resource_path
 from utils.duplicate_capture import UnresolvedDuplicateCaptureError, recover_duplicate_capture
 from utils.scan_integrity import ScanIntegrityError, integrity_skip_message, validate_relic_records
 from utils.navigation import Navigation
@@ -178,7 +179,6 @@ class HSRScanner(QObject):
             config[CONFIG_DEBUG_OUTPUT_LOCATION],
             config.get(CONFIG_DEBUG_VERBOSE_LOGS, True),
         )
-        self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
         configure_ocr_profile(
@@ -946,11 +946,11 @@ class HSRScanner(QObject):
                 # Locate and click databank button
                 self._log("Locating Data Bank button...", LogLevel.DEBUG)
                 haystack = self._screenshot.screenshot_screen()
-                needle = self._databank_img.resize(
+                needle = self._screenshot.databank_img.resize(
                     # Scale image to match capture size
                     (
-                        int(haystack.size[0] * 0.0296875),
-                        int(haystack.size[1] * 0.05625),
+                        int(haystack.size[0] * DATABANK_WIDTH_RATIO),
+                        int(haystack.size[1] * DATABANK_HEIGHT_RATIO),
                     )
                 )
                 self._nav.move_cursor_to_image(haystack, needle)

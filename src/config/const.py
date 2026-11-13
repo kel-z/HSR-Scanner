@@ -42,6 +42,12 @@ EQUIPPED_AVATAR_OFFSET = "equipped_avatar_trailblazer"
 EQUIPPED = "equipped"
 LOCK = "lock"
 
+# ESC-menu detection
+DATABANK_IMAGE = "assets/images/databank.png"
+DATABANK_WIDTH_RATIO = 0.0296875
+DATABANK_HEIGHT_RATIO = 0.05625
+DATABANK_MATCH_THRESHOLD = 0.6
+
 # Paths
 HUNT = "hunt"
 ERUDITION = "erudition"

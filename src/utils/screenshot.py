@@ -32,6 +32,10 @@ from config.const import (
     CHAR_EIDOLONS,
     CHEST,
     COUNT,
+    DATABANK_HEIGHT_RATIO,
+    DATABANK_IMAGE,
+    DATABANK_MATCH_THRESHOLD,
+    DATABANK_WIDTH_RATIO,
     QUANTITY,
     SORT,
     STATS,
@@ -42,6 +46,7 @@ from config.screenshot import SCREENSHOT_COORDS
 from enums.log_level import LogLevel
 from enums.increment_type import IncrementType
 from models.const import CHAR_LEVEL, CHAR_NAME, DHPT_CHARACTER_ID
+from utils.data import resource_path
 from utils.ocr import image_to_string
 from utils.scan_integrity import ScanIntegrityError
 
@@ -71,6 +76,7 @@ class Screenshot:
         """
         self._aspect_ratio = aspect_ratio
         self._log_signal = log_signal
+        self.databank_img = PILImage.open(resource_path(DATABANK_IMAGE))
 
         self._window_width, self._window_height = win32gui.GetClientRect(hwnd)[2:]
         self._window_x, self._window_y = win32gui.ClientToScreen(hwnd, (0, 0))
@@ -284,16 +290,26 @@ class Screenshot:
         return re.fullmatch(r"(\d+/\d+|\d{6,})", text) is not None
 
     def escape_menu_open(self) -> bool:
-        """True when the ESC menu's Trailblaze Level bar is visible
+        """True when the ESC menu's Data Bank button is visible
 
         :return: True if the ESC menu is open
         """
-        img = self._take_screenshot(0.66, 0.225, 0.28, 0.035)
-        text = image_to_string(img, "TrailblazeLevel0123456789", 7)
-        self._log_signal.emit(
-            (f"ESC-menu probe OCR: {text!r}", LogLevel.DEBUG)
+        haystack = np.array(self.screenshot_screen())
+        needle = np.array(
+            self.databank_img.resize(
+                (
+                    int(haystack.shape[1] * DATABANK_WIDTH_RATIO),
+                    int(haystack.shape[0] * DATABANK_HEIGHT_RATIO),
+                )
+            )
         )
-        return "level" in text.lower()
+        score = float(
+            cv2.matchTemplate(haystack, needle, cv2.TM_CCOEFF_NORMED).max()
+        )
+        self._log_signal.emit(
+            (f"ESC-menu probe Data Bank match: {score:.3f}", LogLevel.DEBUG)
+        )
+        return score >= DATABANK_MATCH_THRESHOLD
 
     def screenshot_sort(self) -> Image:
         """Takes a screenshot of the current sort option. Requires inventory to be open.
