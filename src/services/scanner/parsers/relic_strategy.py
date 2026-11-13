@@ -25,8 +25,6 @@ from models.const import (
     RELIC_SET,
     RELIC_SET_ID,
     RELIC_SLOT,
-    RELIC_SUBSTAT_NAME,
-    RELIC_SUBSTAT_VALUE,
     RELIC_SUBSTAT_VALUES,
     RELIC_SUBSTATS,
     RELIC_SUBSTAT_NAMES,
@@ -42,21 +40,18 @@ from utils.ocr import (
     preprocess_relic_main_stat_img,
     preprocess_sub_stat_value_img,
     image_to_string,
-    preprocess_equipped_img,
-    preprocess_level_img,
     preprocess_sub_stat_img,
 )
 from utils.ocr_batch import batch_image_to_strings_chunked
 from utils.ocr_profile import ocr_profile_context
-from utils.scan_integrity import ScanIntegrityError
+from utils.scan_integrity import ScanIntegrityError, integrity_skip_message
 from utils.substat_validation import validate_substat_rolls
-from utils.recognition_validation import validated_match, validate_main_stat_slot, normalize_text
 from utils.avatar_matching import equipped_frame_present
+from utils.recognition_validation import validated_match, validate_main_stat_slot, normalize_text
 
 
 class RelicStrategy(BaseParseStrategy):
     """RelicStrategy class for parsing relic data from screenshots."""
-
     SCAN_TYPE = IncrementType.RELIC_ADD
     NAV_DATA = RELIC_NAV_DATA
     BATCH_OCR_CHUNK_SIZE = 10
@@ -232,8 +227,6 @@ class RelicStrategy(BaseParseStrategy):
                                 stats_dict[RELIC_LEVEL], uid, "level_filter_failed"
                             )
                         raise ScanIntegrityError(f'Relic {uid}: unreadable filter level; incomplete scan, no export.')
-                        filter_results[key] = True
-                        continue
 
                     parsed_level = self._parse_level_int(level)
                     if parsed_level is None:
@@ -246,9 +239,6 @@ class RelicStrategy(BaseParseStrategy):
                                 stats_dict[RELIC_LEVEL], uid, "level_filter_digits_failed"
                             )
                         raise ScanIntegrityError(f'Relic {uid}: invalid filter level; incomplete scan, no export.')
-                        # Do not fail filter on OCR parse errors; avoid early scan termination.
-                        filter_results[key] = True
-                        continue
 
                     val = stats_dict[RELIC_LEVEL] = parsed_level
 
@@ -294,7 +284,7 @@ class RelicStrategy(BaseParseStrategy):
                         "0123456789S+",
                         13,
                         True,
-                        preprocess_level_img,
+                        preprocess_sub_stat_img,
                     )
                     .replace("S", "5")
                     .replace("+", "")
@@ -358,11 +348,16 @@ class RelicStrategy(BaseParseStrategy):
             for uid, stats_dict in item_chunk:
                 # Preserve original images so failure debug still saves useful crops.
                 stats_dict["_raw_stats"] = raw_stats_by_uid[uid]  # type: ignore[typeddict-unknown-key]
-                result = self.parse(stats_dict, uid)
+                try:
+                    result = self.parse(stats_dict, uid)
+                except ScanIntegrityError as exc:
+                    # Best-effort export: skip the item, keep the shard's siblings.
+                    self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
+                    continue
                 if result:
                     results.append(result)
                 elif not self._interrupt_event.is_set():
-                    raise ScanIntegrityError(f'Relic {uid}: empty parse result; incomplete scan, no export.')
+                    self._log(f'Relic {uid}: empty parse result; item skipped, scan continues.', LogLevel.ERROR)
         return results
 
     def _chunk_items(
@@ -396,7 +391,7 @@ class RelicStrategy(BaseParseStrategy):
             "0123456789S+",
             6,
             True,
-            preprocess_level_img,
+            preprocess_sub_stat_img,
             True,
             "white",
             40,
@@ -561,7 +556,10 @@ class RelicStrategy(BaseParseStrategy):
             retry.update(reread)
             retry['_raw_stats'] = raw
             try:
-                return self._parse_once(retry, uid)
+                result = self._parse_once(retry, uid)
+                if result:
+                    self._log(f"Relic {uid}: Retry succeeded.")
+                return result
             except ScanIntegrityError as exc:
                 error = exc
 
@@ -662,14 +660,14 @@ class RelicStrategy(BaseParseStrategy):
             footer = raw_stats.get('_equipped_frame')
             if not isinstance(footer, Image):
                 raise ScanIntegrityError(f'Relic {uid}: missing equipped-footer evidence; incomplete scan, no export.')
-            # The footer frame decides whether the relic is equipped and the portrait
-            # decides by whom. The label text only serves as a cross-check.
-            if equipped_frame_present(footer):
+            try:
                 location, outfit_id = self._game_data.get_verified_equipped_character(
                     stats_dict[EQUIPPED_AVATAR], stats_dict[EQUIPPED_AVATAR_OFFSET]
                 )
-            elif normalize_text(equipped) in ('equipped', 'equippe'):
-                raise ScanIntegrityError(f'Relic {uid}: equipped label/frame disagree; incomplete scan, no export.')
+            except ScanIntegrityError:
+                if equipped_frame_present(footer) or normalize_text(equipped).startswith('equip'):
+                    raise
+                location, outfit_id = "", None
 
             if outfit_id:
                 self._log(
@@ -759,6 +757,8 @@ class RelicStrategy(BaseParseStrategy):
             name = raw_name
             if "(" in name:
                 name = name[:name.index("(")].strip()
+            # OCR picks up the substat glyph '+' before the name; it never starts one.
+            name = name.lstrip("+ ").strip()
 
             name = validated_match(name, RELIC_SUB_STATS, 'substat name')
 

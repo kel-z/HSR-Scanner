@@ -264,7 +264,9 @@ class InventoryLoopTest(unittest.TestCase):
         with patch("services.scanner.scanner.image_to_string", side_effect=["53/3000", SORT_RARITY]), patch("services.scanner.scanner.time.sleep"):
             shards = scanner.scan_inventory(strategy)
         self.assertEqual([uid for shard in shards for uid, stats in shard], list(range(1, 54)))
-        self.assertEqual(sum(call.args == ("d",) for call in scanner._nav.key_tap.call_args_list), 52)
+        self.assertEqual(sum(call.args == ("d",) for call in scanner._nav.key_tap.call_args_list), 24)
+        self.assertEqual(sum(call.args == ("a",) for call in scanner._nav.key_tap.call_args_list), 23)
+        self.assertEqual(sum(call.args == ("s",) for call in scanner._nav.key_tap.call_args_list), 5)
         self.assertEqual(len(shards[0]), 50)
 
     def test_profile_groups_batch_boundary_without_changing_navigation(self):
@@ -278,16 +280,19 @@ class InventoryLoopTest(unittest.TestCase):
         self.assertEqual([uid for shard in shards for uid, stats in shard], list(range(1, 54)))
         self.assertEqual([r[0] for r in scanner._inventory_profile if r[1] == 'after_shard_1_3'], [51, 52, 53])
         self.assertEqual(len(scanner._inventory_profile), 52)
-        self.assertEqual(sum(call.args == ('d',) for call in scanner._nav.key_tap.call_args_list), 52)
+        self.assertEqual(sum(call.args == ('d',) for call in scanner._nav.key_tap.call_args_list), 24)
+        self.assertEqual(sum(call.args == ('a',) for call in scanner._nav.key_tap.call_args_list), 23)
+        self.assertEqual(sum(call.args == ('s',) for call in scanner._nav.key_tap.call_args_list), 5)
 
-    def test_exhaustion_does_not_queue_failed_uid_or_advance_again(self):
+    def test_exhaustion_skips_item_and_continues_scan(self):
         scanner, strategy = self.scanner()
-        scanner._screenshot.screenshot_stats_on_panel_change.side_effect = [({}, b"a"), ({}, b"a"), ({}, b"a"), ({}, b"a")]
+        scanner._screenshot.screenshot_stats_on_panel_change.side_effect = lambda *a, **k: ({}, b"a")
         with patch("services.scanner.scanner.image_to_string", side_effect=["53/3000", SORT_RARITY]), patch("services.scanner.scanner.time.sleep"):
-            with self.assertRaises(UnresolvedDuplicateCaptureError):
-                scanner.scan_inventory(strategy)
-        self.assertEqual(sum(call.args == ("d",) for call in scanner._nav.key_tap.call_args_list), 1)
-        scanner._profiled_parse_task.assert_not_called()
+            shards = scanner.scan_inventory(strategy)
+        skips = [c.args[0] for c in scanner._log.call_args_list
+                 if c.args and 'skipped' in str(c.args[0])]
+        self.assertEqual(len(skips), 52)
+        self.assertEqual([[uid for uid, _ in shard] for shard in shards], [[1]])
 
     def test_start_scan_failure_cannot_return_export(self):
         import asyncio

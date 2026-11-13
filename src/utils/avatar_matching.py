@@ -50,7 +50,8 @@ def rank_avatar(image, templates):
 def require_avatar_match(image, templates):
     key, score, margin = rank_avatar(image, templates)
     # An unknown portrait still has a best match, so require a clear winner.
-    if score < .80 or margin < .05:
+    # Live 42x42 footers correlate below the 100x100 templates.
+    if score < .70 or margin < .05:
         raise ScanIntegrityError(
             f'Uncertain equipped portrait: candidate={key!r}, correlation={score:.3f}, '
             f'margin={margin:.3f}; incomplete scan, no export.'

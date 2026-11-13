@@ -199,15 +199,6 @@ def preprocess_equipped_img(img: Image) -> Image:
     return _preprocess_img_by_colour_filter(img, (202, 177, 134), 75)
 
 
-def preprocess_level_img(img: Image) -> Image:
-    """Preprocess level image
-
-    :param img: The image to preprocess
-    :return: The preprocessed image
-    """
-    return _preprocess_img_by_colour_filter(img, (255, 255, 255), 100)
-
-
 def preprocess_main_stat_img(img: Image) -> Image:
     """Preprocess main stat image
 

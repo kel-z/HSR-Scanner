@@ -33,3 +33,10 @@ def validate_relic_records(relics: list[dict]) -> list[dict]:
             )
         seen[key] = (index, uid)
     return relics
+
+
+def integrity_skip_message(exc: BaseException) -> str:
+    """Reformat a fail-closed integrity message for best-effort skip logging."""
+    return (str(exc)
+            .replace("; incomplete scan, no export", "")
+            .replace(". The scan is incomplete and will not be exported.", ""))

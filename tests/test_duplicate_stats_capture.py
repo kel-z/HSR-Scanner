@@ -3,6 +3,7 @@ import re
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -130,6 +131,25 @@ class DuplicateStatsCaptureTest(unittest.TestCase):
 
         self.assertEqual(actions, [("wait", 0.15), ("wait", 0.15)])
         self.assertNotIn("navigate", [action[0] for action in actions])
+
+    def test_identical_panel_with_moved_selection_is_accepted(self) -> None:
+        screenshot = FakeScreenshot([({"id": "identical"}, b"previous")])
+        logs = []
+        stats, panel_bytes = recover_duplicate_capture(
+            screenshot.capture_stats,
+            b"previous",
+            7,
+            lambda msg, level: logs.append((msg, level)),
+            lambda _seconds: None,
+            0.15,
+            None,
+            lambda: True,
+        )
+
+        self.assertEqual(stats, {"id": "identical"})
+        self.assertEqual(panel_bytes, b"previous")
+        self.assertEqual(screenshot.calls, 1)
+        self.assertIn(LogLevel.DEBUG, [level for _, level in logs])
 
     def test_basic_debug_callback_records_each_unchanged_attempt(self) -> None:
         attempts = []
@@ -264,6 +284,29 @@ class DebugRunDuplicateCaptureTest(unittest.TestCase):
         self.assertEqual(screenshot.calls, 2)
         self.assertEqual(sleeps, [0.15])
         self.assertIn(LogLevel.WARNING, [level for _, level in logs])
+
+
+class EarlyDuplicateAcceptTest(unittest.TestCase):
+    def test_identical_panel_with_selection_moved_accepts_after_300ms(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import test_inventory_capture_integration as fixtures
+        helper = fixtures.CapturePollingTest()
+        helper.poll([1], timeout=0.15, settle=0)
+        screenshot = helper.last_screenshot
+        screenshot._capture_selection_moved = lambda: True
+        grab = screenshot._grab_screenshot
+        calls = []
+        clock = [0.0]
+        def counting(bbox):
+            clock[0] += 0.01
+            calls.append(1)
+            return grab(bbox)
+        screenshot._grab_screenshot = counting
+        with patch("utils.screenshot.time.perf_counter",
+                   side_effect=lambda: clock[0]):
+            (_, signature) = screenshot._screenshot_stats("relic", b"\x01", 0.5, 0)
+        self.assertEqual(signature, b"\x01")
+        self.assertEqual(len(calls), 30)
 
 
 if __name__ == "__main__":

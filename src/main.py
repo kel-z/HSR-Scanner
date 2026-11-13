@@ -720,6 +720,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         if isinstance(log, tuple):
             message, log_level = log
+            if (
+                log_level == LogLevel.DEBUG
+                and not self.checkBoxDebugMode.isChecked()
+            ):
+                return
         else:
             message = log
             log_level = LogLevel.INFO

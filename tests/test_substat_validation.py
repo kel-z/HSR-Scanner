@@ -62,10 +62,28 @@ class SubstatValidationTest(unittest.TestCase):
     def test_fractional_integer_ocr_is_not_truncated(self):
         parser = RelicStrategy.__new__(RelicStrategy)
         parser._log = Mock()
-        parser._game_data = Mock()
-        parser._game_data.get_closest_relic_sub_stat.return_value = ('SPD', 0)
         with self.assertRaisesRegex(ScanIntegrityError, 'invalid integer'):
             parser._parse_substats(['SPD (+3 to activate)'], ['.2'], 125)
+
+    def test_level_zero_three_previews_is_valid(self):
+        active = [stat('HP', 25)]
+        preview = [stat('Effect RES_', 2.5), stat('HP_', 2.0), stat('CRIT DMG_', 3.4)]
+        validate_substat_rolls(active, preview, 3, 0, 2071)
+
+    def test_three_star_level_zero_with_two_active_and_two_previews(self):
+        active = [stat('HP', 20), stat('ATK', 10)]
+        preview = [stat('HP_', 2.0), stat('ATK_', 2.0)]
+        validate_substat_rolls(active, preview, 3, 0, 2072)
+
+    def test_two_star_level_zero_with_no_active_stats(self):
+        preview = [stat('HP_', 1.3), stat('ATK_', 1.3)]
+        validate_substat_rolls([], preview, 2, 0, 1)
+
+    def test_five_substat_lines_are_rejected(self):
+        with self.assertRaises(ScanIntegrityError):
+            validate_substat_rolls([stat('HP', 25)], [stat('Effect RES_', 2.5),
+                                                     stat('HP_', 2.0), stat('CRIT DMG_', 3.4),
+                                                     stat('SPD', 2)], 3, 0, 1)
 
     def test_parse_propagates_failure_instead_of_returning_empty_record(self):
         parser = RelicStrategy.__new__(RelicStrategy)

@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pyautogui
 import win32gui
 from PIL import Image as PILImage
+from PIL import ImageChops
 from pynput.keyboard import Key
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
@@ -19,7 +20,9 @@ from config.const import (
     DETAILS_BUTTON,
     EIDOLONS_BUTTON,
     FIRST_ITEM,
+    INVENTORY_ROW_LENGTH,
     INV_TAB,
+    INV_TAB_ALL,
     SORT_BUTTON,
     TRACES,
     TRACES_BUTTON,
@@ -68,7 +71,8 @@ from models.const import (
 from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
 from utils.data import resource_path
-from utils.duplicate_capture import recover_duplicate_capture
+from utils.duplicate_capture import UnresolvedDuplicateCaptureError, recover_duplicate_capture
+from utils.scan_integrity import ScanIntegrityError, integrity_skip_message, validate_relic_records
 from utils.navigation import Navigation
 from utils.ocr import (
     image_to_string,
@@ -85,7 +89,6 @@ from utils.ocr_profile import (
     reset_ocr_profile,
 )
 from utils.screenshot import Screenshot
-from utils.scan_integrity import validate_relic_records
 from utils.window import bring_window_to_foreground
 
 from .parsers.character_parser import CharacterParser
@@ -217,7 +220,9 @@ class HSRScanner(QObject):
             if (getattr(self, '_pipeline_allowed', False)
                     and getattr(self, '_inventory_nav_target', None) != item_id + 1):
                 advance = lambda raw, key: self._advance_inventory_candidate(item_id, raw, key)
-            self._screenshot.configure_inventory_capture(item_id, advance, self._check_capture_interrupt)
+            self._screenshot.configure_inventory_capture(
+                item_id, advance, self._check_capture_interrupt,
+                self._inventory_selection_moved)
             return self._screenshot.screenshot_stats_on_panel_change(
                 strategy.SCAN_TYPE, previous_stats_panel_bytes,
                 self.PANEL_CHANGE_TIMEOUT, self.PANEL_SETTLE_TIME)
@@ -231,6 +236,7 @@ class HSRScanner(QObject):
             lambda attempt, _stats: self._record_duplicate_transition(
                 item_id, attempt
             ),
+            self._inventory_selection_moved,
         )
         if profile:
             capture_end = time.perf_counter()
@@ -244,6 +250,20 @@ class HSRScanner(QObject):
                     (capture_end - capture_start) * 1000,
                 ))
         return result
+
+    def _inventory_selection_moved(self) -> bool:
+        """True when the grid selection differs from the last accepted item
+
+        :return: True if the inventory selection moved
+        """
+        current = self._screenshot.inventory_grid_image()
+        previous = getattr(self, '_previous_grid_image', None)
+        if not isinstance(current, PILImage.Image) or not isinstance(previous, PILImage.Image):
+            return False
+        if current.size != previous.size:
+            return True
+        diff = ImageChops.difference(current, previous).convert('L')
+        return sum(diff.histogram()[31:]) > 200
 
     def _record_duplicate_transition(self, item_id: int, attempt: int) -> None:
         """Record enough evidence to diagnose a failed inventory transition."""
@@ -291,7 +311,15 @@ class HSRScanner(QObject):
         self._check_capture_interrupt()
         self._screenshot.remember_inventory_before_navigation()
         nav_start = time.perf_counter()
-        self._nav.key_tap("d")
+        row_length = getattr(self, '_inventory_row_length', 9)
+        index = (item_id - 1) % row_length
+        row = (item_id - 1) // row_length
+        at_row_end = index == row_length - 1
+        key = 's' if at_row_end else ('d' if row % 2 == 0 else 'a')
+        # Distinguish a duplicate panel from a failed navigation.
+        self._previous_grid_image = self._screenshot.inventory_grid_image()
+        self._nav.key_tap(key)
+        self._inventory_nav_action = key
         nav_end = time.perf_counter()
         self._inventory_nav_target = item_id + 1
         self._profile_nav_start = nav_start
@@ -373,6 +401,8 @@ class HSRScanner(QObject):
             return {}
 
         self._return_to_escape_screen()
+        # Escape-screen probe reopens mss; close() is idempotent.
+        self._screenshot.close()
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")
 
@@ -381,7 +411,11 @@ class HSRScanner(QObject):
             await asyncio.gather(*light_cones)
         )
         relic_results = self._flatten_scan_results(await asyncio.gather(*relics))
-        validate_relic_records(relic_results)
+        try:
+            validate_relic_records(relic_results)
+        except ScanIntegrityError as exc:
+            # Best-effort export: flag the suspect pair, keep everything.
+            self._log(f'{integrity_skip_message(exc)} Exporting as-is (best effort).', LogLevel.ERROR)
         character_results = self._flatten_scan_results(
             await asyncio.gather(*characters)
         )
@@ -494,8 +528,63 @@ class HSRScanner(QObject):
         self._interrupt_event.set()
 
     def _return_to_escape_screen(self) -> None:
-        """Open the game's escape menu before OCR starts."""
-        self._nav.key_tap(Key.esc)
+        """Opens the game's escape menu, confirming the screen before keys"""
+        if self._screenshot.escape_menu_open():
+            return
+        for _ in range(3):
+            self._nav.key_tap(Key.esc)
+            self._log("Waiting for the ESC menu to open...")
+            for i in range(4):
+                self._nav_sleep(2 if i == 0 else 1.5)
+                if self._screenshot.escape_menu_open():
+                    return
+        self._log(
+            "Could not confirm the ESC menu is open.", LogLevel.WARNING
+        )
+
+    def _open_inventory(self) -> None:
+        """Opens the inventory, confirming the visible screen before each key
+
+        :raises ValueError: Thrown if the inventory could not be opened
+        """
+        for attempt in range(4):
+            if self._screenshot.inventory_open():
+                self._log(f"Inventory already open (attempt {attempt}).")
+                return
+            if attempt == 0 and self._screenshot.escape_menu_open():
+                self._log(
+                    f"ESC menu detected, closing it first (attempt {attempt})."
+                )
+                self._nav.key_tap(Key.esc)
+                self._log("Waiting for the ESC menu to close...")
+                for i in range(4):
+                    self._nav_sleep(2 if i == 0 else 1.5)
+                    if not self._screenshot.escape_menu_open():
+                        break
+            self._log(
+                f"Pressing {self._config[CONFIG_INVENTORY_KEY]} (attempt {attempt})."
+            )
+            self._nav.key_tap(self._config[CONFIG_INVENTORY_KEY])
+            self._log("Waiting for the inventory screen to load...")
+            if self._wait_for_inventory(8):
+                self._log(f"Inventory opened (attempt {attempt}).")
+                return
+        raise ValueError(
+            "Could not open the inventory from the current game screen. "
+            "Start the scan with the game in the overworld, ESC menu or inventory."
+        )
+
+    def _wait_for_inventory(self, max_checks: int) -> bool:
+        """Polls until the inventory quantity renders
+
+        :param max_checks: The maximum number of checks to perform
+        :return: True if the inventory is open
+        """
+        for i in range(max_checks):
+            self._nav_sleep(1.5 if i == 0 else 1)
+            if self._screenshot.inventory_open():
+                return True
+        return False
 
     def scan_inventory(self, strategy: BaseParseStrategy) -> set[asyncio.Task]:
         """Scans the inventory for light cones or relics
@@ -506,13 +595,9 @@ class HSRScanner(QObject):
         :return: The tasks to await
         """
         nav_data = strategy.NAV_DATA[self._aspect_ratio]
+        self._inventory_row_length = nav_data.get(INVENTORY_ROW_LENGTH, 9)
 
-        # Navigate to correct tab from cellphone menu
-        self._nav_sleep(1)
-        self._nav.key_tap(Key.esc)
-        self._nav_sleep(2)
-        self._nav.key_tap(self._config[CONFIG_INVENTORY_KEY])
-        self._nav_sleep(1.5)
+        self._open_inventory()
 
         # Get quantity
         max_retry = 5
@@ -522,6 +607,25 @@ class HSRScanner(QObject):
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(1.5)
+            if INV_TAB_ALL in nav_data:
+                self._nav.move_cursor_to(*nav_data[INV_TAB_ALL])
+                time.sleep(0.05)
+                self._nav.click()
+                self._nav_sleep(1.0)
+
+            # Quantity OCR can read before the tab switch renders.
+            if not self._screenshot.inventory_tab_active(*nav_data[INV_TAB]):
+                retry += 1
+                if retry > max_retry:
+                    raise ValueError(
+                        "Failed to switch to the requested inventory tab."
+                    )
+                self._log(
+                    f"Inventory tab did not switch. Retrying... ({retry}/{max_retry})",
+                    LogLevel.WARNING,
+                )
+                self._nav_sleep(1)
+                continue
 
             # TODO: using quantity to know when to scan the bottom row is not ideal
             #       because it will not work for tabs that do not have a quantity
@@ -580,7 +684,8 @@ class HSRScanner(QObject):
             self._nav.click()
             current_sort_method = optimal_sort_method
             self._nav_sleep(0.5)
-            self._select_first_inventory_item(nav_data)
+
+        self._select_first_inventory_item(nav_data)
 
         tasks = []
         batch_items = []
@@ -643,45 +748,76 @@ class HSRScanner(QObject):
                 )
             return quantity_remaining <= 0
 
+        stop_after_row = False
         while not should_stop():
             item_id = quantity - quantity_remaining + 1
             self._pipeline_allowed = (
                 pipeline_safe and quantity_remaining > 1
                 and (not recent_mode or scanned + 1 < self._config[CONFIG_RECENT_RELICS_NUM])
             )
-            stats_dict, stats_panel_bytes = self._capture_inventory_stats(
-                strategy, item_id, previous_stats_panel_bytes
-            )
-            previous_stats_panel_bytes = stats_panel_bytes
+            stats_dict = None
+            try:
+                stats_dict, stats_panel_bytes = self._capture_inventory_stats(
+                    strategy, item_id, previous_stats_panel_bytes
+                )
+                previous_stats_panel_bytes = stats_panel_bytes
+            except UnresolvedDuplicateCaptureError as exc:
+                # Best-effort export: skip the item, keep scanning.
+                self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
             quantity_remaining -= 1
+
+            if stats_dict is None:
+                if not should_stop():
+                    self._advance_inventory(item_id)
+                continue
 
             # Check if item satisfies filters
             if FILTERS in self._config:
-                filter_results, stats_dict = strategy.check_filters(
-                    stats_dict,
-                    self._config[FILTERS],
-                    item_id,
-                )
+                try:
+                    filter_results, stats_dict = strategy.check_filters(
+                        stats_dict,
+                        self._config[FILTERS],
+                        item_id,
+                    )
+                except ScanIntegrityError as exc:
+                    # Best-effort export: skip the item, keep scanning.
+                    self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
+                    if not should_stop():
+                        self._advance_inventory(item_id)
+                    continue
+                row_length = getattr(self, '_inventory_row_length', 9)
+                index = (item_id - 1) % row_length
+                row = (item_id - 1) // row_length
                 if (
                     current_sort_method == SORT_LV
                     and MIN_LEVEL in filter_results
                     and not filter_results[MIN_LEVEL]
                 ):
-                    quantity_remaining = 0
+                    if row % 2 == 0 or index == row_length - 1:
+                        quantity_remaining = 0
+                        self._log(
+                            f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
+                        )
+                        break
+                    stop_after_row = True
                     self._log(
-                        f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
+                        f"Reached minimum level filter at row start; finishing row {row}."
                     )
-                    break
                 if (
                     current_sort_method == SORT_RARITY
                     and MIN_RARITY in filter_results
                     and not filter_results[MIN_RARITY]
                 ):
-                    quantity_remaining = 0
+                    if row % 2 == 0 or index == row_length - 1:
+                        quantity_remaining = 0
+                        self._log(
+                            f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
+                        )
+                        break
+                    stop_after_row = True
                     self._log(
-                        f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
+                        f"Reached minimum rarity filter at row start; finishing row {row}."
                     )
-                    break
                 if (
                     self._scan_mode == ScanMode.RECENT_RELICS.value
                     and current_sort_method == SORT_DATE
@@ -714,6 +850,12 @@ class HSRScanner(QObject):
                 )
                 tasks.append(task)
 
+            if stop_after_row:
+                row_length = getattr(self, '_inventory_row_length', 9)
+                if (item_id - 1) % row_length == row_length - 1:
+                    quantity_remaining = 0
+                    break
+
             # Next item
             if not should_stop():
                 self._advance_inventory(item_id)
@@ -730,10 +872,7 @@ class HSRScanner(QObject):
                 f"{batch_shard_count} streamed shard(s).",
                 LogLevel.DEBUG,
             )
-        self._nav.key_tap(Key.esc)
-        self._nav_sleep(2)
-        self._nav.key_tap(Key.esc)
-        self._nav_sleep(1)
+        self._return_to_escape_screen()
         return tasks
 
     def scan_characters(self) -> set[asyncio.Task]:
@@ -1119,7 +1258,12 @@ class HSRScanner(QObject):
             with self._ocr_gate:
                 worker_started_at = time.perf_counter()
                 with ocr_profile_context(item_type=item_type, uid=uid, phase="parse"):
-                    result = parse_func(*args)
+                    try:
+                        result = parse_func(*args)
+                    except ScanIntegrityError as exc:
+                        # Best-effort export: drop the failed item, keep scanning.
+                        self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
+                        result = []
                 parse_ms = (time.perf_counter() - worker_started_at) * 1000
                 record_parse_task(
                     item_type=item_type,

@@ -21,7 +21,7 @@ def _vocabulary(choices):
 def validated_match(text, choices, field):
     raw = normalize_text(text)
     if field == 'main stat':
-        raw = raw.strip(" '\"")
+        raw = raw.strip(" '\"+")
     if not raw:
         raise ScanIntegrityError(f'Unreadable {field}; incomplete scan, no export.')
     pairs, exact = _vocabulary(tuple(choices))

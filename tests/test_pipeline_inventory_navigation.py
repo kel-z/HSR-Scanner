@@ -27,11 +27,11 @@ class PipelineInventoryNavigationTest(unittest.TestCase):
         clock = [0.0]
         events = []
         def tap(key):
-            if key == 'd':
+            if key in ('d', 'a', 's'):
                 self.assertFalse(pending[0], 'second input before prior navigation arrived')
                 pending[0] = True
                 polls_since_d[0] = 0
-                events.append(('d', frame[0] + 1))
+                events.append((key, frame[0] + 1))
         def grab(bbox):
             clock[0] += .009
             if pending[0]:
@@ -49,10 +49,12 @@ class PipelineInventoryNavigationTest(unittest.TestCase):
             shards = scanner.scan_inventory(strategy)
         items = [(uid, stats['name'].getpixel((0, 0))[0]) for shard in shards for uid, stats in shard]
         self.assertEqual(items, [(uid, uid) for uid in range(1, 54)])
-        self.assertEqual(sum(kind == 'd' for kind, _ in events), 52)
+        self.assertEqual(sum(kind == 'd' for kind, _ in events), 24)
+        self.assertEqual(sum(kind == 'a' for kind, _ in events), 23)
+        self.assertEqual(sum(kind == 's' for kind, _ in events), 5)
         self.assertFalse(pending[0])
 
-    def run_inventory(self, quantity=53, recent=None, level=0, scan_delay=0, rarities=None):
+    def run_inventory(self, quantity=53, recent=None, level=0, scan_delay=0, rarities=None, levels=None):
         scanner, strategy = fixtures.InventoryLoopTest().scanner()
         scanner._config[FILTERS] = {RELIC_FILTERS: {MIN_RARITY: 5, MIN_LEVEL: level}}
         scanner._config[CONFIG_SCAN_DELAY] = scan_delay
@@ -67,9 +69,10 @@ class PipelineInventoryNavigationTest(unittest.TestCase):
         def capture(_strategy, uid, previous):
             allowed.append((uid, scanner._pipeline_allowed))
             rarity = (rarities or {}).get(uid, 5)
+            level_value = (levels or {}).get(uid, 15)
             if uid > 1 and scanner._pipeline_allowed:
                 scanner._advance_inventory_candidate(uid, Image.new('RGB', (480, 842), (rarity, 0, 0)), 'relic')
-            return {'uid': uid, 'rarity': rarity, 'level': 15}, str(uid).encode()
+            return {'uid': uid, 'rarity': rarity, 'level': level_value}, str(uid).encode()
         scanner._capture_inventory_stats = Mock(side_effect=capture)
         strategy.check_filters.side_effect = lambda stats, filters, uid: (
             {MIN_RARITY: stats['rarity'] >= 5, MIN_LEVEL: stats['level'] >= level}, stats)
@@ -83,7 +86,9 @@ class PipelineInventoryNavigationTest(unittest.TestCase):
         self.assertTrue(all(enabled for uid, enabled in allowed[:-1]))
         self.assertFalse(allowed[-1][1])
         self.assertEqual([uid for shard in shards for uid, _ in shard], list(range(1, 54)))
-        self.assertEqual(sum(call.args == ('d',) for call in scanner._nav.key_tap.call_args_list), 52)
+        self.assertEqual(sum(call.args == ('d',) for call in scanner._nav.key_tap.call_args_list), 24)
+        self.assertEqual(sum(call.args == ('a',) for call in scanner._nav.key_tap.call_args_list), 23)
+        self.assertEqual(sum(call.args == ('s',) for call in scanner._nav.key_tap.call_args_list), 5)
         self.assertEqual(scanner._inventory_nav_target, 53)
         self.assertEqual(len(shards[0]), 50)
 
@@ -107,6 +112,12 @@ class PipelineInventoryNavigationTest(unittest.TestCase):
             self.assertEqual(sum(call.args == ('d',) for call in scanner._nav.key_tap.call_args_list), 2)
             if 'scan_delay' in options:
                 self.assertEqual(sum(call.args == (0,) for call in scanner._scan_sleep.call_args_list), 2)
+
+    def test_level_filter_finishes_right_to_left_row_before_stopping(self):
+        scanner, shards, _ = self.run_inventory(quantity=18, level=15, levels={10: 0})
+        items = [uid for shard in shards for uid, _ in shard]
+        self.assertEqual(items, list(range(1, 10)) + list(range(11, 19)))
+        self.assertEqual(scanner._inventory_nav_target, 18)
 
     def test_zero_delay_never_calls_sleep_zero_after_navigation(self):
         scanner, _, _ = self.run_inventory(quantity=3)

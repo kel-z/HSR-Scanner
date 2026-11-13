@@ -27,6 +27,7 @@ def recover_duplicate_capture(
     sleep: Callable[[float], None],
     retry_delay: float,
     on_duplicate: Callable[[int, Stats], None] | None = None,
+    selection_moved: Callable[[], bool] | None = None,
 ) -> tuple[Stats, bytes]:
     """Capture stats, re-capturing while the panel matches the previous item.
 
@@ -34,6 +35,15 @@ def recover_duplicate_capture(
     """
     stats, panel_bytes = capture_stats()
     if previous_panel_bytes is None or panel_bytes != previous_panel_bytes:
+        return stats, panel_bytes
+
+    # Identical panels are legitimate when the grid selection moved.
+    if selection_moved is not None and selection_moved():
+        log(
+            f"Item UID {item_id}: identical panel but the grid selection moved; "
+            "accepting the next item.",
+            LogLevel.DEBUG,
+        )
         return stats, panel_bytes
 
     if on_duplicate is not None:

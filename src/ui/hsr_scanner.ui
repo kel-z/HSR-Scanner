@@ -968,7 +968,7 @@ p, li { white-space: pre-wrap; }
        </layout>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="groupBox_10">
+     <widget class="QGroupBox" name="groupBox_101">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -1003,7 +1003,7 @@ p, li { white-space: pre-wrap; }
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QLabel" name="label_17">
+         <widget class="QLabel" name="label_171">
           <property name="text">
            <string>OCR concurrency:</string>
           </property>

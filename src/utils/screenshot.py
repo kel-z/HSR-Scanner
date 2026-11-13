@@ -1,6 +1,7 @@
 import datetime
 import csv
 import os
+import re
 import time
 
 import cv2
@@ -31,6 +32,7 @@ from config.screenshot import SCREENSHOT_COORDS
 from enums.log_level import LogLevel
 from enums.increment_type import IncrementType
 from models.const import CHAR_LEVEL, CHAR_NAME
+from utils.ocr import image_to_string
 from utils.scan_integrity import ScanIntegrityError
 
 
@@ -85,10 +87,11 @@ class Screenshot:
         self._capture_trace_dropped = 0
         self._overlap_evidence = []
 
-    def configure_inventory_capture(self, uid, advance=None, interrupt=None):
+    def configure_inventory_capture(self, uid, advance=None, interrupt=None, selection_moved=None):
         self._capture_uid = uid
         self._capture_advance = advance
         self._capture_interrupt = interrupt
+        self._capture_selection_moved = selection_moved
 
     def reset_inventory_pipeline(self):
         self._pipeline_cache = None
@@ -234,6 +237,53 @@ class Screenshot:
             case _:
                 raise ValueError(f"Invalid scan type: {scan_type.name}.")
         return self._screenshot_stats(key, previous_panel_bytes, timeout_s, settle_s)
+
+    _INVENTORY_GRID_COORDS = (0.045, 0.12, 0.655, 0.64)
+
+    def inventory_grid_image(self) -> Image:
+        """Takes a screenshot of the inventory grid
+
+        :return: The screenshot
+        """
+        return self._take_screenshot(*self._INVENTORY_GRID_COORDS, do_not_save=True)
+
+    def inventory_tab_active(self, x_pct: float, y_pct: float) -> bool:
+        """True when the inventory tab at the given position is selected
+
+        :param x_pct: The x percent coordinate of the tab icon
+        :param y_pct: The y percent coordinate of the tab icon
+        :return: True if the tab icon is bright enough to be selected
+        """
+        img = self._take_screenshot(
+            x_pct - 0.02, y_pct - 0.025, 0.04, 0.06, do_not_save=True
+        )
+        return sum(img.convert("L").histogram()[241:]) > 50
+
+    def inventory_open(self) -> bool:
+        """True when the inventory is visible
+
+        Accepts the currency row shown on tabs without a quantity counter.
+
+        :return: True if the inventory is visible
+        """
+        text = image_to_string(self.screenshot_quantity(), "0123456789/", 7)
+        text = text.replace(" ", "")
+        self._log_signal.emit(
+            (f"Inventory probe OCR: {text!r}", LogLevel.DEBUG)
+        )
+        return re.fullmatch(r"(\d+/\d+|\d{6,})", text) is not None
+
+    def escape_menu_open(self) -> bool:
+        """True when the ESC menu's Trailblaze Level bar is visible
+
+        :return: True if the ESC menu is open
+        """
+        img = self._take_screenshot(0.66, 0.225, 0.28, 0.035)
+        text = image_to_string(img, "TrailblazeLevel0123456789", 7)
+        self._log_signal.emit(
+            (f"ESC-menu probe OCR: {text!r}", LogLevel.DEBUG)
+        )
+        return "level" in text.lower()
 
     def screenshot_sort(self) -> Image:
         """Takes a screenshot of the current sort option. Requires inventory to be open.
@@ -460,6 +510,8 @@ class Screenshot:
         uid = getattr(self, '_capture_uid', 0)
         advance = getattr(self, '_capture_advance', None)
         interrupt = getattr(self, '_capture_interrupt', None)
+        selection_moved = getattr(self, '_capture_selection_moved', None)
+        equal_streak = 0
         candidate_raw = None
         candidate_backend = None
         navigation_issued = False
@@ -517,6 +569,23 @@ class Screenshot:
             if not changed:
                 changed_signature = None
                 stable_since = None
+                equal_streak += 1
+                # Duplicate: identical panel 300ms+ and selection moved; a
+                # repaint inside the window takes the changed path instead.
+                if (
+                    equal_streak >= 2
+                    and now - poll_start >= 0.3
+                    and selection_moved is not None
+                    and selection_moved()
+                ):
+                    self._log_signal.emit(
+                        (f'Item {uid}: duplicate panel confirmed after '
+                         f'{(now - poll_start) * 1000:.0f}ms.', LogLevel.INFO))
+                    settled = True
+                    decision = 'duplicate'
+                    break
+            else:
+                equal_streak = 0
             if changed:
                 if previous_panel_bytes is None:
                     settled = True

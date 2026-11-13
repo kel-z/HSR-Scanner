@@ -42,13 +42,25 @@ class EquippedFooterGateTest(unittest.TestCase):
     def test_unknown_portrait_still_blocks_export(self):
         s=self.parser()
         s._game_data.get_verified_equipped_character.side_effect=ScanIntegrityError('unknown')
-        with patch('services.scanner.parsers.relic_strategy.equipped_frame_present',return_value=True):
-            with self.assertRaises(ScanIntegrityError):s.parse(self.row('pEquippe'),1)
-
-    def test_label_frame_conflict_still_rejected(self):
-        s=self.parser()
-        with patch('services.scanner.parsers.relic_strategy.equipped_frame_present',return_value=False):
+        with patch('services.scanner.parsers.relic_strategy.equipped_frame_present',return_value=True) as detector:
             with self.assertRaises(ScanIntegrityError):s.parse(self.row('Equipped'),1)
+        detector.assert_called_once()
+
+    def test_batch_parse_skips_failed_item_and_keeps_siblings(self):
+        s=self.parser()
+        s.BATCH_OCR_CHUNK_SIZE=10
+        s._batch_extract_stats_data=Mock()
+        good={'name':'Example Hat'}
+        bad={'name':'bad','_raw_stats':{}}
+        s._parse_once=Mock(side_effect=[ScanIntegrityError('Relic 1: uncertain relic name'),{'_uid':'relic_2'}])
+        self.assertEqual(s.batch_parse([(1,bad),(2,good)]),[{'_uid':'relic_2'}])
+        self.assertTrue(any('skipped' in str(c.args[0]) for c in s._log.call_args_list))
+
+    def test_noisy_label_with_unknown_portrait_is_not_equipped(self):
+        s=self.parser()
+        s._game_data.get_verified_equipped_character.side_effect=ScanIntegrityError('unknown')
+        with patch('services.scanner.parsers.relic_strategy.equipped_frame_present',return_value=False):
+            self.assertEqual(s.parse(self.row('pEquippe'),1)['location'],'')
 
     def test_cached_field_retry_is_bounded_and_does_not_change_uid(self):
         s=self.parser()

@@ -42,8 +42,8 @@ def validate_substat_rolls(active, preview, rarity, level, uid):
     initial_min, initial_max = rarity - 2, rarity - 1
     if not min(4, initial_min + upgrades) <= len(active) <= min(4, initial_max + upgrades):
         fail(f'{len(active)} active stats incompatible with rarity {rarity}, level {level}')
-    if len(preview) > 1 or (preview and len(active) >= 4):
-        fail('preview stat cannot coexist with four active stats or another preview')
+    if len(active) + len(preview) > 4:
+        fail(f'{len(active) + len(preview)} substat lines; a relic has at most four')
     seen = set()
     possible_totals = {0}
     for is_preview, stats in ((False, active), (True, preview)):

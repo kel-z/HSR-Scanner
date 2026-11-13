@@ -59,6 +59,10 @@ class ConfirmedOutfitPortraitTest(unittest.TestCase):
 
 
 class RecognitionValidationTest(unittest.TestCase):
+    def test_main_stat_trailing_plus_is_stripped(self):
+        for text in ('HP+', 'ATK +', 'DEF+ '):
+            self.assertIn(validated_match(text, RELIC_MAIN_STATS, 'main stat'), ('HP', 'ATK', 'DEF'))
+
     def test_main_stat_garbage_is_not_nearest_guessed(self):
         for text in ('', 'NV fi eYo COCOCXJ a', 'HF', 'AIH'):
             with self.subTest(text=text), self.assertRaises(ScanIntegrityError):
