@@ -843,6 +843,8 @@ def main():
         from ui.hsr_scanner import Ui_MainWindow
         from utils.ocr import prepare_ocr
         from utils.ocr_batch import batch_image_to_strings
+        from utils.window import bring_window_to_foreground  # noqa: F401
+        import pyautogui  # noqa: F401
         from PIL import Image
 
         Ui_MainWindow().setupUi(MainWindow)
