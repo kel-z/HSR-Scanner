@@ -720,6 +720,11 @@ class HSRScannerUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         if isinstance(log, tuple):
             message, log_level = log
+            if (
+                log_level == LogLevel.DEBUG
+                and not self.checkBoxDebugMode.isChecked()
+            ):
+                return
         else:
             message = log
             log_level = LogLevel.INFO
@@ -832,6 +837,27 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(resource_path("assets/images/app.ico")))
     MainWindow = QtWidgets.QMainWindow()
+    if len(sys.argv) == 3 and sys.argv[1] == "--startup-smoke-test":
+        from pathlib import Path
+        from PyQt6.QtCore import qVersion
+        from ui.hsr_scanner import Ui_MainWindow
+        from utils.ocr import prepare_ocr
+        from utils.ocr_batch import batch_image_to_strings
+        from utils.window import bring_window_to_foreground  # noqa: F401
+        import pyautogui  # noqa: F401
+        from PIL import Image
+
+        Ui_MainWindow().setupUi(MainWindow)
+        app.processEvents()
+        ocr_version = prepare_ocr()
+        batch_image_to_strings([Image.new("RGB", (160, 60), "white")], "0123456789", 6)
+        Path(sys.argv[2]).write_text(
+            f"STARTUP_OK Qt={qVersion()} platform={app.platformName()} "
+            f"Tesseract={ocr_version} TSV_OK\n",
+            encoding="utf-8",
+        )
+        MainWindow.close()
+        return
     ui = HSRScannerUI()
     ui.setup_ui(MainWindow)
     MainWindow.show()

@@ -16,6 +16,7 @@ from models.const import (
     CHAR_PATH,
     CHAR_ID,
     CHAR_ASCENSION,
+    CHAR_AFFINITIVE_EIDOLONS,
     CHAR_EIDOLON,
     EIDOLON_IMAGES,
     HSR_SCANNER,
@@ -101,6 +102,11 @@ class CharacterParser:
                 },
                 CHAR_TRACES: {},
             }
+
+            if CHAR_AFFINITIVE_EIDOLONS in stats_dict:
+                character[CHAR_AFFINITIVE_EIDOLONS] = stats_dict[
+                    CHAR_AFFINITIVE_EIDOLONS
+                ]
 
             if path == "Remembrance":
                 character[CHAR_MEMOSPRITE] = {

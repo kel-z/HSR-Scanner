@@ -55,6 +55,7 @@ The output is loosely based off of Genshin's `.GOOD` export format. If a breakin
 - Flat substats and percentage substats are differentiated by an underscore suffix in the key.
   - Main stats will never have an underscore suffix.
 - Unrevealed gray relic substats are exported separately under `preview_substats` so `substats` only contains active rolls.
+- Characters with Affinitive Eidolons include `affinitive_eidolons`, a list of activated Affinitive Eidolon IDs (for example, `[130801]` for Acheron). The list is empty when the character has an Affinitive Eidolon but has not activated it, and the field is omitted for characters without one.
 - The `_uid` value for light cones and relics is arbitrarily assigned during the scanning process. It is intended for easy lookup in case of any errors logged during the scan, for double-checking or manual correction purposes.
 - For `Dan Heng • Imbibitor Lunae`, the character `•` will appear as `\u2022` in the JSON output. This is the Unicode representation of the character and is a normal behaviour when special characters are included in JSON. Most modern environments will automatically render `\u2022` as `•` when displaying or processing the JSON.
 - For character traces, `ability_#` and `stat_#` are ordered by earliest availability (i.e. `stat_1` can be unlocked at Ascension 0, but `stat_2` requires Ascension 2).
@@ -68,7 +69,7 @@ Current output sample:
 ```JSON
 {
     "source": "HSR-Scanner",
-    "build": "v1.5.0",
+    "build": "v1.6.0",
     "version": 4,
     "metadata": {
         "uid": 601869216,

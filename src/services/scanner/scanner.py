@@ -7,18 +7,28 @@ from concurrent.futures import ThreadPoolExecutor
 import pyautogui
 import win32gui
 from PIL import Image as PILImage
+from PIL import ImageChops
 from pynput.keyboard import Key
 from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 
 from config.character_scan import CHARACTER_NAV_DATA
+from config.screenshot import SCREENSHOT_COORDS
 from config.const import (
+    AFFINITIVE_EIDOLON_ACTIVATED,
+    AFFINITIVE_EIDOLON_REGULAR,
+    AFFINITIVE_EIDOLON_UNACTIVATED,
+    AFFINITIVE_EIDOLON_UNKNOWN,
     ASCENSION_OFFSET_X,
     ASCENSION_START,
     ASPECT_16_9,
+    DATABANK_HEIGHT_RATIO,
+    DATABANK_WIDTH_RATIO,
     DETAILS_BUTTON,
     EIDOLONS_BUTTON,
     FIRST_ITEM,
+    INVENTORY_ROW_LENGTH,
     INV_TAB,
+    INV_TAB_ALL,
     SORT_BUTTON,
     TRACES,
     TRACES_BUTTON,
@@ -27,7 +37,10 @@ from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
 from models.const import (
+    CHAR_AFFINITIVE_EIDOLON,
+    CHAR_AFFINITIVE_EIDOLONS,
     CHAR_FILTERS,
+    CHAR_ID,
     CHAR_LEVEL,
     CHAR_NAME,
     CHAR_PATH,
@@ -53,9 +66,11 @@ from models.const import (
     HSR_SCANNER,
     KEL_Z,
     LEVEL,
+    LC_FILTERS,
     MIN_LEVEL,
     MIN_RARITY,
     RARITY,
+    RELIC_FILTERS,
     SORT_DATE,
     SORT_LV,
     SORT_RARITY,
@@ -64,11 +79,12 @@ from models.const import (
 )
 from models.game_data import GameData
 from services.scanner.parsers.parse_strategy import BaseParseStrategy
-from utils.data import resource_path
-from utils.duplicate_capture import recover_duplicate_capture
+from utils.duplicate_capture import UnresolvedDuplicateCaptureError, recover_duplicate_capture
+from utils.scan_integrity import ScanIntegrityError, integrity_skip_message, validate_relic_records
 from utils.navigation import Navigation
 from utils.ocr import (
     image_to_string,
+    prepare_ocr,
     preprocess_char_count_img,
     preprocess_uid_img,
     set_ocr_concurrency,
@@ -99,13 +115,11 @@ class InterruptedScanException(Exception):
 class HSRScanner(QObject):
     """HSRScanner class is responsible for scanning the game for light cones, relics, and characters"""
 
-    DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.15
+    DUPLICATE_STATS_CAPTURE_RETRY_DELAY = 0.25
 
-    # Earliest panel refresh is ~15ms (~1 frame), so sleep that, then rapid-poll
-    # until the text changes or 70ms (the cap covers identical neighbors and slow
-    # frames).
-    PANEL_CHANGE_TIMEOUT = 0.07
-    POST_NAV_BASE_DELAY = 0.015
+    PANEL_CHANGE_TIMEOUT = 0.75
+    PANEL_SETTLE_TIME = 0.0  # Two matching observations, no fixed per-item wait.
+    POST_NAV_BASE_DELAY = 0.0
 
     update_signal = pyqtSignal(int)
     log_signal = pyqtSignal(object)
@@ -165,7 +179,6 @@ class HSRScanner(QObject):
             config[CONFIG_DEBUG_OUTPUT_LOCATION],
             config.get(CONFIG_DEBUG_VERBOSE_LOGS, True),
         )
-        self._databank_img = PILImage.open(resource_path("assets/images/databank.png"))
 
         self._interrupt_event = asyncio.Event()
         configure_ocr_profile(
@@ -175,8 +188,6 @@ class HSRScanner(QObject):
         )
         reset_ocr_profile()
 
-        # Gate OCR to half concurrency during capture so it can't starve the
-        # game's CPU and drop frames; opens to full once capture ends.
         self._loop: asyncio.AbstractEventLoop | None = None
         self._ocr_capture_workers = max(1, self._ocr_concurrency // 2)
         self._ocr_gate = threading.Semaphore(self._ocr_capture_workers)
@@ -208,18 +219,125 @@ class HSRScanner(QObject):
         previous_stats_panel_bytes: bytes | None,
     ) -> tuple[dict, bytes]:
         """Capture inventory stats and recover from repeated stale panel screenshots."""
-        return recover_duplicate_capture(
-            lambda: self._screenshot.screenshot_stats_on_panel_change(
-                strategy.SCAN_TYPE,
-                previous_stats_panel_bytes,
-                self.PANEL_CHANGE_TIMEOUT,
-            ),
+        profile = self._config.get(CONFIG_DEBUG, False)
+        capture_start = time.perf_counter() if profile else 0.0
+        incoming_nav_start = getattr(self, '_profile_nav_start', None)
+        def capture():
+            advance = None
+            if (getattr(self, '_pipeline_allowed', False)
+                    and getattr(self, '_inventory_nav_target', None) != item_id + 1):
+                advance = lambda raw, key: self._advance_inventory_candidate(item_id, raw, key)
+            self._screenshot.configure_inventory_capture(
+                item_id, advance, self._check_capture_interrupt,
+                self._inventory_selection_moved)
+            return self._screenshot.screenshot_stats_on_panel_change(
+                strategy.SCAN_TYPE, previous_stats_panel_bytes,
+                self.PANEL_CHANGE_TIMEOUT, self.PANEL_SETTLE_TIME)
+        result = recover_duplicate_capture(
+            capture,
             previous_stats_panel_bytes,
             item_id,
             self._log,
             self._interruptible_sleep,
             self.DUPLICATE_STATS_CAPTURE_RETRY_DELAY,
+            lambda attempt, _stats: self._record_duplicate_transition(
+                item_id, attempt
+            ),
+            self._inventory_selection_moved,
         )
+        if profile:
+            capture_end = time.perf_counter()
+            nav_start = incoming_nav_start
+            if nav_start is not None:
+                distance = item_id - getattr(self, '_profile_shard_last_uid', -100)
+                group = 'after_shard_1_3' if 1 <= distance <= 3 else 'other'
+                self._inventory_profile.append((
+                    item_id, group, (capture_end - nav_start) * 1000,
+                    (capture_start - nav_start) * 1000,
+                    (capture_end - capture_start) * 1000,
+                ))
+        return result
+
+    def _inventory_selection_moved(self) -> bool:
+        """True when the grid selection differs from the last accepted item
+
+        :return: True if the inventory selection moved
+        """
+        current = self._screenshot.inventory_grid_image()
+        previous = getattr(self, '_previous_grid_image', None)
+        if not isinstance(current, PILImage.Image) or not isinstance(previous, PILImage.Image):
+            return False
+        if current.size != previous.size:
+            return True
+        diff = ImageChops.difference(current, previous).convert('L')
+        return sum(diff.histogram()[31:]) > 200
+
+    def _record_duplicate_transition(self, item_id: int, attempt: int) -> None:
+        """Record enough evidence to diagnose a failed inventory transition."""
+        try:
+            foreground = win32gui.GetForegroundWindow()
+            self._log(
+                f"Item UID {item_id}: recovery attempt={attempt}, "
+                f"game_is_foreground={foreground == self._hwnd}, "
+                f"foreground_class={win32gui.GetClassName(foreground) if foreground else 'none'}. "
+                "This is recovery-time focus, not proof of focus during input.",
+                LogLevel.DEBUG,
+            )
+        except Exception as exc:
+            self._log(f"Could not inspect recovery-time focus: {exc}", LogLevel.DEBUG)
+        if attempt == 0:
+            self._log(
+                f"Item UID {item_id}: item {item_id - 1} was accepted and one "
+                "forward ('d') navigation input was issued, but the details "
+                "signature still matches the prior item. This may be an "
+                "unaccepted navigation input or a stale details panel; recovery "
+                "will capture only and will not resend navigation.",
+                LogLevel.WARNING,
+            )
+        self._screenshot.save_inventory_transition_diagnostic(item_id, attempt)
+
+    def _check_capture_interrupt(self):
+        event = getattr(self, '_interrupt_event', None)
+        if event is not None and event.is_set():
+            raise InterruptedScanException()
+
+    def _advance_inventory_candidate(self, item_id, raw, key):
+        """Skip the next input once a relic is below the rarity filter; the parser still filters."""
+        minimum = getattr(self, '_pipeline_min_rarity', 0)
+        if minimum > 2 and key == 'relic':
+            left, top, right, bottom = SCREENSHOT_COORDS[self._aspect_ratio]['relic'][RARITY]
+            x = min(raw.width - 1, int((left + right) * raw.width / 2))
+            y = min(raw.height - 1, int((top + bottom) * raw.height / 2))
+            if self._game_data.get_closest_rarity(raw.getpixel((x, y))) < minimum:
+                return None
+        return self._advance_inventory(item_id, pipeline=True)
+
+    def _advance_inventory(self, item_id: int, pipeline: bool = False):
+        if getattr(self, '_inventory_nav_target', None) == item_id + 1:
+            return None
+        self._check_capture_interrupt()
+        self._screenshot.remember_inventory_before_navigation()
+        nav_start = time.perf_counter()
+        row_length = getattr(self, '_inventory_row_length', 9)
+        index = (item_id - 1) % row_length
+        row = (item_id - 1) // row_length
+        at_row_end = index == row_length - 1
+        key = 's' if at_row_end else ('d' if row % 2 == 0 else 'a')
+        # Distinguish a duplicate panel from a failed navigation.
+        self._previous_grid_image = self._screenshot.inventory_grid_image()
+        self._nav.key_tap(key)
+        self._inventory_nav_action = key
+        nav_end = time.perf_counter()
+        self._inventory_nav_target = item_id + 1
+        self._profile_nav_start = nav_start
+        if not pipeline:
+            if self._config.get(CONFIG_DEBUG, False):
+                self._screenshot._trace_capture(('nav', getattr(self, '_inventory_type', ''),
+                    item_id, item_id + 1, '', nav_start, nav_end, '', '', '', '', '', 'issued'))
+            delay = self._config.get(CONFIG_SCAN_DELAY, 0)
+            if delay:
+                self._scan_sleep(0)
+        return nav_start, nav_end
 
     async def start_scan(self) -> dict:
         """Starts the scan
@@ -244,25 +362,51 @@ class HSRScanner(QObject):
                 "Non-English game name detected. The scanner only works with English text.",
                 LogLevel.WARNING,
             )
-        bring_window_to_foreground(self._hwnd)
 
         uid = None
         light_cones = []
         relics = []
         characters = []
         try:
+            preflight_start = time.perf_counter()
+            version = prepare_ocr()
+            self._log(
+                f"OCR preflight: Tesseract {version}, version cache ready; "
+                f"elapsed_ms={(time.perf_counter() - preflight_start) * 1000:.3f}. "
+                "Windows subprocesses use CREATE_NO_WINDOW; recognition jobs "
+                "still launch per call.", LogLevel.DEBUG,
+            )
+            bring_window_to_foreground(self._hwnd)
             uid, light_cones, relics, characters = self._run_capture_phases()
         finally:
             # Submitted OCR work blocks on the capture gate; open it before any
             # await/shutdown so workers can always drain, even on interrupt.
             self._open_ocr_gate()
             self._screenshot.close()
+            try:
+                self._screenshot.flush_inventory_capture_trace()
+            except Exception as exc:
+                self._log(f'Could not write capture pipeline trace: {exc}', LogLevel.WARNING)
+            for line in self._screenshot.get_capture_timing_summary_lines():
+                self._log(line, LogLevel.DEBUG)
+            records = getattr(self, '_inventory_profile', [])
+            for group in ('all', 'after_shard_1_3', 'other'):
+                selected = [r for r in records if group == 'all' or r[1] == group]
+                if not selected:
+                    continue
+                for column, name in ((2, 'nav_to_accept_ms'), (3, 'nav_to_capture_ms'), (4, 'capture_with_recovery_ms')):
+                    values = sorted(r[column] for r in selected)
+                    self._log(
+                        f"Inventory profile: group={group}, metric={name}, n={len(values)}, "
+                        f"avg={sum(values)/len(values):.3f}, p50={values[len(values)//2]:.3f}, "
+                        f"p95={values[min(len(values)-1, int(len(values)*.95))]:.3f}, max={values[-1]:.3f}",
+                        LogLevel.DEBUG,
+                    )
 
         if self._interrupt_event.is_set():
             await asyncio.gather(*light_cones, *relics, *characters)
             return {}
 
-        self._return_to_escape_screen()
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")
 
@@ -271,6 +415,11 @@ class HSRScanner(QObject):
             await asyncio.gather(*light_cones)
         )
         relic_results = self._flatten_scan_results(await asyncio.gather(*relics))
+        try:
+            validate_relic_records(relic_results)
+        except ScanIntegrityError as exc:
+            # Best-effort export: flag the suspect pair, keep everything.
+            self._log(f'{integrity_skip_message(exc)} Exporting as-is (best effort).', LogLevel.ERROR)
         character_results = self._flatten_scan_results(
             await asyncio.gather(*characters)
         )
@@ -279,14 +428,12 @@ class HSRScanner(QObject):
             f"light_cones={len(light_cone_results)}, relics={len(relic_results)}, characters={len(character_results)}",
             LogLevel.DEBUG,
         )
-        for line in self._screenshot.get_capture_timing_summary_lines():
-            self._log(line, LogLevel.DEBUG)
         for line in get_ocr_profile_summary_lines():
             self._log(line, LogLevel.DEBUG)
 
         return {
             "source": "HSR-Scanner",
-            "build": "v1.5.0",
+            "build": "v1.6.0",
             "version": 4,
             "metadata": {
                 "uid": int(uid) if uid else None,
@@ -385,8 +532,63 @@ class HSRScanner(QObject):
         self._interrupt_event.set()
 
     def _return_to_escape_screen(self) -> None:
-        """Open the game's escape menu before OCR starts."""
-        self._nav.key_tap(Key.esc)
+        """Opens the game's escape menu, confirming the screen before keys"""
+        if self._screenshot.escape_menu_open():
+            return
+        for _ in range(3):
+            self._nav.key_tap(Key.esc)
+            self._log("Waiting for the ESC menu to open...")
+            for i in range(4):
+                self._nav_sleep(2 if i == 0 else 1.5)
+                if self._screenshot.escape_menu_open():
+                    return
+        self._log(
+            "Could not confirm the ESC menu is open.", LogLevel.WARNING
+        )
+
+    def _open_inventory(self) -> None:
+        """Opens the inventory, confirming the visible screen before each key
+
+        :raises ValueError: Thrown if the inventory could not be opened
+        """
+        for attempt in range(4):
+            if self._screenshot.inventory_open():
+                self._log(f"Inventory already open (attempt {attempt}).")
+                return
+            if attempt == 0 and self._screenshot.escape_menu_open():
+                self._log(
+                    f"ESC menu detected, closing it first (attempt {attempt})."
+                )
+                self._nav.key_tap(Key.esc)
+                self._log("Waiting for the ESC menu to close...")
+                for i in range(4):
+                    self._nav_sleep(2 if i == 0 else 1.5)
+                    if not self._screenshot.escape_menu_open():
+                        break
+            self._log(
+                f"Pressing {self._config[CONFIG_INVENTORY_KEY]} (attempt {attempt})."
+            )
+            self._nav.key_tap(self._config[CONFIG_INVENTORY_KEY])
+            self._log("Waiting for the inventory screen to load...")
+            if self._wait_for_inventory(8):
+                self._log(f"Inventory opened (attempt {attempt}).")
+                return
+        raise ValueError(
+            "Could not open the inventory from the current game screen. "
+            "Start the scan with the game in the overworld, ESC menu or inventory."
+        )
+
+    def _wait_for_inventory(self, max_checks: int) -> bool:
+        """Polls until the inventory quantity renders
+
+        :param max_checks: The maximum number of checks to perform
+        :return: True if the inventory is open
+        """
+        for i in range(max_checks):
+            self._nav_sleep(1.5 if i == 0 else 1)
+            if self._screenshot.inventory_open():
+                return True
+        return False
 
     def scan_inventory(self, strategy: BaseParseStrategy) -> set[asyncio.Task]:
         """Scans the inventory for light cones or relics
@@ -397,13 +599,9 @@ class HSRScanner(QObject):
         :return: The tasks to await
         """
         nav_data = strategy.NAV_DATA[self._aspect_ratio]
+        self._inventory_row_length = nav_data.get(INVENTORY_ROW_LENGTH, 9)
 
-        # Navigate to correct tab from cellphone menu
-        self._nav_sleep(1)
-        self._nav.key_tap(Key.esc)
-        self._nav_sleep(2)
-        self._nav.key_tap(self._config[CONFIG_INVENTORY_KEY])
-        self._nav_sleep(1.5)
+        self._open_inventory()
 
         # Get quantity
         max_retry = 5
@@ -413,6 +611,25 @@ class HSRScanner(QObject):
             time.sleep(0.05)
             self._nav.click()
             self._nav_sleep(1.5)
+            if INV_TAB_ALL in nav_data:
+                self._nav.move_cursor_to(*nav_data[INV_TAB_ALL])
+                time.sleep(0.05)
+                self._nav.click()
+                self._nav_sleep(1.0)
+
+            # Quantity OCR can read before the tab switch renders.
+            if not self._screenshot.inventory_tab_active(*nav_data[INV_TAB]):
+                retry += 1
+                if retry > max_retry:
+                    raise ValueError(
+                        "Failed to switch to the requested inventory tab."
+                    )
+                self._log(
+                    f"Inventory tab did not switch. Retrying... ({retry}/{max_retry})",
+                    LogLevel.WARNING,
+                )
+                self._nav_sleep(1)
+                continue
 
             # TODO: using quantity to know when to scan the bottom row is not ideal
             #       because it will not work for tabs that do not have a quantity
@@ -471,7 +688,8 @@ class HSRScanner(QObject):
             self._nav.click()
             current_sort_method = optimal_sort_method
             self._nav_sleep(0.5)
-            self._select_first_inventory_item(nav_data)
+
+        self._select_first_inventory_item(nav_data)
 
         tasks = []
         batch_items = []
@@ -479,6 +697,29 @@ class HSRScanner(QObject):
         batch_shard_count = 0
         scanned = 0
         previous_stats_panel_bytes = None
+        self._inventory_nav_target = None
+        self._inventory_type = 'relic' if isinstance(strategy, RelicStrategy) else 'light_cone'
+        self._screenshot.reset_inventory_pipeline()
+        filters = self._config.get(FILTERS, {}).get(
+            RELIC_FILTERS if isinstance(strategy, RelicStrategy) else LC_FILTERS, {})
+        minimum_level = 0 if isinstance(strategy, RelicStrategy) else 1
+        recent_mode = self._scan_mode == ScanMode.RECENT_RELICS.value
+        self._pipeline_min_rarity = (
+            filters.get(MIN_RARITY, 1) if current_sort_method == SORT_RARITY else 0
+        )
+        pipeline_safe = (
+            not self._config.get(CONFIG_SCAN_DELAY, 0)
+            and filters.get(MIN_LEVEL, minimum_level) <= minimum_level
+            and (isinstance(strategy, RelicStrategy) or filters.get(MIN_RARITY, 1) <= 1)
+        )
+        self._log(
+            f'Inventory pipeline: eligible={pipeline_safe}, base_delay_ms=0, '
+            f'rarity_stop_hint={self._pipeline_min_rarity}, '
+            f'recent_last_candidate_conservative={recent_mode}.', LogLevel.DEBUG)
+        self._profile_nav_start = None
+        self._profile_shard_last_uid = -100
+        if not hasattr(self, '_inventory_profile'):
+            self._inventory_profile = []
 
         if isinstance(strategy, RelicStrategy):
             strategy.BATCH_OCR_CHUNK_SIZE = self._ocr_batch_size
@@ -487,6 +728,12 @@ class HSRScanner(QObject):
             """Stream a relic shard to the gated OCR workers while capture continues."""
             nonlocal batch_shard_count
             batch_shard_count += 1
+            self._profile_shard_last_uid = shard[-1][0]
+            self._log(
+                f"OCR shard submitted: shard={batch_shard_count}, "
+                f"first_uid={shard[0][0]}, last_uid={shard[-1][0]}, count={len(shard)}",
+                LogLevel.DEBUG,
+            )
             tasks.append(
                 self._profiled_parse_task(
                     strategy.SCAN_TYPE.name.lower(),
@@ -505,42 +752,76 @@ class HSRScanner(QObject):
                 )
             return quantity_remaining <= 0
 
+        stop_after_row = False
         while not should_stop():
+            item_id = quantity - quantity_remaining + 1
+            self._pipeline_allowed = (
+                pipeline_safe and quantity_remaining > 1
+                and (not recent_mode or scanned + 1 < self._config[CONFIG_RECENT_RELICS_NUM])
+            )
+            stats_dict = None
+            try:
+                stats_dict, stats_panel_bytes = self._capture_inventory_stats(
+                    strategy, item_id, previous_stats_panel_bytes
+                )
+                previous_stats_panel_bytes = stats_panel_bytes
+            except UnresolvedDuplicateCaptureError as exc:
+                # Best-effort export: skip the item, keep scanning.
+                self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
             quantity_remaining -= 1
 
-            item_id = quantity - quantity_remaining
-            stats_dict, stats_panel_bytes = self._capture_inventory_stats(
-                strategy, item_id, previous_stats_panel_bytes
-            )
-            previous_stats_panel_bytes = stats_panel_bytes
+            if stats_dict is None:
+                if not should_stop():
+                    self._advance_inventory(item_id)
+                continue
 
             # Check if item satisfies filters
             if FILTERS in self._config:
-                filter_results, stats_dict = strategy.check_filters(
-                    stats_dict,
-                    self._config[FILTERS],
-                    item_id,
-                )
+                try:
+                    filter_results, stats_dict = strategy.check_filters(
+                        stats_dict,
+                        self._config[FILTERS],
+                        item_id,
+                    )
+                except ScanIntegrityError as exc:
+                    # Best-effort export: skip the item, keep scanning.
+                    self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
+                    if not should_stop():
+                        self._advance_inventory(item_id)
+                    continue
+                row_length = getattr(self, '_inventory_row_length', 9)
+                index = (item_id - 1) % row_length
+                row = (item_id - 1) // row_length
                 if (
                     current_sort_method == SORT_LV
                     and MIN_LEVEL in filter_results
                     and not filter_results[MIN_LEVEL]
                 ):
-                    quantity_remaining = 0
+                    if row % 2 == 0 or index == row_length - 1:
+                        quantity_remaining = 0
+                        self._log(
+                            f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
+                        )
+                        break
+                    stop_after_row = True
                     self._log(
-                        f"Reached minimum level filter (got level {stats_dict[LEVEL]})."
+                        f"Reached minimum level filter at row start; finishing row {row}."
                     )
-                    break
                 if (
                     current_sort_method == SORT_RARITY
                     and MIN_RARITY in filter_results
                     and not filter_results[MIN_RARITY]
                 ):
-                    quantity_remaining = 0
+                    if row % 2 == 0 or index == row_length - 1:
+                        quantity_remaining = 0
+                        self._log(
+                            f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
+                        )
+                        break
+                    stop_after_row = True
                     self._log(
-                        f"Reached minimum rarity filter (got rarity {stats_dict[RARITY]})."
+                        f"Reached minimum rarity filter at row start; finishing row {row}."
                     )
-                    break
                 if (
                     self._scan_mode == ScanMode.RECENT_RELICS.value
                     and current_sort_method == SORT_DATE
@@ -549,8 +830,8 @@ class HSRScanner(QObject):
                 ):
                     scanned += 1
                 if not all(filter_results.values()):
-                    self._nav.key_tap("d")
-                    self._scan_sleep(self.POST_NAV_BASE_DELAY)
+                    if not should_stop():
+                        self._advance_inventory(item_id)
                     continue
 
             # Update UI count
@@ -573,9 +854,15 @@ class HSRScanner(QObject):
                 )
                 tasks.append(task)
 
+            if stop_after_row:
+                row_length = getattr(self, '_inventory_row_length', 9)
+                if (item_id - 1) % row_length == row_length - 1:
+                    quantity_remaining = 0
+                    break
+
             # Next item
-            self._nav.key_tap("d")
-            self._scan_sleep(self.POST_NAV_BASE_DELAY)
+            if not should_stop():
+                self._advance_inventory(item_id)
 
         if batch_items:
             # Split the remainder across workers so the post-capture tail
@@ -589,11 +876,47 @@ class HSRScanner(QObject):
                 f"{batch_shard_count} streamed shard(s).",
                 LogLevel.DEBUG,
             )
-        self._nav.key_tap(Key.esc)
-        self._nav_sleep(2)
-        self._nav.key_tap(Key.esc)
-        self._nav_sleep(1)
+        self._return_to_escape_screen()
         return tasks
+
+    def _open_affinitive_eidolon_screen(self, state: str, screen):
+        """Open the AE details screen only when the regular layout is shown."""
+        if state in (
+            AFFINITIVE_EIDOLON_ACTIVATED,
+            AFFINITIVE_EIDOLON_UNACTIVATED,
+        ):
+            return state, screen
+        for _ in range(2):
+            self._nav.press_gamepad_x()
+            for _ in range(3):
+                self._scan_sleep(0.8)
+                screen = self._screenshot.screenshot_character_eidolon_screen()
+                state = self._screenshot.affinitive_eidolon_screen_state(screen)
+                if state in (
+                    AFFINITIVE_EIDOLON_ACTIVATED,
+                    AFFINITIVE_EIDOLON_UNACTIVATED,
+                ):
+                    return state, screen
+                if state == AFFINITIVE_EIDOLON_UNKNOWN:
+                    continue
+                break
+        return AFFINITIVE_EIDOLON_UNKNOWN, None
+
+    def _return_to_regular_eidolon_screen(self, activated: bool):
+        """X switches the activated AE screen; B leaves the unactivated one."""
+        for _ in range(2):
+            if activated:
+                self._nav.press_gamepad_x()
+            else:
+                self._nav.press_gamepad_b()
+            self._scan_sleep(0.8)
+            screen = self._screenshot.screenshot_character_eidolon_screen()
+            state = self._screenshot.affinitive_eidolon_screen_state(screen)
+            if state == AFFINITIVE_EIDOLON_REGULAR:
+                return screen
+            if state == AFFINITIVE_EIDOLON_UNKNOWN:
+                return None
+        return None
 
     def scan_characters(self) -> set[asyncio.Task]:
         """Scans the characters
@@ -623,11 +946,11 @@ class HSRScanner(QObject):
                 # Locate and click databank button
                 self._log("Locating Data Bank button...", LogLevel.DEBUG)
                 haystack = self._screenshot.screenshot_screen()
-                needle = self._databank_img.resize(
+                needle = self._screenshot.databank_img.resize(
                     # Scale image to match capture size
                     (
-                        int(haystack.size[0] * 0.0296875),
-                        int(haystack.size[1] * 0.05625),
+                        int(haystack.size[0] * DATABANK_WIDTH_RATIO),
+                        int(haystack.size[1] * DATABANK_HEIGHT_RATIO),
                     )
                 )
                 self._nav.move_cursor_to_image(haystack, needle)
@@ -901,7 +1224,57 @@ class HSRScanner(QObject):
                 self._nav.press_gamepad_rb()
                 self._scan_sleep(0.1)
                 continue
-            res[i][EIDOLON_IMAGES] = self._screenshot.screenshot_character_eidolons()
+
+            metadata = self._game_data.get_character_meta_data(
+                res[i][CHAR_NAME], res[i][CHAR_PATH]
+            )
+            char_id = str(metadata[CHAR_ID])
+            ae_id = metadata.get(CHAR_AFFINITIVE_EIDOLON)
+            screen = self._screenshot.screenshot_character_eidolon_screen()
+            state = self._screenshot.affinitive_eidolon_screen_state(screen)
+
+            if ae_id is not None:
+                if (
+                    state == AFFINITIVE_EIDOLON_UNKNOWN
+                    and self._screenshot.affinitive_eidolon_activated(screen)
+                ):
+                    state = AFFINITIVE_EIDOLON_ACTIVATED
+                state, screen = self._open_affinitive_eidolon_screen(state, screen)
+                activated = state == AFFINITIVE_EIDOLON_ACTIVATED or (
+                    state == AFFINITIVE_EIDOLON_UNKNOWN
+                    and screen is not None
+                    and self._screenshot.affinitive_eidolon_activated(screen)
+                )
+                self._log(
+                    f"{res[i][CHAR_NAME]}: Affinitive Eidolon {ae_id} eligible; "
+                    f"screen={state}, activated={activated}.",
+                    LogLevel.DEBUG,
+                )
+                res[i][CHAR_AFFINITIVE_EIDOLONS] = [ae_id] if activated else []
+                if state in (
+                    AFFINITIVE_EIDOLON_ACTIVATED,
+                    AFFINITIVE_EIDOLON_UNACTIVATED,
+                ) or screen is not None:
+                    self._log(
+                        f"{res[i][CHAR_NAME]}: Leaving the AE details screen.",
+                        LogLevel.DEBUG,
+                    )
+                    if self._return_to_regular_eidolon_screen(activated) is None:
+                        self._log(
+                            f"{res[i][CHAR_NAME]}: Could not return to the original "
+                            "Eidolon layout; the Eidolon level may be wrong.",
+                            LogLevel.ERROR,
+                        )
+                    else:
+                        self._log(
+                            f"{res[i][CHAR_NAME]}: Returned to the regular "
+                            "Eidolon screen.",
+                            LogLevel.DEBUG,
+                        )
+
+            res[i][EIDOLON_IMAGES] = (
+                self._screenshot.screenshot_character_eidolons(char_id)
+            )
             i += 1
             self._nav.press_gamepad_rb()
             self._scan_sleep(0.5)
@@ -978,7 +1351,12 @@ class HSRScanner(QObject):
             with self._ocr_gate:
                 worker_started_at = time.perf_counter()
                 with ocr_profile_context(item_type=item_type, uid=uid, phase="parse"):
-                    result = parse_func(*args)
+                    try:
+                        result = parse_func(*args)
+                    except ScanIntegrityError as exc:
+                        # Best-effort export: drop the failed item, keep scanning.
+                        self._log(f'{integrity_skip_message(exc)} Item skipped, scan continues.', LogLevel.ERROR)
+                        result = []
                 parse_ms = (time.perf_counter() - worker_started_at) * 1000
                 record_parse_task(
                     item_type=item_type,

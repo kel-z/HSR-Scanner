@@ -44,21 +44,28 @@ class Navigation:
         self.key_tap("1")
         time.sleep(0.1)
 
+    def _press_gamepad_button(self, button) -> None:
+        self._gamepad.press_button(button)
+        self._gamepad.update()
+        time.sleep(0.1)
+        self._gamepad.release_button(button)
+        self._gamepad.update()
+
+    def press_gamepad_x(self) -> None:
+        """Press the X button on the gamepad"""
+        self._press_gamepad_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_X)
+
+    def press_gamepad_b(self) -> None:
+        """Press the B button on the gamepad"""
+        self._press_gamepad_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_B)
+
     def press_gamepad_rb(self) -> None:
         """Press the right button on the gamepad"""
-        self._gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-        self._gamepad.update()
-        time.sleep(0.1)  # Ensure the button press is registered
-        self._gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-        self._gamepad.update()
+        self._press_gamepad_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
 
     def press_gamepad_lb(self) -> None:
         """Press the left button on the gamepad"""
-        self._gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
-        self._gamepad.update()
-        time.sleep(0.1)
-        self._gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
-        self._gamepad.update()
+        self._press_gamepad_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
 
     def translate_percent_to_coords(
         self, x_percent: float, y_percent: float
