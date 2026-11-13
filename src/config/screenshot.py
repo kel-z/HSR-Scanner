@@ -1,5 +1,8 @@
 from config.const import (
     ABUNDANCE,
+    AFFINITIVE_EIDOLON,
+    AFFINITIVE_EIDOLON_HINT,
+    AFFINITIVE_EIDOLON_LABEL,
     ASPECT_16_9,
     CHAR_EIDOLONS,
     CHARACTER,
@@ -151,6 +154,10 @@ SCREENSHOT_COORDS = {
             RELIC_SUBSTAT_NAMES: (0.11, 0.3545, 0.5, 0.5141),
             RELIC_SUBSTAT_VALUES: (0.775, 0.3545, 0.975, 0.5141),
             "_equipped_frame": (0, 0.81, 1, 0.88),
+        },
+        AFFINITIVE_EIDOLON: {
+            AFFINITIVE_EIDOLON_HINT: (0.72, 0.88, 1.0, 1.0),
+            AFFINITIVE_EIDOLON_LABEL: (0.82, 0.30, 0.93, 0.36),
         },
     }
 }

@@ -14,6 +14,8 @@ CHAR_PATH = "path"
 CHAR_LEVEL = "level"
 CHAR_ASCENSION = "ascension"
 CHAR_EIDOLON = "eidolon"
+CHAR_AFFINITIVE_EIDOLON = "affinitive_eidolon"
+CHAR_AFFINITIVE_EIDOLONS = "affinitive_eidolons"
 CHAR_SKILLS = "skills"
 CHAR_TRACES = "traces"
 CHAR_MEMOSPRITE = "memosprite"
@@ -117,6 +119,8 @@ CONFIG_RECENT_RELICS_FIVE_STAR = "recent_relics_five_star"
 
 CONFIG_INCLUDE_UID = "include_uid"
 CONFIG_PLAY_SOUND = "play_sound"
+
+DHPT_CHARACTER_ID = "1414"
 
 CONFIG_DEBUG = "debug"
 CONFIG_DEBUG_OUTPUT_LOCATION = "debug_output_location"

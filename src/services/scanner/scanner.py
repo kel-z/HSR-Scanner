@@ -14,6 +14,10 @@ from PyQt6.QtCore import QObject, QSettings, pyqtSignal
 from config.character_scan import CHARACTER_NAV_DATA
 from config.screenshot import SCREENSHOT_COORDS
 from config.const import (
+    AFFINITIVE_EIDOLON_ACTIVATED,
+    AFFINITIVE_EIDOLON_REGULAR,
+    AFFINITIVE_EIDOLON_UNACTIVATED,
+    AFFINITIVE_EIDOLON_UNKNOWN,
     ASCENSION_OFFSET_X,
     ASCENSION_START,
     ASPECT_16_9,
@@ -31,7 +35,10 @@ from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from enums.scan_mode import ScanMode
 from models.const import (
+    CHAR_AFFINITIVE_EIDOLON,
+    CHAR_AFFINITIVE_EIDOLONS,
     CHAR_FILTERS,
+    CHAR_ID,
     CHAR_LEVEL,
     CHAR_NAME,
     CHAR_PATH,
@@ -400,9 +407,6 @@ class HSRScanner(QObject):
             await asyncio.gather(*light_cones, *relics, *characters)
             return {}
 
-        self._return_to_escape_screen()
-        # Escape-screen probe reopens mss; close() is idempotent.
-        self._screenshot.close()
         self.complete_signal.emit()
         self._log("Starting OCR process. Please wait...")
 
@@ -429,7 +433,7 @@ class HSRScanner(QObject):
 
         return {
             "source": "HSR-Scanner",
-            "build": "v1.5.0",
+            "build": "v1.6.0",
             "version": 4,
             "metadata": {
                 "uid": int(uid) if uid else None,
@@ -875,6 +879,45 @@ class HSRScanner(QObject):
         self._return_to_escape_screen()
         return tasks
 
+    def _open_affinitive_eidolon_screen(self, state: str, screen):
+        """Open the AE details screen only when the regular layout is shown."""
+        if state in (
+            AFFINITIVE_EIDOLON_ACTIVATED,
+            AFFINITIVE_EIDOLON_UNACTIVATED,
+        ):
+            return state, screen
+        for _ in range(2):
+            self._nav.press_gamepad_x()
+            for _ in range(3):
+                self._scan_sleep(0.8)
+                screen = self._screenshot.screenshot_character_eidolon_screen()
+                state = self._screenshot.affinitive_eidolon_screen_state(screen)
+                if state in (
+                    AFFINITIVE_EIDOLON_ACTIVATED,
+                    AFFINITIVE_EIDOLON_UNACTIVATED,
+                ):
+                    return state, screen
+                if state == AFFINITIVE_EIDOLON_UNKNOWN:
+                    continue
+                break
+        return AFFINITIVE_EIDOLON_UNKNOWN, None
+
+    def _return_to_regular_eidolon_screen(self, activated: bool):
+        """X switches the activated AE screen; B leaves the unactivated one."""
+        for _ in range(2):
+            if activated:
+                self._nav.press_gamepad_x()
+            else:
+                self._nav.press_gamepad_b()
+            self._scan_sleep(0.8)
+            screen = self._screenshot.screenshot_character_eidolon_screen()
+            state = self._screenshot.affinitive_eidolon_screen_state(screen)
+            if state == AFFINITIVE_EIDOLON_REGULAR:
+                return screen
+            if state == AFFINITIVE_EIDOLON_UNKNOWN:
+                return None
+        return None
+
     def scan_characters(self) -> set[asyncio.Task]:
         """Scans the characters
 
@@ -1181,7 +1224,57 @@ class HSRScanner(QObject):
                 self._nav.press_gamepad_rb()
                 self._scan_sleep(0.1)
                 continue
-            res[i][EIDOLON_IMAGES] = self._screenshot.screenshot_character_eidolons()
+
+            metadata = self._game_data.get_character_meta_data(
+                res[i][CHAR_NAME], res[i][CHAR_PATH]
+            )
+            char_id = str(metadata[CHAR_ID])
+            ae_id = metadata.get(CHAR_AFFINITIVE_EIDOLON)
+            screen = self._screenshot.screenshot_character_eidolon_screen()
+            state = self._screenshot.affinitive_eidolon_screen_state(screen)
+
+            if ae_id is not None:
+                if (
+                    state == AFFINITIVE_EIDOLON_UNKNOWN
+                    and self._screenshot.affinitive_eidolon_activated(screen)
+                ):
+                    state = AFFINITIVE_EIDOLON_ACTIVATED
+                state, screen = self._open_affinitive_eidolon_screen(state, screen)
+                activated = state == AFFINITIVE_EIDOLON_ACTIVATED or (
+                    state == AFFINITIVE_EIDOLON_UNKNOWN
+                    and screen is not None
+                    and self._screenshot.affinitive_eidolon_activated(screen)
+                )
+                self._log(
+                    f"{res[i][CHAR_NAME]}: Affinitive Eidolon {ae_id} eligible; "
+                    f"screen={state}, activated={activated}.",
+                    LogLevel.DEBUG,
+                )
+                res[i][CHAR_AFFINITIVE_EIDOLONS] = [ae_id] if activated else []
+                if state in (
+                    AFFINITIVE_EIDOLON_ACTIVATED,
+                    AFFINITIVE_EIDOLON_UNACTIVATED,
+                ) or screen is not None:
+                    self._log(
+                        f"{res[i][CHAR_NAME]}: Leaving the AE details screen.",
+                        LogLevel.DEBUG,
+                    )
+                    if self._return_to_regular_eidolon_screen(activated) is None:
+                        self._log(
+                            f"{res[i][CHAR_NAME]}: Could not return to the original "
+                            "Eidolon layout; the Eidolon level may be wrong.",
+                            LogLevel.ERROR,
+                        )
+                    else:
+                        self._log(
+                            f"{res[i][CHAR_NAME]}: Returned to the regular "
+                            "Eidolon screen.",
+                            LogLevel.DEBUG,
+                        )
+
+            res[i][EIDOLON_IMAGES] = (
+                self._screenshot.screenshot_character_eidolons(char_id)
+            )
             i += 1
             self._nav.press_gamepad_rb()
             self._scan_sleep(0.5)

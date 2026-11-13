@@ -17,6 +17,16 @@ from PIL.Image import Image
 from PyQt6.QtCore import pyqtBoundSignal
 
 from config.const import (
+    AFFINITIVE_EIDOLON,
+    AFFINITIVE_EIDOLON_ACTIVATED,
+    AFFINITIVE_EIDOLON_HINT,
+    AFFINITIVE_EIDOLON_HINT_SCROLL,
+    AFFINITIVE_EIDOLON_HINT_SELECT,
+    AFFINITIVE_EIDOLON_HINT_SWITCH,
+    AFFINITIVE_EIDOLON_LABEL,
+    AFFINITIVE_EIDOLON_REGULAR,
+    AFFINITIVE_EIDOLON_UNACTIVATED,
+    AFFINITIVE_EIDOLON_UNKNOWN,
     ASPECT_16_9,
     CHARACTER,
     CHAR_EIDOLONS,
@@ -31,7 +41,7 @@ from config.const import (
 from config.screenshot import SCREENSHOT_COORDS
 from enums.log_level import LogLevel
 from enums.increment_type import IncrementType
-from models.const import CHAR_LEVEL, CHAR_NAME
+from models.const import CHAR_LEVEL, CHAR_NAME, DHPT_CHARACTER_ID
 from utils.ocr import image_to_string
 from utils.scan_integrity import ScanIntegrityError
 
@@ -336,7 +346,56 @@ class Screenshot:
             *SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHEST]
         )
 
-    def screenshot_character_eidolons(self) -> list[np.ndarray]:
+    def screenshot_character_eidolon_screen(self) -> Image:
+        """Take a normalized screenshot of the character Eidolon screen."""
+        return self._take_screenshot(0, 0, 1, 1, do_not_save=True)
+
+    def _affinitive_eidolon_crop(self, screen: Image, key: str) -> Image:
+        coords = SCREENSHOT_COORDS[self._aspect_ratio][AFFINITIVE_EIDOLON][key]
+        width, height = screen.size
+        return screen.crop(
+            (
+                int(width * coords[0]),
+                int(height * coords[1]),
+                int(width * coords[2]),
+                int(height * coords[3]),
+            )
+        )
+
+    def affinitive_eidolon_screen_state(self, screen: Image) -> str:
+        """Classify the current Eidolon screen as regular, activated, or unactivated."""
+        text = image_to_string(
+            self._affinitive_eidolon_crop(screen, AFFINITIVE_EIDOLON_HINT),
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+            11,
+        )
+        normalized = text.replace(" ", "").lower()
+        if AFFINITIVE_EIDOLON_HINT_SWITCH in normalized:
+            return AFFINITIVE_EIDOLON_ACTIVATED
+        if AFFINITIVE_EIDOLON_HINT_SCROLL in normalized:
+            return AFFINITIVE_EIDOLON_UNACTIVATED
+        if AFFINITIVE_EIDOLON_HINT_SELECT in normalized:
+            return AFFINITIVE_EIDOLON_REGULAR
+        return AFFINITIVE_EIDOLON_UNKNOWN
+
+    def affinitive_eidolon_activated(self, screen: Image) -> bool:
+        """True when the Activated badge is visible on the AE details screen."""
+        text = image_to_string(
+            self._affinitive_eidolon_crop(screen, AFFINITIVE_EIDOLON_LABEL),
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+            6,
+        )
+        return text.strip().lower() == AFFINITIVE_EIDOLON_ACTIVATED
+
+    # shortcut: DHPT's long node-5 text pushes the icon up; remove if the crop
+    # becomes dynamic.
+    EIDOLON_NODE_OVERRIDES = {
+        DHPT_CHARACTER_ID: {4: (0.4172875, 0.7481)},
+    }
+
+    def screenshot_character_eidolons(
+        self, character_id: str | None = None
+    ) -> list[np.ndarray]:
         """Takes a screenshot of the character eidolons
 
         :return: A list of the screenshots
@@ -352,7 +411,11 @@ class Screenshot:
         mask = np.zeros((dim, dim), dtype="uint8")
         cv2.circle(mask, (int(dim / 2), int(dim / 2)), int(dim / 2), 255, -1)  # type: ignore
 
-        for c in SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHAR_EIDOLONS]:
+        overrides = self.EIDOLON_NODE_OVERRIDES.get(character_id or "", {})
+        for index, c in enumerate(
+            SCREENSHOT_COORDS[self._aspect_ratio][CHARACTER][CHAR_EIDOLONS]
+        ):
+            c = overrides.get(index, c)
             left = self._window_x + int(self._window_width * c[0])
             upper = self._window_y + int(self._window_height * c[1])
             right = left + self._window_width * 0.042
