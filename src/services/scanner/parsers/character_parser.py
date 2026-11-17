@@ -12,6 +12,8 @@ from enums.increment_type import IncrementType
 from enums.log_level import LogLevel
 from models.const import (
     CAELUS_ICON_PATH,
+    CAELUS_YELLOWPURPLE_ICON_PATH,
+    CAELUS_VIMVIGOR_ICON_PATH,
     CHAR_NAME,
     CHAR_PATH,
     CHAR_ID,
@@ -29,6 +31,8 @@ from models.const import (
     BASIC,
     SKILL,
     STELLE_ICON_PATH,
+    STELLE_YELLOWPURPLE_ICON_PATH,
+    STELLE_VIMVIGOR_ICON_PATH,
     TALENT,
     ULT,
     TRACES_LEVELS,
@@ -67,6 +71,10 @@ class CharacterParser:
         self._trailblazer_imgs = {
             "M": PILImage.open(resource_path(CAELUS_ICON_PATH)),
             "F": PILImage.open(resource_path(STELLE_ICON_PATH)),
+            "M_YELLOWPURPLE": PILImage.open(resource_path(CAELUS_YELLOWPURPLE_ICON_PATH)),
+            "M_VIMVIGOR": PILImage.open(resource_path(CAELUS_VIMVIGOR_ICON_PATH)),
+            "F_YELLOWPURPLE": PILImage.open(resource_path(STELLE_YELLOWPURPLE_ICON_PATH)),
+            "F_VIMVIGOR": PILImage.open(resource_path(STELLE_VIMVIGOR_ICON_PATH)),
         }
         self._is_trailblazer_scanned = False
 
@@ -306,9 +314,12 @@ class CharacterParser:
             trailblazer_img = trailblazer_img.resize(character_img.size)
             try:
                 if locate(character_img, trailblazer_img, confidence=0.8):
-                    QSettings(KEL_Z, HSR_SCANNER).setValue(IS_STELLE, k == "F")
+                    QSettings(KEL_Z, HSR_SCANNER).setValue(
+                        IS_STELLE, k.startswith("F")
+                    )
                     self._log(
-                        f'{"Stelle" if k == "F" else "Caelus"} detected.', LogLevel.DEBUG
+                        f'{"Stelle" if k.startswith("F") else "Caelus"} detected.',
+                        LogLevel.DEBUG,
                     )
                     return True
             except ImageNotFoundException:
