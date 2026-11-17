@@ -134,4 +134,8 @@ DEFAULT_OCR_BATCH_SIZE = 10
 # Resource paths
 CAELUS_ICON_PATH = "assets/images/trailblazerm.png"
 STELLE_ICON_PATH = "assets/images/trailblazerf.png"
+CAELUS_YELLOWPURPLE_ICON_PATH = "assets/images/trailblazerm_yellowpurple.png"
+CAELUS_VIMVIGOR_ICON_PATH = "assets/images/trailblazerm_vimvigor.png"
+STELLE_YELLOWPURPLE_ICON_PATH = "assets/images/trailblazerf_yellowpurple.png"
+STELLE_VIMVIGOR_ICON_PATH = "assets/images/trailblazerf_vimvigor.png"
 LOCK_ICON_PATH = "assets/images/lock.png"
